@@ -14,94 +14,94 @@ DEFAULT_SFH_PDF_QUENCH_PARAMS = OrderedDict(
     frac_quench_k=1.27,
     frac_quench_ylo=-0.81,
     frac_quench_yhi=1.78,
-    mean_ulgm_quench_ylo=11.68,
-    mean_ulgm_quench_yhi=12.33,
-    mean_ulgy_quench_ylo=0.48,
-    mean_ulgy_quench_yhi=-0.11,
-    mean_ul_quench_ylo=-2.25,
-    mean_ul_quench_yhi=2.50,
-    mean_utau_quench_ylo=35.30,
-    mean_utau_quench_yhi=-32.92,
-    mean_uqt_quench_ylo=1.55,
-    mean_uqt_quench_yhi=0.10,
-    mean_uqs_quench_ylo=-1.92,
-    mean_uqs_quench_yhi=2.57,
-    mean_udrop_quench_ylo=-0.43,
-    mean_udrop_quench_yhi=-4.44,
-    mean_urej_quench_ylo=0.79,
-    mean_urej_quench_yhi=-2.97,
-    cov_ulgm_ulgm_quench_ylo=368.19,
-    cov_ulgm_ulgm_quench_yhi=-100.07,
-    cov_ulgy_ulgy_quench_ylo=14.16,
-    cov_ulgy_ulgy_quench_yhi=8.74,
-    cov_ul_ul_quench_ylo=7.70,
-    cov_ul_ul_quench_yhi=3.14,
-    cov_utau_utau_quench_ylo=3.85,
-    cov_utau_utau_quench_yhi=4.44,
-    cov_uqt_uqt_quench_ylo=-0.36,
-    cov_uqt_uqt_quench_yhi=0.40,
-    cov_uqs_uqs_quench_ylo=2.20,
-    cov_uqs_uqs_quench_yhi=29.57,
-    cov_udrop_udrop_quench_ylo=4.06,
-    cov_udrop_udrop_quench_yhi=12.19,
-    cov_urej_urej_quench_ylo=6.18,
-    cov_urej_urej_quench_yhi=4.65,
-    cov_ulgy_ulgm_quench_ylo=0.21,
-    cov_ulgy_ulgm_quench_yhi=-0.27,
-    cov_ul_ulgm_quench_ylo=-0.38,
-    cov_ul_ulgm_quench_yhi=0.23,
-    cov_ul_ulgy_quench_ylo=0.01,
-    cov_ul_ulgy_quench_yhi=-0.13,
-    cov_utau_ulgm_quench_ylo=0.03,
-    cov_utau_ulgm_quench_yhi=0.03,
-    cov_utau_ulgy_quench_ylo=0.15,
-    cov_utau_ulgy_quench_yhi=-0.06,
-    cov_utau_ul_quench_ylo=-0.03,
-    cov_utau_ul_quench_yhi=-0.33,
-    cov_uqt_ulgm_quench_ylo=-0.03,
-    cov_uqt_ulgm_quench_yhi=0.07,
-    cov_uqt_ulgy_quench_ylo=0.01,
-    cov_uqt_ulgy_quench_yhi=-0.03,
-    cov_uqt_ul_quench_ylo=0.01,
-    cov_uqt_ul_quench_yhi=-0.09,
-    cov_uqt_utau_quench_ylo=0.23,
-    cov_uqt_utau_quench_yhi=-0.17,
-    cov_uqs_ulgm_quench_ylo=0.03,
-    cov_uqs_ulgm_quench_yhi=-0.05,
-    cov_uqs_ulgy_quench_ylo=-0.07,
-    cov_uqs_ulgy_quench_yhi=0.18,
-    cov_uqs_ul_quench_ylo=-0.11,
-    cov_uqs_ul_quench_yhi=0.13,
-    cov_uqs_utau_quench_ylo=0.19,
-    cov_uqs_utau_quench_yhi=-0.11,
-    cov_uqs_uqt_quench_ylo=0.11,
-    cov_uqs_uqt_quench_yhi=-0.11,
-    cov_udrop_ulgm_quench_ylo=-0.08,
-    cov_udrop_ulgm_quench_yhi=0.04,
-    cov_udrop_ulgy_quench_ylo=0.10,
-    cov_udrop_ulgy_quench_yhi=-0.18,
-    cov_udrop_ul_quench_ylo=-0.00,
-    cov_udrop_ul_quench_yhi=0.02,
-    cov_udrop_utau_quench_ylo=-0.01,
-    cov_udrop_utau_quench_yhi=-0.03,
-    cov_udrop_uqt_quench_ylo=-0.09,
-    cov_udrop_uqt_quench_yhi=0.40,
-    cov_udrop_uqs_quench_ylo=0.19,
-    cov_udrop_uqs_quench_yhi=-0.29,
-    cov_urej_ulgm_quench_ylo=0.22,
-    cov_urej_ulgm_quench_yhi=-0.17,
-    cov_urej_ulgy_quench_ylo=0.33,
-    cov_urej_ulgy_quench_yhi=-0.23,
-    cov_urej_ul_quench_ylo=-0.08,
-    cov_urej_ul_quench_yhi=0.03,
-    cov_urej_utau_quench_ylo=-0.10,
-    cov_urej_utau_quench_yhi=0.23,
-    cov_urej_uqt_quench_ylo=-0.25,
-    cov_urej_uqt_quench_yhi=0.32,
-    cov_urej_uqs_quench_ylo=0.02,
-    cov_urej_uqs_quench_yhi=-0.08,
-    cov_urej_udrop_quench_ylo=-0.17,
-    cov_urej_udrop_quench_yhi=0.15,
+    mean_ulgm_quench_ylo=11.75,
+    mean_ulgm_quench_yhi=12.32,
+    mean_ulgy_quench_ylo=0.96,
+    mean_ulgy_quench_yhi=-0.63,
+    mean_ul_quench_ylo=-2.23,
+    mean_ul_quench_yhi=2.48,
+    mean_utau_quench_ylo=23.20,
+    mean_utau_quench_yhi=-21.89,
+    mean_uqt_quench_ylo=1.67,
+    mean_uqt_quench_yhi=-0.01,
+    mean_uqs_quench_ylo=-3.61,
+    mean_uqs_quench_yhi=4.13,
+    mean_udrop_quench_ylo=0.33,
+    mean_udrop_quench_yhi=-5.13,
+    mean_urej_quench_ylo=1.24,
+    mean_urej_quench_yhi=-3.41,
+    cov_ulgm_ulgm_quench_ylo=-1.00,
+    cov_ulgm_ulgm_quench_yhi=-1.00,
+    cov_ulgy_ulgy_quench_ylo=-1.00,
+    cov_ulgy_ulgy_quench_yhi=-1.00,
+    cov_ul_ul_quench_ylo=-1.00,
+    cov_ul_ul_quench_yhi=-1.00,
+    cov_utau_utau_quench_ylo=-1.00,
+    cov_utau_utau_quench_yhi=-1.00,
+    cov_uqt_uqt_quench_ylo=-1.00,
+    cov_uqt_uqt_quench_yhi=-1.00,
+    cov_uqs_uqs_quench_ylo=-1.00,
+    cov_uqs_uqs_quench_yhi=-1.00,
+    cov_udrop_udrop_quench_ylo=-1.00,
+    cov_udrop_udrop_quench_yhi=-1.00,
+    cov_urej_urej_quench_ylo=-1.00,
+    cov_urej_urej_quench_yhi=-1.00,
+    cov_ulgy_ulgm_quench_ylo=0.00,
+    cov_ulgy_ulgm_quench_yhi=0.00,
+    cov_ul_ulgm_quench_ylo=0.00,
+    cov_ul_ulgm_quench_yhi=0.00,
+    cov_ul_ulgy_quench_ylo=0.00,
+    cov_ul_ulgy_quench_yhi=0.00,
+    cov_utau_ulgm_quench_ylo=0.00,
+    cov_utau_ulgm_quench_yhi=0.00,
+    cov_utau_ulgy_quench_ylo=0.00,
+    cov_utau_ulgy_quench_yhi=0.00,
+    cov_utau_ul_quench_ylo=0.00,
+    cov_utau_ul_quench_yhi=0.00,
+    cov_uqt_ulgm_quench_ylo=0.00,
+    cov_uqt_ulgm_quench_yhi=0.00,
+    cov_uqt_ulgy_quench_ylo=0.00,
+    cov_uqt_ulgy_quench_yhi=0.00,
+    cov_uqt_ul_quench_ylo=0.00,
+    cov_uqt_ul_quench_yhi=0.00,
+    cov_uqt_utau_quench_ylo=0.00,
+    cov_uqt_utau_quench_yhi=0.00,
+    cov_uqs_ulgm_quench_ylo=0.00,
+    cov_uqs_ulgm_quench_yhi=0.00,
+    cov_uqs_ulgy_quench_ylo=0.00,
+    cov_uqs_ulgy_quench_yhi=0.00,
+    cov_uqs_ul_quench_ylo=0.00,
+    cov_uqs_ul_quench_yhi=0.00,
+    cov_uqs_utau_quench_ylo=0.00,
+    cov_uqs_utau_quench_yhi=0.00,
+    cov_uqs_uqt_quench_ylo=0.00,
+    cov_uqs_uqt_quench_yhi=0.00,
+    cov_udrop_ulgm_quench_ylo=0.00,
+    cov_udrop_ulgm_quench_yhi=0.00,
+    cov_udrop_ulgy_quench_ylo=0.00,
+    cov_udrop_ulgy_quench_yhi=0.00,
+    cov_udrop_ul_quench_ylo=0.00,
+    cov_udrop_ul_quench_yhi=0.00,
+    cov_udrop_utau_quench_ylo=0.00,
+    cov_udrop_utau_quench_yhi=0.00,
+    cov_udrop_uqt_quench_ylo=0.00,
+    cov_udrop_uqt_quench_yhi=0.00,
+    cov_udrop_uqs_quench_ylo=0.00,
+    cov_udrop_uqs_quench_yhi=0.00,
+    cov_urej_ulgm_quench_ylo=0.00,
+    cov_urej_ulgm_quench_yhi=0.00,
+    cov_urej_ulgy_quench_ylo=0.00,
+    cov_urej_ulgy_quench_yhi=0.00,
+    cov_urej_ul_quench_ylo=0.00,
+    cov_urej_ul_quench_yhi=0.00,
+    cov_urej_utau_quench_ylo=0.00,
+    cov_urej_utau_quench_yhi=0.00,
+    cov_urej_uqt_quench_ylo=0.00,
+    cov_urej_uqt_quench_yhi=0.00,
+    cov_urej_uqs_quench_ylo=0.00,
+    cov_urej_uqs_quench_yhi=0.00,
+    cov_urej_udrop_quench_ylo=0.00,
+    cov_urej_udrop_quench_yhi=0.00,
 )
 
 
@@ -130,6 +130,12 @@ def _fun_Mcrit(x, ymin, ymax):
 @jjit
 def _fun_QT(x, ymin, ymax):
     return _sigmoid(x, 13.0, 4.0, ymin, ymax)
+
+
+@jjit
+def _fun_cov_diag(x, ymin, ymax):
+    _res = 10 ** _sigmoid(x, 13.0, 0.5, ymin, ymax)
+    return _res
 
 
 @jjit
@@ -203,71 +209,71 @@ def _get_cov_scalar(
     urej_udrop,
 ):
     cov = jnp.zeros((8, 8)).astype("f4")
-    cov = cov.at[[0, 0]].set(ulgm_ulgm ** 2)
-    cov = cov.at[[1, 1]].set(ulgy_ulgy ** 2)
-    cov = cov.at[[2, 2]].set(ul_ul ** 2)
-    cov = cov.at[[3, 3]].set(utau_utau ** 2)
-    cov = cov.at[[4, 4]].set(uqt_uqt ** 2)
-    cov = cov.at[[5, 5]].set(uqs_uqs ** 2)
-    cov = cov.at[[6, 6]].set(udrop_udrop ** 2)
-    cov = cov.at[[7, 7]].set(urej_urej ** 2)
+    cov = cov.at[(0, 0)].set(ulgm_ulgm ** 2)
+    cov = cov.at[(1, 1)].set(ulgy_ulgy ** 2)
+    cov = cov.at[(2, 2)].set(ul_ul ** 2)
+    cov = cov.at[(3, 3)].set(utau_utau ** 2)
+    cov = cov.at[(4, 4)].set(uqt_uqt ** 2)
+    cov = cov.at[(5, 5)].set(uqs_uqs ** 2)
+    cov = cov.at[(6, 6)].set(udrop_udrop ** 2)
+    cov = cov.at[(7, 7)].set(urej_urej ** 2)
 
-    cov = cov.at[[1, 0]].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
-    cov = cov.at[[0, 1]].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
-    cov = cov.at[[2, 0]].set(ul_ulgm * ul_ul * ulgm_ulgm)
-    cov = cov.at[[0, 2]].set(ul_ulgm * ul_ul * ulgm_ulgm)
-    cov = cov.at[[2, 1]].set(ul_ulgy * ul_ul * ulgy_ulgy)
-    cov = cov.at[[1, 2]].set(ul_ulgy * ul_ul * ulgy_ulgy)
-    cov = cov.at[[3, 0]].set(utau_ulgm * utau_utau * ulgm_ulgm)
-    cov = cov.at[[0, 3]].set(utau_ulgm * utau_utau * ulgm_ulgm)
-    cov = cov.at[[3, 1]].set(utau_ulgy * utau_utau * ulgy_ulgy)
-    cov = cov.at[[1, 3]].set(utau_ulgy * utau_utau * ulgy_ulgy)
-    cov = cov.at[[3, 2]].set(utau_ul * utau_utau * ul_ul)
-    cov = cov.at[[2, 3]].set(utau_ul * utau_utau * ul_ul)
-    cov = cov.at[[4, 0]].set(uqt_ulgm * uqt_uqt * ulgm_ulgm)
-    cov = cov.at[[0, 4]].set(uqt_ulgm * uqt_uqt * ulgm_ulgm)
-    cov = cov.at[[4, 1]].set(uqt_ulgy * uqt_uqt * ulgy_ulgy)
-    cov = cov.at[[1, 4]].set(uqt_ulgy * uqt_uqt * ulgy_ulgy)
-    cov = cov.at[[4, 2]].set(uqt_ul * uqt_uqt * ul_ul)
-    cov = cov.at[[2, 4]].set(uqt_ul * uqt_uqt * ul_ul)
-    cov = cov.at[[4, 3]].set(uqt_utau * uqt_uqt * utau_utau)
-    cov = cov.at[[3, 4]].set(uqt_utau * uqt_uqt * utau_utau)
-    cov = cov.at[[5, 0]].set(uqs_ulgm * uqs_uqs * ulgm_ulgm)
-    cov = cov.at[[0, 5]].set(uqs_ulgm * uqs_uqs * ulgm_ulgm)
-    cov = cov.at[[5, 1]].set(uqs_ulgy * uqs_uqs * ulgy_ulgy)
-    cov = cov.at[[1, 5]].set(uqs_ulgy * uqs_uqs * ulgy_ulgy)
-    cov = cov.at[[5, 2]].set(uqs_ul * uqs_uqs * ul_ul)
-    cov = cov.at[[2, 5]].set(uqs_ul * uqs_uqs * ul_ul)
-    cov = cov.at[[5, 3]].set(uqs_utau * uqs_uqs * utau_utau)
-    cov = cov.at[[3, 5]].set(uqs_utau * uqs_uqs * utau_utau)
-    cov = cov.at[[5, 4]].set(uqs_uqt * uqs_uqs * uqt_uqt)
-    cov = cov.at[[4, 5]].set(uqs_uqt * uqs_uqs * uqt_uqt)
-    cov = cov.at[[6, 0]].set(udrop_ulgm * udrop_udrop * ulgm_ulgm)
-    cov = cov.at[[0, 6]].set(udrop_ulgm * udrop_udrop * ulgm_ulgm)
-    cov = cov.at[[6, 1]].set(udrop_ulgy * udrop_udrop * ulgy_ulgy)
-    cov = cov.at[[1, 6]].set(udrop_ulgy * udrop_udrop * ulgy_ulgy)
-    cov = cov.at[[6, 2]].set(udrop_ul * udrop_udrop * ul_ul)
-    cov = cov.at[[2, 6]].set(udrop_ul * udrop_udrop * ul_ul)
-    cov = cov.at[[6, 3]].set(udrop_utau * udrop_udrop * utau_utau)
-    cov = cov.at[[3, 6]].set(udrop_utau * udrop_udrop * utau_utau)
-    cov = cov.at[[6, 4]].set(udrop_uqt * udrop_udrop * uqt_uqt)
-    cov = cov.at[[4, 6]].set(udrop_uqt * udrop_udrop * uqt_uqt)
-    cov = cov.at[[6, 5]].set(udrop_uqs * udrop_udrop * uqs_uqs)
-    cov = cov.at[[5, 6]].set(udrop_uqs * udrop_udrop * uqs_uqs)
-    cov = cov.at[[7, 0]].set(urej_ulgm * urej_urej * ulgm_ulgm)
-    cov = cov.at[[0, 7]].set(urej_ulgm * urej_urej * ulgm_ulgm)
-    cov = cov.at[[7, 1]].set(urej_ulgy * urej_urej * ulgy_ulgy)
-    cov = cov.at[[1, 7]].set(urej_ulgy * urej_urej * ulgy_ulgy)
-    cov = cov.at[[7, 2]].set(urej_ul * urej_urej * ul_ul)
-    cov = cov.at[[2, 7]].set(urej_ul * urej_urej * ul_ul)
-    cov = cov.at[[7, 3]].set(urej_utau * urej_urej * utau_utau)
-    cov = cov.at[[3, 7]].set(urej_utau * urej_urej * utau_utau)
-    cov = cov.at[[7, 4]].set(urej_uqt * urej_urej * uqt_uqt)
-    cov = cov.at[[4, 7]].set(urej_uqt * urej_urej * uqt_uqt)
-    cov = cov.at[[7, 5]].set(urej_uqs * urej_urej * uqs_uqs)
-    cov = cov.at[[5, 7]].set(urej_uqs * urej_urej * uqs_uqs)
-    cov = cov.at[[7, 6]].set(urej_udrop * urej_urej * udrop_udrop)
-    cov = cov.at[[6, 7]].set(urej_udrop * urej_urej * udrop_udrop)
+    cov = cov.at[(1, 0)].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
+    cov = cov.at[(0, 1)].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
+    cov = cov.at[(2, 0)].set(ul_ulgm * ul_ul * ulgm_ulgm)
+    cov = cov.at[(0, 2)].set(ul_ulgm * ul_ul * ulgm_ulgm)
+    cov = cov.at[(2, 1)].set(ul_ulgy * ul_ul * ulgy_ulgy)
+    cov = cov.at[(1, 2)].set(ul_ulgy * ul_ul * ulgy_ulgy)
+    cov = cov.at[(3, 0)].set(utau_ulgm * utau_utau * ulgm_ulgm)
+    cov = cov.at[(0, 3)].set(utau_ulgm * utau_utau * ulgm_ulgm)
+    cov = cov.at[(3, 1)].set(utau_ulgy * utau_utau * ulgy_ulgy)
+    cov = cov.at[(1, 3)].set(utau_ulgy * utau_utau * ulgy_ulgy)
+    cov = cov.at[(3, 2)].set(utau_ul * utau_utau * ul_ul)
+    cov = cov.at[(2, 3)].set(utau_ul * utau_utau * ul_ul)
+    cov = cov.at[(4, 0)].set(uqt_ulgm * uqt_uqt * ulgm_ulgm)
+    cov = cov.at[(0, 4)].set(uqt_ulgm * uqt_uqt * ulgm_ulgm)
+    cov = cov.at[(4, 1)].set(uqt_ulgy * uqt_uqt * ulgy_ulgy)
+    cov = cov.at[(1, 4)].set(uqt_ulgy * uqt_uqt * ulgy_ulgy)
+    cov = cov.at[(4, 2)].set(uqt_ul * uqt_uqt * ul_ul)
+    cov = cov.at[(2, 4)].set(uqt_ul * uqt_uqt * ul_ul)
+    cov = cov.at[(4, 3)].set(uqt_utau * uqt_uqt * utau_utau)
+    cov = cov.at[(3, 4)].set(uqt_utau * uqt_uqt * utau_utau)
+    cov = cov.at[(5, 0)].set(uqs_ulgm * uqs_uqs * ulgm_ulgm)
+    cov = cov.at[(0, 5)].set(uqs_ulgm * uqs_uqs * ulgm_ulgm)
+    cov = cov.at[(5, 1)].set(uqs_ulgy * uqs_uqs * ulgy_ulgy)
+    cov = cov.at[(1, 5)].set(uqs_ulgy * uqs_uqs * ulgy_ulgy)
+    cov = cov.at[(5, 2)].set(uqs_ul * uqs_uqs * ul_ul)
+    cov = cov.at[(2, 5)].set(uqs_ul * uqs_uqs * ul_ul)
+    cov = cov.at[(5, 3)].set(uqs_utau * uqs_uqs * utau_utau)
+    cov = cov.at[(3, 5)].set(uqs_utau * uqs_uqs * utau_utau)
+    cov = cov.at[(5, 4)].set(uqs_uqt * uqs_uqs * uqt_uqt)
+    cov = cov.at[(4, 5)].set(uqs_uqt * uqs_uqs * uqt_uqt)
+    cov = cov.at[(6, 0)].set(udrop_ulgm * udrop_udrop * ulgm_ulgm)
+    cov = cov.at[(0, 6)].set(udrop_ulgm * udrop_udrop * ulgm_ulgm)
+    cov = cov.at[(6, 1)].set(udrop_ulgy * udrop_udrop * ulgy_ulgy)
+    cov = cov.at[(1, 6)].set(udrop_ulgy * udrop_udrop * ulgy_ulgy)
+    cov = cov.at[(6, 2)].set(udrop_ul * udrop_udrop * ul_ul)
+    cov = cov.at[(2, 6)].set(udrop_ul * udrop_udrop * ul_ul)
+    cov = cov.at[(6, 3)].set(udrop_utau * udrop_udrop * utau_utau)
+    cov = cov.at[(3, 6)].set(udrop_utau * udrop_udrop * utau_utau)
+    cov = cov.at[(6, 4)].set(udrop_uqt * udrop_udrop * uqt_uqt)
+    cov = cov.at[(4, 6)].set(udrop_uqt * udrop_udrop * uqt_uqt)
+    cov = cov.at[(6, 5)].set(udrop_uqs * udrop_udrop * uqs_uqs)
+    cov = cov.at[(5, 6)].set(udrop_uqs * udrop_udrop * uqs_uqs)
+    cov = cov.at[(7, 0)].set(urej_ulgm * urej_urej * ulgm_ulgm)
+    cov = cov.at[(0, 7)].set(urej_ulgm * urej_urej * ulgm_ulgm)
+    cov = cov.at[(7, 1)].set(urej_ulgy * urej_urej * ulgy_ulgy)
+    cov = cov.at[(1, 7)].set(urej_ulgy * urej_urej * ulgy_ulgy)
+    cov = cov.at[(7, 2)].set(urej_ul * urej_urej * ul_ul)
+    cov = cov.at[(2, 7)].set(urej_ul * urej_urej * ul_ul)
+    cov = cov.at[(7, 3)].set(urej_utau * urej_urej * utau_utau)
+    cov = cov.at[(3, 7)].set(urej_utau * urej_urej * utau_utau)
+    cov = cov.at[(7, 4)].set(urej_uqt * urej_urej * uqt_uqt)
+    cov = cov.at[(4, 7)].set(urej_uqt * urej_urej * uqt_uqt)
+    cov = cov.at[(7, 5)].set(urej_uqs * urej_urej * uqs_uqs)
+    cov = cov.at[(5, 7)].set(urej_uqs * urej_urej * uqs_uqs)
+    cov = cov.at[(7, 6)].set(urej_udrop * urej_urej * udrop_udrop)
+    cov = cov.at[(6, 7)].set(urej_udrop * urej_urej * udrop_udrop)
     return cov
 
 
@@ -282,7 +288,9 @@ def frac_quench_vs_lgm0(
     frac_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["frac_quench_ylo"],
     frac_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["frac_quench_yhi"],
 ):
-    return _sigmoid(lgm0, LGM_X0, LGM_K, frac_quench_ylo, frac_quench_yhi)
+    return _fun_fquench(
+        lgm0, frac_quench_x0, frac_quench_k, frac_quench_ylo, frac_quench_yhi
+    )
 
 
 @jjit
@@ -327,7 +335,7 @@ def mean_uqt_quench_vs_lgm0(
     mean_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["mean_uqt_quench_ylo"],
     mean_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["mean_uqt_quench_yhi"],
 ):
-    return _fun_QT(lgm0, mean_uqt_quench_ylo, mean_uqt_quench_yhi)
+    return _fun(lgm0, mean_uqt_quench_ylo, mean_uqt_quench_yhi)
 
 
 @jjit
@@ -363,11 +371,8 @@ def cov_ulgm_ulgm_quench_vs_lgm0(
     cov_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgm_ulgm_quench_ylo"],
     cov_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgm_ulgm_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_ulgm_ulgm_quench_ylo, cov_ulgm_ulgm_quench_yhi
-    )
-    _res = _fun
-    return _bound_cov_diag(_res)
+    _res = _fun_cov_diag(lgm0, cov_ulgm_ulgm_quench_ylo, cov_ulgm_ulgm_quench_yhi)
+    return _res
 
 
 @jjit
@@ -376,11 +381,8 @@ def cov_ulgy_ulgy_quench_vs_lgm0(
     cov_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgy_quench_ylo"],
     cov_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgy_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_ulgy_ulgy_quench_ylo, cov_ulgy_ulgy_quench_yhi
-    )
-    _res = _fun
-    return _bound_cov_diag(_res)
+    _res = _fun_cov_diag(lgm0, cov_ulgy_ulgy_quench_ylo, cov_ulgy_ulgy_quench_yhi)
+    return _res
 
 
 @jjit
@@ -389,9 +391,8 @@ def cov_ul_ul_quench_vs_lgm0(
     cov_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ul_quench_ylo"],
     cov_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ul_quench_yhi"],
 ):
-    _res = _sigmoid(lgm0, LGM_X0, LGM_K, cov_ul_ul_quench_ylo, cov_ul_ul_quench_yhi)
-    _res = _fun
-    return _bound_cov_diag(_res)
+    _res = _fun_cov_diag(lgm0, cov_ul_ul_quench_ylo, cov_ul_ul_quench_yhi)
+    return _res
 
 
 @jjit
@@ -400,11 +401,8 @@ def cov_utau_utau_quench_vs_lgm0(
     cov_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_utau_quench_ylo"],
     cov_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_utau_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_utau_utau_quench_ylo, cov_utau_utau_quench_yhi
-    )
-    _res = _fun
-    return _bound_cov_diag(_res)
+    _res = _fun_cov_diag(lgm0, cov_utau_utau_quench_ylo, cov_utau_utau_quench_yhi)
+    return _res
 
 
 @jjit
@@ -413,9 +411,8 @@ def cov_uqt_uqt_quench_vs_lgm0(
     cov_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_uqt_quench_ylo"],
     cov_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_uqt_quench_yhi"],
 ):
-    _res = _sigmoid(lgm0, LGM_X0, LGM_K, cov_uqt_uqt_quench_ylo, cov_uqt_uqt_quench_yhi)
-    _res = _fun
-    return _bound_cov_diag(_res)
+    _res = _fun_cov_diag(lgm0, cov_uqt_uqt_quench_ylo, cov_uqt_uqt_quench_yhi)
+    return _res
 
 
 @jjit
@@ -424,9 +421,8 @@ def cov_uqs_uqs_quench_vs_lgm0(
     cov_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqs_quench_ylo"],
     cov_uqs_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqs_quench_yhi"],
 ):
-    _res = _sigmoid(lgm0, LGM_X0, LGM_K, cov_uqs_uqs_quench_ylo, cov_uqs_uqs_quench_yhi)
-    _res = _fun
-    return _bound_cov_diag(_res)
+    _res = _fun_cov_diag(lgm0, cov_uqs_uqs_quench_ylo, cov_uqs_uqs_quench_yhi)
+    return _res
 
 
 @jjit
@@ -439,11 +435,8 @@ def cov_udrop_udrop_quench_vs_lgm0(
         "cov_udrop_udrop_quench_yhi"
     ],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_udrop_udrop_quench_ylo, cov_udrop_udrop_quench_yhi
-    )
-    _res = _fun
-    return _bound_cov_diag(_res)
+    _res = _fun_cov_diag(lgm0, cov_udrop_udrop_quench_ylo, cov_udrop_udrop_quench_yhi)
+    return _res
 
 
 @jjit
@@ -452,11 +445,8 @@ def cov_urej_urej_quench_vs_lgm0(
     cov_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_urej_quench_ylo"],
     cov_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_urej_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_urej_urej_quench_ylo, cov_urej_urej_quench_yhi
-    )
-    _res = _fun
-    return _bound_cov_diag(_res)
+    _res = _fun_cov_diag(lgm0, cov_urej_urej_quench_ylo, cov_urej_urej_quench_yhi)
+    return _res
 
 
 @jjit
@@ -465,9 +455,7 @@ def cov_ulgy_ulgm_quench_vs_lgm0(
     cov_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgm_quench_ylo"],
     cov_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgm_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_ulgy_ulgm_quench_ylo, cov_ulgy_ulgm_quench_yhi
-    )
+    _res = _fun(lgm0, cov_ulgy_ulgm_quench_ylo, cov_ulgy_ulgm_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -477,7 +465,7 @@ def cov_ul_ulgm_quench_vs_lgm0(
     cov_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgm_quench_ylo"],
     cov_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgm_quench_yhi"],
 ):
-    _res = _sigmoid(lgm0, LGM_X0, LGM_K, cov_ul_ulgm_quench_ylo, cov_ul_ulgm_quench_yhi)
+    _res = _fun(lgm0, cov_ul_ulgm_quench_ylo, cov_ul_ulgm_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -487,7 +475,7 @@ def cov_ul_ulgy_quench_vs_lgm0(
     cov_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgy_quench_ylo"],
     cov_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgy_quench_yhi"],
 ):
-    _res = _sigmoid(lgm0, LGM_X0, LGM_K, cov_ul_ulgy_quench_ylo, cov_ul_ulgy_quench_yhi)
+    _res = _fun(lgm0, cov_ul_ulgy_quench_ylo, cov_ul_ulgy_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -497,9 +485,7 @@ def cov_utau_ulgm_quench_vs_lgm0(
     cov_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgm_quench_ylo"],
     cov_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgm_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_utau_ulgm_quench_ylo, cov_utau_ulgm_quench_yhi
-    )
+    _res = _fun(lgm0, cov_utau_ulgm_quench_ylo, cov_utau_ulgm_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -509,9 +495,7 @@ def cov_utau_ulgy_quench_vs_lgm0(
     cov_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgy_quench_ylo"],
     cov_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgy_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_utau_ulgy_quench_ylo, cov_utau_ulgy_quench_yhi
-    )
+    _res = _fun(lgm0, cov_utau_ulgy_quench_ylo, cov_utau_ulgy_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -521,7 +505,7 @@ def cov_utau_ul_quench_vs_lgm0(
     cov_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ul_quench_ylo"],
     cov_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ul_quench_yhi"],
 ):
-    _res = _sigmoid(lgm0, LGM_X0, LGM_K, cov_utau_ul_quench_ylo, cov_utau_ul_quench_yhi)
+    _res = _fun(lgm0, cov_utau_ul_quench_ylo, cov_utau_ul_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -531,9 +515,7 @@ def cov_uqt_ulgm_quench_vs_lgm0(
     cov_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgm_quench_ylo"],
     cov_uqt_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgm_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_uqt_ulgm_quench_ylo, cov_uqt_ulgm_quench_yhi
-    )
+    _res = _fun(lgm0, cov_uqt_ulgm_quench_ylo, cov_uqt_ulgm_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -543,9 +525,7 @@ def cov_uqt_ulgy_quench_vs_lgm0(
     cov_uqt_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgy_quench_ylo"],
     cov_uqt_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgy_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_uqt_ulgy_quench_ylo, cov_uqt_ulgy_quench_yhi
-    )
+    _res = _fun(lgm0, cov_uqt_ulgy_quench_ylo, cov_uqt_ulgy_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -555,7 +535,7 @@ def cov_uqt_ul_quench_vs_lgm0(
     cov_uqt_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ul_quench_ylo"],
     cov_uqt_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ul_quench_yhi"],
 ):
-    _res = _sigmoid(lgm0, LGM_X0, LGM_K, cov_uqt_ul_quench_ylo, cov_uqt_ul_quench_yhi)
+    _res = _fun(lgm0, cov_uqt_ul_quench_ylo, cov_uqt_ul_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -565,9 +545,7 @@ def cov_uqt_utau_quench_vs_lgm0(
     cov_uqt_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_utau_quench_ylo"],
     cov_uqt_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_utau_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_uqt_utau_quench_ylo, cov_uqt_utau_quench_yhi
-    )
+    _res = _fun(lgm0, cov_uqt_utau_quench_ylo, cov_uqt_utau_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -577,9 +555,7 @@ def cov_uqs_ulgm_quench_vs_lgm0(
     cov_uqs_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgm_quench_ylo"],
     cov_uqs_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgm_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_uqs_ulgm_quench_ylo, cov_uqs_ulgm_quench_yhi
-    )
+    _res = _fun(lgm0, cov_uqs_ulgm_quench_ylo, cov_uqs_ulgm_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -589,9 +565,7 @@ def cov_uqs_ulgy_quench_vs_lgm0(
     cov_uqs_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgy_quench_ylo"],
     cov_uqs_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgy_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_uqs_ulgy_quench_ylo, cov_uqs_ulgy_quench_yhi
-    )
+    _res = _fun(lgm0, cov_uqs_ulgy_quench_ylo, cov_uqs_ulgy_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -601,7 +575,7 @@ def cov_uqs_ul_quench_vs_lgm0(
     cov_uqs_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ul_quench_ylo"],
     cov_uqs_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ul_quench_yhi"],
 ):
-    _res = _sigmoid(lgm0, LGM_X0, LGM_K, cov_uqs_ul_quench_ylo, cov_uqs_ul_quench_yhi)
+    _res = _fun(lgm0, cov_uqs_ul_quench_ylo, cov_uqs_ul_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -611,9 +585,7 @@ def cov_uqs_utau_quench_vs_lgm0(
     cov_uqs_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_utau_quench_ylo"],
     cov_uqs_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_utau_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_uqs_utau_quench_ylo, cov_uqs_utau_quench_yhi
-    )
+    _res = _fun(lgm0, cov_uqs_utau_quench_ylo, cov_uqs_utau_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -623,7 +595,7 @@ def cov_uqs_uqt_quench_vs_lgm0(
     cov_uqs_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqt_quench_ylo"],
     cov_uqs_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqt_quench_yhi"],
 ):
-    _res = _sigmoid(lgm0, LGM_X0, LGM_K, cov_uqs_uqt_quench_ylo, cov_uqs_uqt_quench_yhi)
+    _res = _fun(lgm0, cov_uqs_uqt_quench_ylo, cov_uqs_uqt_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -637,9 +609,7 @@ def cov_udrop_ulgm_quench_vs_lgm0(
         "cov_udrop_ulgm_quench_yhi"
     ],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_udrop_ulgm_quench_ylo, cov_udrop_ulgm_quench_yhi
-    )
+    _res = _fun(lgm0, cov_udrop_ulgm_quench_ylo, cov_udrop_ulgm_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -653,9 +623,7 @@ def cov_udrop_ulgy_quench_vs_lgm0(
         "cov_udrop_ulgy_quench_yhi"
     ],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_udrop_ulgy_quench_ylo, cov_udrop_ulgy_quench_yhi
-    )
+    _res = _fun(lgm0, cov_udrop_ulgy_quench_ylo, cov_udrop_ulgy_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -665,9 +633,7 @@ def cov_udrop_ul_quench_vs_lgm0(
     cov_udrop_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_ul_quench_ylo"],
     cov_udrop_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_ul_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_udrop_ul_quench_ylo, cov_udrop_ul_quench_yhi
-    )
+    _res = _fun(lgm0, cov_udrop_ul_quench_ylo, cov_udrop_ul_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -681,9 +647,7 @@ def cov_udrop_utau_quench_vs_lgm0(
         "cov_udrop_utau_quench_yhi"
     ],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_udrop_utau_quench_ylo, cov_udrop_utau_quench_yhi
-    )
+    _res = _fun(lgm0, cov_udrop_utau_quench_ylo, cov_udrop_utau_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -693,9 +657,7 @@ def cov_udrop_uqt_quench_vs_lgm0(
     cov_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqt_quench_ylo"],
     cov_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqt_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_udrop_uqt_quench_ylo, cov_udrop_uqt_quench_yhi
-    )
+    _res = _fun(lgm0, cov_udrop_uqt_quench_ylo, cov_udrop_uqt_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -705,9 +667,7 @@ def cov_udrop_uqs_quench_vs_lgm0(
     cov_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqs_quench_ylo"],
     cov_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqs_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_udrop_uqs_quench_ylo, cov_udrop_uqs_quench_yhi
-    )
+    _res = _fun(lgm0, cov_udrop_uqs_quench_ylo, cov_udrop_uqs_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -717,9 +677,7 @@ def cov_urej_ulgm_quench_vs_lgm0(
     cov_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgm_quench_ylo"],
     cov_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgm_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_urej_ulgm_quench_ylo, cov_urej_ulgm_quench_yhi
-    )
+    _res = _fun(lgm0, cov_urej_ulgm_quench_ylo, cov_urej_ulgm_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -729,9 +687,7 @@ def cov_urej_ulgy_quench_vs_lgm0(
     cov_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgy_quench_ylo"],
     cov_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgy_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_urej_ulgy_quench_ylo, cov_urej_ulgy_quench_yhi
-    )
+    _res = _fun(lgm0, cov_urej_ulgy_quench_ylo, cov_urej_ulgy_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -741,7 +697,7 @@ def cov_urej_ul_quench_vs_lgm0(
     cov_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ul_quench_ylo"],
     cov_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ul_quench_yhi"],
 ):
-    _res = _sigmoid(lgm0, LGM_X0, LGM_K, cov_urej_ul_quench_ylo, cov_urej_ul_quench_yhi)
+    _res = _fun(lgm0, cov_urej_ul_quench_ylo, cov_urej_ul_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -751,9 +707,7 @@ def cov_urej_utau_quench_vs_lgm0(
     cov_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_utau_quench_ylo"],
     cov_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_utau_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_urej_utau_quench_ylo, cov_urej_utau_quench_yhi
-    )
+    _res = _fun(lgm0, cov_urej_utau_quench_ylo, cov_urej_utau_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -763,9 +717,7 @@ def cov_urej_uqt_quench_vs_lgm0(
     cov_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqt_quench_ylo"],
     cov_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqt_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_urej_uqt_quench_ylo, cov_urej_uqt_quench_yhi
-    )
+    _res = _fun(lgm0, cov_urej_uqt_quench_ylo, cov_urej_uqt_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -775,9 +727,7 @@ def cov_urej_uqs_quench_vs_lgm0(
     cov_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqs_quench_ylo"],
     cov_urej_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqs_quench_yhi"],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_urej_uqs_quench_ylo, cov_urej_uqs_quench_yhi
-    )
+    _res = _fun(lgm0, cov_urej_uqs_quench_ylo, cov_urej_uqs_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -791,9 +741,7 @@ def cov_urej_udrop_quench_vs_lgm0(
         "cov_urej_udrop_quench_yhi"
     ],
 ):
-    _res = _sigmoid(
-        lgm0, LGM_X0, LGM_K, cov_urej_udrop_quench_ylo, cov_urej_udrop_quench_yhi
-    )
+    _res = _fun(lgm0, cov_urej_udrop_quench_ylo, cov_urej_udrop_quench_yhi)
     return _bound_cov_offdiag(_res)
 
 
@@ -895,7 +843,7 @@ def get_default_params(lgm):
 
 
 @jjit
-def _get_smah_means_and_covs(
+def get_smah_means_and_covs_quench(
     logmp_arr,
     frac_quench_x0=DEFAULT_SFH_PDF_QUENCH_PARAMS["frac_quench_x0"],
     frac_quench_k=DEFAULT_SFH_PDF_QUENCH_PARAMS["frac_quench_k"],
