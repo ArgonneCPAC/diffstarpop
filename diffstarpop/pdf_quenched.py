@@ -1,4 +1,4 @@
-"""Model of halo population assembly calibrated to Rockstar halos."""
+"""Model of a quenched galaxy population calibrated to SMDPL halos."""
 from collections import OrderedDict
 from jax import jit as jjit
 from jax import numpy as jnp
@@ -745,6 +745,7 @@ def cov_urej_udrop_quench_vs_lgm0(
     return _bound_cov_offdiag(_res)
 
 
+@jjit
 def get_default_params(lgm):
     frac_quench = frac_quench_vs_lgm0(lgm)
     ulgm_q = mean_ulgm_quench_vs_lgm0(lgm)

@@ -10,9 +10,14 @@ from diffstar.stars import (
     _get_unbounded_sfr_params,
     jax_np_interp,
 )
+from diffstar.quenching import (
+    DEFAULT_Q_PARAMS as DEFAULT_Q_PARAMS_DICT,
+    _get_unbounded_q_params,
+)
 from diffmah.individual_halo_assembly import _calc_halo_history
 
 from .pdf_quenched import get_smah_means_and_covs_quench
+from .pdf_mainseq import get_smah_means_and_covs_mainseq
 
 # from .pdf_model_assembly_bias_shifts import _get_shift_to_PDF_mean, _get_slopes
 
@@ -31,8 +36,13 @@ DEFAULT_UNBOUND_SFR_PARAMS = _get_unbounded_sfr_params(
 DEFAULT_UNBOUND_SFR_PARAMS_DICT = OrderedDict(
     zip(DEFAULT_SFR_PARAMS_DICT.keys(), DEFAULT_UNBOUND_SFR_PARAMS)
 )
-
+DEFAULT_UNBOUND_Q_PARAMS = np.array(
+    _get_unbounded_q_params(*tuple(DEFAULT_Q_PARAMS_DICT.values()))
+)
 UH = DEFAULT_UNBOUND_SFR_PARAMS_DICT["indx_hi"]
+
+DEFAULT_UNBOUND_Q_PARAMS_MAIN_SEQ = DEFAULT_UNBOUND_Q_PARAMS.copy()
+DEFAULT_UNBOUND_Q_PARAMS_MAIN_SEQ[0] = 1.9
 
 
 def _calculate_sm(
@@ -59,6 +69,119 @@ calculate_sm = jjit(vmap(_calculate_sm, in_axes=(*[None] * 2, *[0] * 3, *[None] 
 
 
 def mc_sfh_population(
+    lgt,
+    dt,
+    logmh,
+    mah_params,
+    n_haloes,
+    index_select,
+    index_high,
+    fstar_tdelay,
+    seed=0,
+    pdf_parameters_MS={},
+    pdf_parameters_Q={},
+):
+    """Generate Monte Carlo realization of the assembly of a population of halos.
+    Parameters
+    ----------
+    lgt : ndarray
+        Array of log10 cosmic times in units of Gyr
+    dt : float
+        Time step sizes in units of Gyr
+    logmh : float
+        Base-10 log of present-day halo mass of the halo population
+    mah_params : ndarray, size (n_mah_haloes x n_mah_params)
+        Array with the diffmah parameters that will be marginalized over. Could
+        be either individual fits of n_mah_haloes haloes, or be n_mah_haloes
+        samples from a population model. They are chosen at random n_halos times.
+    n_halos : int
+        Number of halos in the population.
+    seed : int, optional
+        Random number seed
+    **kwargs : floats
+        All parameters of the SFH PDF model are accepted as keyword arguments.
+        Default values are set by rockstar_pdf_model.DEFAULT_SFH_PDF_PARAMS
+    Returns
+    -------
+    mstar : ndarray of shape (n_halos, n_times)
+        Stores cumulative stellar mass history in units of Msun/yr.
+    sfr : ndarray of shape (n_halos, n_times)
+        Stores star formation rate history in units of Msun/yr.
+    """
+
+    logmh = np.atleast_1d(logmh).astype("f4")
+    assert logmh.size == 1, "Input halo mass must be a scalar"
+
+    n_mah = len(mah_params)
+
+    sampled_mahs_inds = RandomState(seed).choice(n_mah, n_haloes, replace=True)
+    mah_params_sampled = mah_params[sampled_mahs_inds]
+
+    _res = get_smah_means_and_covs_quench(logmh, **pdf_parameters_Q)
+    frac_quench, means_quench, covs_quench = _res
+    frac_quench = frac_quench[0]
+    means_quench = means_quench[0]
+    covs_quench = covs_quench[0]
+
+    n_haloes_Q = int(n_haloes * frac_quench)
+    n_haloes_MS = n_haloes - n_haloes_Q
+    # n_haloes_Q = int(n_haloes / 2.0)
+    # n_haloes_MS = n_haloes - n_haloes_Q
+
+    sfr_params_quench = np.zeros((n_haloes_Q, 5))
+    sfr_params_mainseq = np.zeros((n_haloes_MS, 5))
+    q_params_mainseq = np.zeros((n_haloes_MS, 4))
+
+    if n_haloes_Q > 0:
+        sfh_params_quench = RandomState(seed + 1).multivariate_normal(
+            means_quench, covs_quench, size=n_haloes_Q
+        )
+
+        sfr_params_quench[:, :3] = sfh_params_quench[:, :3]
+        sfr_params_quench[:, 3] = UH
+        sfr_params_quench[:, 4] = sfh_params_quench[:, 3]
+        q_params_quench = sfh_params_quench[:, 4:8]
+
+    if n_haloes_MS > 0:
+        _res = get_smah_means_and_covs_mainseq(logmh, **pdf_parameters_MS)
+        means_mainseq, covs_mainseq = _res
+        means_mainseq = means_mainseq[0]
+        covs_mainseq = covs_mainseq[0]
+
+        sfh_params_mainseq = RandomState(seed + 1).multivariate_normal(
+            means_mainseq, covs_mainseq, size=n_haloes_MS
+        )
+
+        sfr_params_mainseq[:, :3] = sfh_params_mainseq[:, :3]
+        sfr_params_mainseq[:, 3] = UH
+        sfr_params_mainseq[:, 4] = sfh_params_mainseq[:, 3]
+        q_params_mainseq[:, np.arange(4)] = DEFAULT_UNBOUND_Q_PARAMS_MAIN_SEQ
+
+    sfr_params = np.concatenate((sfr_params_mainseq, sfr_params_quench))
+    q_params = np.concatenate((q_params_mainseq, q_params_quench))
+
+    _res = calculate_sm(
+        lgt,
+        dt,
+        mah_params_sampled,
+        sfr_params,
+        q_params,
+        index_select,
+        index_high,
+        fstar_tdelay,
+    )
+    mstar = _res[0]
+    sfr = _res[1]
+    fstar = _res[2]
+
+    weights = np.concatenate(
+        (np.ones(n_haloes_MS) * (1 - frac_quench), np.ones(n_haloes_Q) * frac_quench,)
+    )
+
+    return mstar, sfr, fstar, weights
+
+
+def mc_sfh_population_Q(
     lgt,
     dt,
     logmh,
@@ -120,6 +243,86 @@ def mc_sfh_population(
     sfr_params[:, 3] = UH
     sfr_params[:, 4] = sfh_params[:, 3]
     q_params = sfh_params[:, 4:8]
+
+    _res = calculate_sm(
+        lgt,
+        dt,
+        mah_params_sampled,
+        sfr_params,
+        q_params,
+        index_select,
+        index_high,
+        fstar_tdelay,
+    )
+    mstar = _res[0]
+    sfr = _res[1]
+    fstar = _res[2]
+
+    return mstar, sfr, fstar
+
+
+def mc_sfh_population_MS(
+    lgt,
+    dt,
+    logmh,
+    mah_params,
+    n_haloes,
+    index_select,
+    index_high,
+    fstar_tdelay,
+    seed=0,
+    pdf_parameters={},
+):
+    """Generate Monte Carlo realization of the assembly of a population of halos.
+    Parameters
+    ----------
+    lgt : ndarray
+        Array of log10 cosmic times in units of Gyr
+    dt : float
+        Time step sizes in units of Gyr
+    logmh : float
+        Base-10 log of present-day halo mass of the halo population
+    mah_params : ndarray, size (n_mah_haloes x n_mah_params)
+        Array with the diffmah parameters that will be marginalized over. Could
+        be either individual fits of n_mah_haloes haloes, or be n_mah_haloes
+        samples from a population model. They are chosen at random n_halos times.
+    n_halos : int
+        Number of halos in the population.
+    seed : int, optional
+        Random number seed
+    **kwargs : floats
+        All parameters of the SFH PDF model are accepted as keyword arguments.
+        Default values are set by rockstar_pdf_model.DEFAULT_SFH_PDF_PARAMS
+    Returns
+    -------
+    mstar : ndarray of shape (n_halos, n_times)
+        Stores cumulative stellar mass history in units of Msun/yr.
+    sfr : ndarray of shape (n_halos, n_times)
+        Stores star formation rate history in units of Msun/yr.
+    """
+
+    logmh = np.atleast_1d(logmh).astype("f4")
+    assert logmh.size == 1, "Input halo mass must be a scalar"
+
+    n_mah = len(mah_params)
+
+    sampled_mahs_inds = RandomState(seed).choice(n_mah, n_haloes, replace=True)
+    mah_params_sampled = mah_params[sampled_mahs_inds]
+
+    _res = get_smah_means_and_covs_mainseq(logmh, **pdf_parameters)
+    means_mainseq, covs_mainseq = _res
+    means_mainseq = means_mainseq[0]
+    covs_mainseq = covs_mainseq[0]
+
+    sfh_params = RandomState(seed + 1).multivariate_normal(
+        means_mainseq, covs_mainseq, size=n_haloes
+    )
+    sfr_params = np.zeros((n_haloes, 5))
+    sfr_params[:, :3] = sfh_params[:, :3]
+    sfr_params[:, 3] = UH
+    sfr_params[:, 4] = sfh_params[:, 3]
+    q_params = np.zeros((n_haloes, 4))
+    q_params[:, np.arange(4)] = DEFAULT_UNBOUND_Q_PARAMS_MAIN_SEQ
 
     _res = calculate_sm(
         lgt,
