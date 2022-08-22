@@ -1,6 +1,5 @@
 """
 """
-import pytest
 from jax import random as jran
 import numpy as np
 from ..mc_galpop import mc_sfh_population
