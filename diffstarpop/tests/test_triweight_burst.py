@@ -24,8 +24,8 @@ def test_sfh_post_burst_vmap_integrates_to_correct_final_mstar():
 def test_sfh_post_burst_vmap_integrates_to_mstar_post_burst_vmap():
     lgtarr = np.linspace(1, 11, 200)
 
-    BURST_KERN_THI = tb.BURST_KERN_TLO + tb.BURST_KERN_DLGT
-    test_msk = (lgtarr > tb.BURST_KERN_TLO + 0.1) & (lgtarr < BURST_KERN_THI - 0.1)
+    BURST_KERN_LGTHI = tb.BURST_KERN_LGTLO + tb.BURST_KERN_DLGT
+    test_msk = (lgtarr > tb.BURST_KERN_LGTLO + 0.1) & (lgtarr < BURST_KERN_LGTHI - 0.1)
 
     for mstar_tot in (1e5, 1e9, 1e12):
         cuml_mstar = []
@@ -44,10 +44,10 @@ def test_sfh_post_burst_vmap_has_correct_asymptotic_behavior():
     mstar_tot = 1e10
     sfh = tb._sfh_post_burst_vmap(10**lgtarr, mstar_tot)
 
-    early_time_msk = lgtarr < tb.BURST_KERN_TLO
+    early_time_msk = lgtarr < tb.BURST_KERN_LGTLO
     assert np.allclose(sfh[early_time_msk], 0)
 
-    late_time_msk = lgtarr > (tb.BURST_KERN_TLO + tb.BURST_KERN_DLGT)
+    late_time_msk = lgtarr > (tb.BURST_KERN_LGTLO + tb.BURST_KERN_DLGT)
     assert np.allclose(sfh[late_time_msk], 0, atol=0.0001)
 
 
@@ -56,10 +56,10 @@ def test_mstar_post_burst_vmap_has_correct_asymptotic_behavior():
     for mstar_tot in (1e5, 1e9, 1e12):
         smh = tb._mstar_post_burst_vmap(10**lgtarr, mstar_tot)
 
-        early_time_msk = lgtarr < tb.BURST_KERN_TLO
+        early_time_msk = lgtarr < tb.BURST_KERN_LGTLO
         assert np.allclose(smh[early_time_msk], 0, atol=0.001)
 
-        late_time_msk = lgtarr > tb.BURST_KERN_TLO + tb.BURST_KERN_DLGT
+        late_time_msk = lgtarr > tb.BURST_KERN_LGTLO + tb.BURST_KERN_DLGT
         assert np.allclose(smh[late_time_msk], mstar_tot, rtol=0.01)
 
 
@@ -76,10 +76,10 @@ def test_cuml_prob_lgage_has_correct_asymptotic_behavior():
     time_since_burst = 10**lgtarr
     p = tb._cuml_prob_age_vmap(time_since_burst)
 
-    early_time_msk = lgtarr < tb.BURST_KERN_TLO
+    early_time_msk = lgtarr < tb.BURST_KERN_LGTLO
     assert np.allclose(p[early_time_msk], 0, atol=0.001)
 
-    late_time_msk = lgtarr > tb.BURST_KERN_TLO + tb.BURST_KERN_DLGT
+    late_time_msk = lgtarr > tb.BURST_KERN_LGTLO + tb.BURST_KERN_DLGT
     assert np.allclose(p[late_time_msk], 1, atol=0.001)
 
 

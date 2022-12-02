@@ -6,14 +6,14 @@ from jax import grad
 from jax import vmap
 from jax import lax
 
-
-BURST_KERN_TLO, BURST_KERN_DLGT = 5, 1.5
+T_BURST_MIN = 0.01  # min age of cosmic time integrations in Gyr
+BURST_KERN_LGTLO, BURST_KERN_DLGT = 4, 1.5
 C0 = 1 / 2
 C1 = 35 / 96
 C3 = -35 / 864
 C5 = 7 / 2592
 C7 = -5 / 69984
-BURST_TW_X0 = BURST_KERN_TLO + BURST_KERN_DLGT / 2
+BURST_TW_X0 = BURST_KERN_LGTLO + BURST_KERN_DLGT / 2
 BURST_TW_H = BURST_KERN_DLGT / 6
 
 
