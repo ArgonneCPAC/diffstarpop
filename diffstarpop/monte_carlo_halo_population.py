@@ -68,6 +68,35 @@ _calc_halo_history_vmap = jjit(vmap(_calc_halo_history, in_axes=(None, *[0] * 6)
 calculate_sm = jjit(vmap(_calculate_sm, in_axes=(*[None] * 2, *[0] * 3, *[None] * 3)))
 
 
+def calculate_sm_batch(
+    lgt, dt, mah_params, sfr_params, q_params, index_select, index_high, fstar_tdelay
+):
+    ng = len(mah_params)
+    nt = len(lgt)
+    nt2 = len(index_high)
+    mstar = np.zeros((ng, nt))
+    sfr = np.zeros((ng, nt))
+    fstar = np.zeros((ng, nt2))
+
+    indices = np.array_split(np.arange(ng), max(int(ng / 5000), 1))
+
+    for inds in indices:
+        _res = calculate_sm(
+            lgt,
+            dt,
+            mah_params[inds],
+            sfr_params[inds],
+            q_params[inds],
+            index_select,
+            index_high,
+            fstar_tdelay,
+        )
+        mstar[inds] = _res[0]
+        sfr[inds] = _res[1]
+        fstar[inds] = _res[2]
+    return mstar, sfr, fstar
+
+
 def mc_sfh_population(
     lgt,
     dt,
@@ -160,7 +189,7 @@ def mc_sfh_population(
     sfr_params = np.concatenate((sfr_params_mainseq, sfr_params_quench))
     q_params = np.concatenate((q_params_mainseq, q_params_quench))
 
-    _res = calculate_sm(
+    _res = calculate_sm_batch(
         lgt,
         dt,
         mah_params_sampled,
@@ -244,7 +273,7 @@ def mc_sfh_population_Q(
     sfr_params[:, 4] = sfh_params[:, 3]
     q_params = sfh_params[:, 4:8]
 
-    _res = calculate_sm(
+    _res = calculate_sm_batch(
         lgt,
         dt,
         mah_params_sampled,
@@ -324,7 +353,7 @@ def mc_sfh_population_MS(
     q_params = np.zeros((n_haloes, 4))
     q_params[:, np.arange(4)] = DEFAULT_UNBOUND_Q_PARAMS_MAIN_SEQ
 
-    _res = calculate_sm(
+    _res = calculate_sm_batch(
         lgt,
         dt,
         mah_params_sampled,
@@ -429,7 +458,7 @@ def mc_sfh_population_mah_correlation(
     sfr_params[:, 3:] = sfh_params[:, 2:5]
     q_params = sfh_params[:, 5:9]
 
-    _res = calculate_sm(
+    _res = calculate_sm_batch(
         lgt,
         dt,
         mah_params_sampled,
@@ -520,7 +549,7 @@ def mc_sfh_population_R(
     sfr_params[:, 3:] = sfh_params[:, 2:5]
     q_params = sfh_params[:, 5:9]
 
-    _res = calculate_sm(
+    _res = calculate_sm_batch(
         lgt,
         dt,
         mah_params_sampled,

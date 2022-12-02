@@ -58,22 +58,40 @@ def compute_target_sumstats_from_histories(
     weights_pdf, weights_quench_bin, mstar_histories, sfr_histories, fstar_histories
 ):
     """
+    Compute summary statistics from pdf-weighting the histories computed in a
+    latin hypercube grid.
+
     Parameters
     ----------
     weights : ndarray of shape (n_m0, n_sfh_grid)
-        Description.
+        PDF weight of the latin hypercube grid points.
     weights_quench_bin : ndarray of shape (n_m0, n_sfh_grid, n_per_m0, n_t)
-        Description.
+        Weight array indicating when galaxy history is quenched.
+            0: sSFR(t) < 1e-11
+            1: sSFR(t) > 1e-11
     mstar_histories : ndarray of shape (n_m0, n_sfh_grid, n_per_m0, n_t)
-        Description.
+        SMH at each latin hypercube grid point.
     sfr_histories : ndarray of shape (n_m0, n_sfh_grid, n_per_m0, n_t)
-        Description.
+        SFH at each latin hypercube grid point.
     fstar_histories : ndarray of shape (n_m0, n_sfh_grid, n_per_m0, n_t)
-        Description.
+        Fstar history at each latin hypercube grid point.
 
     Returns
     -------
-
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
     """
     NHALO = mstar_histories.shape[2]
     w_sum = 1.0 / jnp.sum(weights_pdf, axis=1)
@@ -550,6 +568,9 @@ def get_default_pdf_SFH_prediction(
     mstar_histories = jnp.concatenate((mstar_histories_MS, mstar_histories_Q), axis=1)
     sfr_histories = jnp.concatenate((sfr_histories_MS, sfr_histories_Q), axis=1)
     fstar_histories = jnp.concatenate((fstar_histories_MS, fstar_histories_Q), axis=1)
+
+    weights_MS /= weights_MS.sum()
+    weights_Q /= weights_Q.sum()
 
     weights_MS = jnp.einsum("ij,i->ij", weights_MS, (1.0 - fracs_Q))
     weights_Q = jnp.einsum("ij,i->ij", weights_Q, fracs_Q)
