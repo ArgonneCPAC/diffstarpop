@@ -4,15 +4,16 @@ from jax import numpy as jnp
 from jax import jit as jjit
 from jax import grad
 from jax import vmap
+from jax import lax
 
 
-BURST_KERN_LGTLO, BURST_KERN_DLGT = 4, 1
+BURST_KERN_TLO, BURST_KERN_DLGT = 5, 1.5
 C0 = 1 / 2
 C1 = 35 / 96
 C3 = -35 / 864
 C5 = 7 / 2592
 C7 = -5 / 69984
-BURST_TW_X0 = BURST_KERN_LGTLO + BURST_KERN_DLGT / 2
+BURST_TW_X0 = BURST_KERN_TLO + BURST_KERN_DLGT / 2
 BURST_TW_H = BURST_KERN_DLGT / 6
 
 
@@ -41,21 +42,35 @@ def _cuml_prob_lgage(lgyr_since_burst):
 
 
 @jjit
-def _cuml_prob_age(yr_since_burst):
-    return _cuml_prob_lgage(jnp.log10(yr_since_burst))
+def _cuml_prob_age_kern(yr_since_burst):
+    return lax.cond(
+        yr_since_burst > 0,
+        lambda x: _cuml_prob_lgage(jnp.log10(x)),
+        lambda x: 0.0,
+        yr_since_burst,
+    )
 
 
-_tw_burst_kern = jjit(vmap(grad(_cuml_prob_age), in_axes=0))
+_cuml_prob_age_vmap = jjit(vmap(_cuml_prob_age_kern, in_axes=0))
+_tw_burst_kern = jjit(grad(_cuml_prob_age_kern))
+_tw_burst_vmap = jjit(vmap(_tw_burst_kern, in_axes=0))
 
 
 @jjit
-def _sfh_post_burst(yr_since_burst, total_mstar_formed):
+def _sfh_post_burst_kern(yr_since_burst, total_mstar_formed):
     return _tw_burst_kern(yr_since_burst) * total_mstar_formed
 
 
 @jjit
-def _mstar_post_burst(yr_since_burst, total_mstar_formed):
-    lgt = jnp.log10(yr_since_burst)
-    norm = total_mstar_formed
-    res = _cuml_prob_lgage(lgt) * norm
-    return res
+def _sfh_post_burst_vmap(yr_since_burst, total_mstar_formed):
+    return _tw_burst_vmap(yr_since_burst) * total_mstar_formed
+
+
+@jjit
+def _mstar_post_burst_kern(yr_since_burst, total_mstar_formed):
+    return total_mstar_formed * _cuml_prob_age_kern(yr_since_burst)
+
+
+@jjit
+def _mstar_post_burst_vmap(yr_since_burst, total_mstar_formed):
+    return total_mstar_formed * _cuml_prob_age_vmap(yr_since_burst)
