@@ -6,8 +6,8 @@ from jax import grad
 from jax import vmap
 from jax import lax
 
-T_BURST_MIN = 0.01  # min age of cosmic time integrations in Gyr
-BURST_KERN_LGTLO, BURST_KERN_DLGT = 4, 1.5
+
+BURST_KERN_LGTLO, BURST_KERN_DLGT = 4, 1
 C0 = 1 / 2
 C1 = 35 / 96
 C3 = -35 / 864
