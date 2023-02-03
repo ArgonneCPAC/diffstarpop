@@ -18,9 +18,18 @@ from diffstar.stars import (
 from diffstar.utils import _jax_get_dt_array
 from diffstar.quenching import DEFAULT_Q_PARAMS
 
-from .pdf_diffmah import get_diffmah_grid
+from .pdf_diffmah import get_diffmah_grid, get_binned_halo_sample
 from .latin_hypercube import latin_hypercube_from_cov
-from .star_wrappers import compute_histories_on_grids_Q, compute_histories_on_grids_MS
+from .star_wrappers import (
+    compute_histories_on_grids_diffstar_vmap_Xsfh_vmap_Xmah_vmap,
+    compute_histories_on_grids_diffstar_vmap_Xsfh_scan_Xmah_scan,
+    compute_histories_on_grids_diffstar_scan_Xsfh_scan_Xmah_scan,
+    compute_histories_on_grids_diffstar_scan_Xsfh_vmap_Xmah_vmap,
+    compute_histories_on_grids_MS_diffstar_vmap_Xsfh_vmap_Xmah_vmap,
+    compute_histories_on_grids_MS_diffstar_vmap_Xsfh_scan_Xmah_scan,
+    compute_histories_on_grids_MS_diffstar_scan_Xsfh_scan_Xmah_scan,
+    compute_histories_on_grids_MS_diffstar_scan_Xsfh_vmap_Xmah_vmap,
+)
 from .pdf_quenched import get_smah_means_and_covs_quench, DEFAULT_SFH_PDF_QUENCH_PARAMS
 from .pdf_mainseq import get_smah_means_and_covs_mainseq, DEFAULT_SFH_PDF_MAINSEQ_PARAMS
 
@@ -58,8 +67,8 @@ def compute_target_sumstats_from_histories(
     weights_pdf, weights_quench_bin, mstar_histories, sfr_histories, fstar_histories
 ):
     """
-    Compute summary statistics from pdf-weighting the histories computed in a
-    latin hypercube grid.
+    Compute differentiable summary statistics from pdf-weighting the histories
+    computed in a latin hypercube grid (or other uniform volume schemes).
 
     Parameters
     ----------
@@ -149,12 +158,12 @@ def compute_target_sumstats_from_histories(
     return _out
 
 
-def get_binned_means_and_covs_Q(pdf_model_pars, logm0_bins):
+def get_binned_means_and_covs_Q(pdf_model_pars_dict, logm0_bins):
     """Calculate the mean and covariance in SFH parameter space for each input M0.
 
     Parameters
     ----------
-    pdf_model_pars : ndarray of shape (n_sfh_params, )
+    pdf_model_pars_dict : dict
         Description.
     logm0_bins : ndarray of shape (n_m0_bins, )
         Description.
@@ -165,12 +174,9 @@ def get_binned_means_and_covs_Q(pdf_model_pars, logm0_bins):
     covs : ndarray of shape (n_m0_bins, n_sfh_params, n_sfh_params)
         Description.
     """
-    subset_dict = OrderedDict(
-        [(key, val) for (key, val) in zip(SFH_PDF_Q_KEYS, pdf_model_pars)]
-    )
 
     pdf_model_params_dict = DEFAULT_SFH_PDF_QUENCH_PARAMS.copy()
-    pdf_model_params_dict.update(subset_dict)
+    pdf_model_params_dict.update(pdf_model_pars_dict)
 
     _res = get_smah_means_and_covs_quench(logm0_bins, **pdf_model_params_dict)
     frac_quench, means_quench, covs_quench = _res
@@ -227,17 +233,79 @@ def get_param_grids_Q(
     return dmhdt_grids, log_mah_grids, sfh_param_grids, fracs_logm0
 
 
-def _get_default_pdf_SFH_prediction_quench(
-    sfh_lh_sig,
+def get_default_pdf_SFH_prediction_Q_diffstar_vmap_Xsfh_scan_Xmah_scan(
     t_table,
+    sfh_lh_sig,
     n_sfh_param_grid,
     logm0_binmids,
     logm0_bin_widths,
     n_halos_per_bin,
     halo_data,
     fstar_tdelay,
-    pdf_model_params=SFH_PDF_Q_VALUES,
+    pdf_model_params=DEFAULT_SFH_PDF_QUENCH_PARAMS,
 ):
+    """
+    Compute Diffstarpop summary statistic predictions for a population of
+    quenched galaxies.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params : dict
+        Dictionary containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a unimodal Gaussian distribution on unbound Diffstar parameters.
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: vmap
+        Diffstarpop Xmah loop: scan
+        Diffstarpop Xsfh loop: scan
+    """
 
     index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
     _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
@@ -267,7 +335,7 @@ def _get_default_pdf_SFH_prediction_quench(
     )
 
     fracs, means, covs = get_binned_means_and_covs_Q(pdf_model_params, logm0_binmids)
-    _res = compute_histories_on_grids_Q(
+    _res = compute_histories_on_grids_diffstar_vmap_Xsfh_scan_Xmah_scan(
         lgt_table,
         dt_table,
         index_select,
@@ -290,12 +358,137 @@ def _get_default_pdf_SFH_prediction_quench(
     )
 
 
-def get_binned_means_and_covs_MS(pdf_model_pars, logm0_bins):
+def get_default_pdf_SFH_prediction_Q_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
+    t_table,
+    sfh_lh_sig,
+    n_sfh_param_grid,
+    logm0_binmids,
+    logm0_bin_widths,
+    n_halos_per_bin,
+    halo_data,
+    fstar_tdelay,
+    pdf_model_params=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+):
+    """
+    Compute Diffstarpop summary statistic predictions for a population of
+    quenched galaxies.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params : dict
+        Dictionary containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a unimodal Gaussian distribution on unbound Diffstar parameters.
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: vmap
+        Diffstarpop Xmah loop: vmap
+        Diffstarpop Xsfh loop: vmap
+    """
+
+    index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
+    _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
+    index_select = np.arange(len(t_table))[_mask]
+    index_high = index_high[_mask]
+
+    jran_key = jran.PRNGKey(0)
+    t0 = t_table[-1]
+    lgt_table = jnp.log10(t_table)
+    dt_table = _jax_get_dt_array(t_table)
+    logm0_halos, mah_tauc_halos, mah_early_halos, mah_late_halos = halo_data
+
+    dmhdt_grids, log_mah_grids, sfh_param_grids, fracs_logm0 = get_param_grids_Q(
+        t_table,
+        n_halos_per_bin,
+        jran_key,
+        logm0_binmids,
+        logm0_bin_widths,
+        logm0_halos,
+        mah_tauc_halos,
+        mah_early_halos,
+        mah_late_halos,
+        pdf_model_params,
+        sfh_lh_sig,
+        n_sfh_param_grid,
+        t0,
+    )
+
+    fracs, means, covs = get_binned_means_and_covs_Q(pdf_model_params, logm0_binmids)
+    _res = compute_histories_on_grids_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        dmhdt_grids,
+        log_mah_grids,
+        sfh_param_grids,
+    )
+    mstar_histories, sfr_histories, fstar_histories = _res
+
+    sfstar_histories = fstar_histories / mstar_histories[:, :, :, index_select]
+
+    weights_quench_bin = jnp.where(sfstar_histories > 1e-11, 1.0, 0.0)
+
+    weights = _get_pdf_weights_kern(sfh_param_grids, means, covs)
+
+    return compute_target_sumstats_from_histories(
+        weights, weights_quench_bin, mstar_histories, sfr_histories, fstar_histories
+    )
+
+
+def get_binned_means_and_covs_MS(pdf_model_pars_dict, logm0_bins):
     """Calculate the mean and covariance in SFH parameter space for each input M0.
 
     Parameters
     ----------
-    pdf_model_pars : ndarray of shape (n_sfh_params, )
+    pdf_model_pars_dict : ndarray of shape (n_sfh_params, )
         Description.
     logm0_bins : ndarray of shape (n_m0_bins, )
         Description.
@@ -306,12 +499,9 @@ def get_binned_means_and_covs_MS(pdf_model_pars, logm0_bins):
     covs : ndarray of shape (n_m0_bins, n_sfh_params, n_sfh_params)
         Description.
     """
-    subset_dict = OrderedDict(
-        [(key, val) for (key, val) in zip(SFH_PDF_MS_KEYS, pdf_model_pars)]
-    )
 
     pdf_model_params_dict = DEFAULT_SFH_PDF_MAINSEQ_PARAMS.copy()
-    pdf_model_params_dict.update(subset_dict)
+    pdf_model_params_dict.update(pdf_model_pars_dict)
 
     _res = get_smah_means_and_covs_mainseq(logm0_bins, **pdf_model_params_dict)
     means_mainseq, covs_mainseq = _res
@@ -368,18 +558,80 @@ def get_param_grids_MS(
     return dmhdt_grids, log_mah_grids, sfh_param_grids
 
 
-def _get_default_pdf_SFH_prediction_mainseq(
-    sfh_lh_sig,
+def get_default_pdf_SFH_prediction_MS_diffstar_vmap_Xsfh_scan_Xmah_scan(
     t_table,
+    sfh_lh_sig,
     n_sfh_param_grid,
     logm0_binmids,
     logm0_bin_widths,
     n_halos_per_bin,
     halo_data,
     fstar_tdelay,
-    pdf_model_params=SFH_PDF_MS_VALUES,
+    pdf_model_params=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
 ):
+    """
+    Compute Diffstarpop summary statistic predictions for a population of
+    main sequence galaxies.
 
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params : dict
+        Dictionary containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a unimodal Gaussian distribution on the four unbound main sequence
+    Diffstar parameters.
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: vmap
+        Diffstarpop Xmah loop: scan
+        Diffstarpop Xsfh loop: scan
+    """
     index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
     _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
     index_select = np.arange(len(t_table))[_mask]
@@ -408,7 +660,132 @@ def _get_default_pdf_SFH_prediction_mainseq(
     )
 
     means, covs = get_binned_means_and_covs_MS(pdf_model_params, logm0_binmids)
-    _res = compute_histories_on_grids_MS(
+    _res = compute_histories_on_grids_MS_diffstar_vmap_Xsfh_scan_Xmah_scan(
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        dmhdt_grids,
+        log_mah_grids,
+        sfh_param_grids,
+    )
+    mstar_histories, sfr_histories, fstar_histories = _res
+
+    sfstar_histories = fstar_histories / mstar_histories[:, :, :, index_select]
+
+    weights_mainseq_bin = jnp.where(sfstar_histories > 1e-11, 1.0, 0.0)
+
+    weights = _get_pdf_weights_kern(sfh_param_grids, means, covs)
+
+    return compute_target_sumstats_from_histories(
+        weights, weights_mainseq_bin, mstar_histories, sfr_histories, fstar_histories
+    )
+
+
+def get_default_pdf_SFH_prediction_MS_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
+    t_table,
+    sfh_lh_sig,
+    n_sfh_param_grid,
+    logm0_binmids,
+    logm0_bin_widths,
+    n_halos_per_bin,
+    halo_data,
+    fstar_tdelay,
+    pdf_model_params=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+):
+    """
+    Compute Diffstarpop summary statistic predictions for a population of
+    main sequence galaxies.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params : dict
+        Dictionary containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a unimodal Gaussian distribution on the four unbound main sequence
+    Diffstar parameters.
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: vmap
+        Diffstarpop Xmah loop: vmap
+        Diffstarpop Xsfh loop: vmap
+    """
+    index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
+    _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
+    index_select = np.arange(len(t_table))[_mask]
+    index_high = index_high[_mask]
+
+    jran_key = jran.PRNGKey(0)
+    t0 = t_table[-1]
+    lgt_table = jnp.log10(t_table)
+    dt_table = _jax_get_dt_array(t_table)
+    logm0_halos, mah_tauc_halos, mah_early_halos, mah_late_halos = halo_data
+
+    dmhdt_grids, log_mah_grids, sfh_param_grids = get_param_grids_MS(
+        t_table,
+        n_halos_per_bin,
+        jran_key,
+        logm0_binmids,
+        logm0_bin_widths,
+        logm0_halos,
+        mah_tauc_halos,
+        mah_early_halos,
+        mah_late_halos,
+        pdf_model_params,
+        sfh_lh_sig,
+        n_sfh_param_grid,
+        t0,
+    )
+
+    means, covs = get_binned_means_and_covs_MS(pdf_model_params, logm0_binmids)
+    _res = compute_histories_on_grids_MS_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
         lgt_table,
         dt_table,
         index_select,
@@ -480,18 +857,88 @@ def get_param_grids(
     )
 
 
-def get_default_pdf_SFH_prediction(
-    sfh_lh_sig,
+def get_default_pdf_SFH_prediction_MIX_diffstar_vmap_Xsfh_scan_Xmah_scan(
     t_table,
+    sfh_lh_sig,
     n_sfh_param_grid,
     logm0_binmids,
     logm0_bin_widths,
     n_halos_per_bin,
     halo_data,
     fstar_tdelay,
-    pdf_model_params_MS=SFH_PDF_MS_VALUES,
-    pdf_model_params_Q=SFH_PDF_Q_VALUES,
+    pdf_model_params_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    pdf_model_params_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
 ):
+    """
+    Compute Diffstarpop summary statistic predictions for a mixed population of
+    both main sequence and quenched galaxies.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params_MS : dict
+        Dictionary containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+    pdf_model_params_Q : dict
+        Dictionary containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a mixture Gaussian model distribution:
+        PDF = f_Q * PDF_Q + (1-f_Q) * PDF_MS
+    where:
+        f_Q: quenched Fraction
+        PDF_Q: Unimodal Gaussian for the quenched sub-population
+        PDF_MS: Unimodal Gaussian for the main sequence sub-population
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: vmap
+        Diffstarpop Xmah loop: scan
+        Diffstarpop Xsfh loop: scan
+    """
 
     index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
     _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
@@ -530,7 +977,7 @@ def get_default_pdf_SFH_prediction(
 
     # Main sequence histories and weights
     means_MS, covs_MS = get_binned_means_and_covs_MS(pdf_model_params_MS, logm0_binmids)
-    _res = compute_histories_on_grids_MS(
+    _res = compute_histories_on_grids_MS_diffstar_vmap_Xsfh_scan_Xmah_scan(
         lgt_table,
         dt_table,
         index_select,
@@ -550,7 +997,7 @@ def get_default_pdf_SFH_prediction(
     fracs_Q, means_Q, covs_Q = get_binned_means_and_covs_Q(
         pdf_model_params_Q, logm0_binmids
     )
-    _res = compute_histories_on_grids_Q(
+    _res = compute_histories_on_grids_diffstar_vmap_Xsfh_scan_Xmah_scan(
         lgt_table,
         dt_table,
         index_select,
@@ -581,3 +1028,1305 @@ def get_default_pdf_SFH_prediction(
     return compute_target_sumstats_from_histories(
         weights, weights_bin, mstar_histories, sfr_histories, fstar_histories
     )
+
+
+def get_default_pdf_SFH_prediction_MIX_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
+    t_table,
+    sfh_lh_sig,
+    n_sfh_param_grid,
+    logm0_binmids,
+    logm0_bin_widths,
+    n_halos_per_bin,
+    halo_data,
+    fstar_tdelay,
+    pdf_model_params_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    pdf_model_params_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+):
+    """
+    Compute Diffstarpop summary statistic predictions for a mixed population of
+    both main sequence and quenched galaxies.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params_MS : dict
+        Dictionary containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+    pdf_model_params_Q : dict
+        Dictionary containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a mixture Gaussian model distribution:
+        PDF = f_Q * PDF_Q + (1-f_Q) * PDF_MS
+    where:
+        f_Q: quenched Fraction
+        PDF_Q: Unimodal Gaussian for the quenched sub-population
+        PDF_MS: Unimodal Gaussian for the main sequence sub-population
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: vmap
+        Diffstarpop Xmah loop: vmap
+        Diffstarpop Xsfh loop: vmap
+    """
+
+    index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
+    _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
+    index_select = np.arange(len(t_table))[_mask]
+    index_high = index_high[_mask]
+
+    jran_key = jran.PRNGKey(0)
+    t0 = t_table[-1]
+    lgt_table = jnp.log10(t_table)
+    dt_table = _jax_get_dt_array(t_table)
+    logm0_halos, mah_tauc_halos, mah_early_halos, mah_late_halos = halo_data
+
+    _res = get_param_grids(
+        t_table,
+        n_halos_per_bin,
+        jran_key,
+        logm0_binmids,
+        logm0_bin_widths,
+        logm0_halos,
+        mah_tauc_halos,
+        mah_early_halos,
+        mah_late_halos,
+        pdf_model_params_MS,
+        pdf_model_params_Q,
+        sfh_lh_sig,
+        n_sfh_param_grid,
+        t0,
+    )
+    (
+        dmhdt_grids,
+        log_mah_grids,
+        sfh_param_grids_MS,
+        sfh_param_grids_Q,
+        fracs_logm0,
+    ) = _res
+
+    # Main sequence histories and weights
+    means_MS, covs_MS = get_binned_means_and_covs_MS(pdf_model_params_MS, logm0_binmids)
+    _res = compute_histories_on_grids_MS_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        dmhdt_grids,
+        log_mah_grids,
+        sfh_param_grids_MS,
+    )
+    mstar_histories_MS, sfr_histories_MS, fstar_histories_MS = _res
+    sfstar_histories_MS = fstar_histories_MS / mstar_histories_MS[:, :, :, index_select]
+
+    weights_MS_bin = jnp.where(sfstar_histories_MS > 1e-11, 1.0, 0.0)
+    weights_MS = _get_pdf_weights_kern(sfh_param_grids_MS, means_MS, covs_MS)
+
+    # Quenched histories and weights
+    fracs_Q, means_Q, covs_Q = get_binned_means_and_covs_Q(
+        pdf_model_params_Q, logm0_binmids
+    )
+    _res = compute_histories_on_grids_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        dmhdt_grids,
+        log_mah_grids,
+        sfh_param_grids_Q,
+    )
+    mstar_histories_Q, sfr_histories_Q, fstar_histories_Q = _res
+    sfstar_histories_Q = fstar_histories_Q / mstar_histories_Q[:, :, :, index_select]
+    weights_Q_bin = jnp.where(sfstar_histories_Q > 1e-11, 1.0, 0.0)
+    weights_Q = _get_pdf_weights_kern(sfh_param_grids_Q, means_Q, covs_Q)
+
+    mstar_histories = jnp.concatenate((mstar_histories_MS, mstar_histories_Q), axis=1)
+    sfr_histories = jnp.concatenate((sfr_histories_MS, sfr_histories_Q), axis=1)
+    fstar_histories = jnp.concatenate((fstar_histories_MS, fstar_histories_Q), axis=1)
+
+    weights_MS /= weights_MS.sum()
+    weights_Q /= weights_Q.sum()
+
+    weights_MS = jnp.einsum("ij,i->ij", weights_MS, (1.0 - fracs_Q))
+    weights_Q = jnp.einsum("ij,i->ij", weights_Q, fracs_Q)
+
+    weights = jnp.concatenate((weights_MS, weights_Q), axis=1)
+    weights_bin = jnp.concatenate((weights_MS_bin, weights_Q_bin), axis=1)
+
+    return compute_target_sumstats_from_histories(
+        weights, weights_bin, mstar_histories, sfr_histories, fstar_histories
+    )
+
+
+def get_default_pdf_SFH_prediction_Q_diffstar_scan_Xsfh_scan_Xmah_scan(
+    t_table,
+    sfh_lh_sig,
+    n_sfh_param_grid,
+    logm0_binmids,
+    logm0_bin_widths,
+    n_halos_per_bin,
+    halo_data,
+    fstar_tdelay,
+    pdf_model_params=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+):
+    """
+    Compute Diffstarpop summary statistic predictions for a population of
+    quenched galaxies.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params : dict
+        Dictionary containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a unimodal Gaussian distribution on unbound Diffstar parameters.
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: scan
+        Diffstarpop Xmah loop: scan
+        Diffstarpop Xsfh loop: scan
+    """
+
+    index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
+    _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
+    index_select = np.arange(len(t_table))[_mask]
+    index_high = index_high[_mask]
+
+    lgt_table = jnp.log10(t_table)
+    dt_table = _jax_get_dt_array(t_table)
+
+    jran_key = jran.PRNGKey(0)
+    logm0_halos, mah_tauc_halos, mah_early_halos, mah_late_halos = halo_data
+
+    # the diffstar scan functions actually want log(tauc)
+    mah_logtauc_halos = np.log10(mah_tauc_halos)
+
+    diffmah_params_grid = get_binned_halo_sample(
+        n_halos_per_bin,
+        jran_key,
+        logm0_binmids,
+        logm0_bin_widths,
+        logm0_halos,
+        mah_logtauc_halos,
+        mah_early_halos,
+        mah_late_halos,
+    )
+    diffmah_params_grid = np.array(diffmah_params_grid)
+    diffmah_params_grid = diffmah_params_grid.reshape(
+        (4, len(logm0_binmids), n_halos_per_bin)
+    )
+    diffmah_params_grid = np.einsum("pmh->mhp", diffmah_params_grid)
+
+    fracs_logm0, sfh_param_grids = get_sfh_param_grid_Q(
+        pdf_model_params, logm0_binmids, sfh_lh_sig, n_sfh_param_grid
+    )
+
+    fracs, means, covs = get_binned_means_and_covs_Q(pdf_model_params, logm0_binmids)
+    _res = compute_histories_on_grids_diffstar_scan_Xsfh_scan_Xmah_scan(
+        t_table,
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        diffmah_params_grid,
+        sfh_param_grids,
+    )
+    mstar_histories, sfr_histories, fstar_histories = _res
+
+    sfstar_histories = fstar_histories / mstar_histories[:, :, :, index_select]
+
+    weights_quench_bin = jnp.where(sfstar_histories > 1e-11, 1.0, 0.0)
+
+    weights = _get_pdf_weights_kern(sfh_param_grids, means, covs)
+
+    return compute_target_sumstats_from_histories(
+        weights, weights_quench_bin, mstar_histories, sfr_histories, fstar_histories
+    )
+
+
+def get_default_pdf_SFH_prediction_Q_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+    t_table,
+    sfh_lh_sig,
+    n_sfh_param_grid,
+    logm0_binmids,
+    logm0_bin_widths,
+    n_halos_per_bin,
+    halo_data,
+    fstar_tdelay,
+    pdf_model_params=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+):
+    """
+    Compute Diffstarpop summary statistic predictions for a population of
+    quenched galaxies.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params : dict
+        Dictionary containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a unimodal Gaussian distribution on unbound Diffstar parameters.
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: scan
+        Diffstarpop Xmah loop: vmap
+        Diffstarpop Xsfh loop: vmap
+    """
+
+    index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
+    _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
+    index_select = np.arange(len(t_table))[_mask]
+    index_high = index_high[_mask]
+
+    lgt_table = jnp.log10(t_table)
+    dt_table = _jax_get_dt_array(t_table)
+
+    jran_key = jran.PRNGKey(0)
+    logm0_halos, mah_tauc_halos, mah_early_halos, mah_late_halos = halo_data
+
+    # the diffstar scan functions actually want log(tauc)
+    mah_logtauc_halos = np.log10(mah_tauc_halos)
+
+    diffmah_params_grid = get_binned_halo_sample(
+        n_halos_per_bin,
+        jran_key,
+        logm0_binmids,
+        logm0_bin_widths,
+        logm0_halos,
+        mah_logtauc_halos,
+        mah_early_halos,
+        mah_late_halos,
+    )
+    diffmah_params_grid = np.array(diffmah_params_grid)
+    diffmah_params_grid = diffmah_params_grid.reshape(
+        (4, len(logm0_binmids), n_halos_per_bin)
+    )
+    diffmah_params_grid = np.einsum("pmh->mhp", diffmah_params_grid)
+
+    fracs_logm0, sfh_param_grids = get_sfh_param_grid_Q(
+        pdf_model_params, logm0_binmids, sfh_lh_sig, n_sfh_param_grid
+    )
+
+    fracs, means, covs = get_binned_means_and_covs_Q(pdf_model_params, logm0_binmids)
+    _res = compute_histories_on_grids_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+        t_table,
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        diffmah_params_grid,
+        sfh_param_grids,
+    )
+    mstar_histories, sfr_histories, fstar_histories = _res
+
+    sfstar_histories = fstar_histories / mstar_histories[:, :, :, index_select]
+
+    weights_quench_bin = jnp.where(sfstar_histories > 1e-11, 1.0, 0.0)
+
+    weights = _get_pdf_weights_kern(sfh_param_grids, means, covs)
+
+    return compute_target_sumstats_from_histories(
+        weights, weights_quench_bin, mstar_histories, sfr_histories, fstar_histories
+    )
+
+
+def get_default_pdf_SFH_prediction_MS_diffstar_scan_Xsfh_scan_Xmah_scan(
+    t_table,
+    sfh_lh_sig,
+    n_sfh_param_grid,
+    logm0_binmids,
+    logm0_bin_widths,
+    n_halos_per_bin,
+    halo_data,
+    fstar_tdelay,
+    pdf_model_params=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+):
+    """
+    Compute Diffstarpop summary statistic predictions for a population of
+    main sequence galaxies.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params : dict
+        Dictionary containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a unimodal Gaussian distribution on unbound Diffstar parameters.
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: scan
+        Diffstarpop Xmah loop: scan
+        Diffstarpop Xsfh loop: scan
+    """
+
+    index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
+    _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
+    index_select = np.arange(len(t_table))[_mask]
+    index_high = index_high[_mask]
+
+    lgt_table = jnp.log10(t_table)
+    dt_table = _jax_get_dt_array(t_table)
+
+    jran_key = jran.PRNGKey(0)
+    logm0_halos, mah_tauc_halos, mah_early_halos, mah_late_halos = halo_data
+
+    # the diffstar scan functions actually want log(tauc)
+    mah_logtauc_halos = np.log10(mah_tauc_halos)
+
+    diffmah_params_grid = get_binned_halo_sample(
+        n_halos_per_bin,
+        jran_key,
+        logm0_binmids,
+        logm0_bin_widths,
+        logm0_halos,
+        mah_logtauc_halos,
+        mah_early_halos,
+        mah_late_halos,
+    )
+    diffmah_params_grid = np.array(diffmah_params_grid)
+    diffmah_params_grid = diffmah_params_grid.reshape(
+        (4, len(logm0_binmids), n_halos_per_bin)
+    )
+    diffmah_params_grid = np.einsum("pmh->mhp", diffmah_params_grid)
+
+    sfh_param_grids = get_sfh_param_grid_MS(
+        pdf_model_params, logm0_binmids, sfh_lh_sig, n_sfh_param_grid
+    )
+
+    means, covs = get_binned_means_and_covs_MS(pdf_model_params, logm0_binmids)
+    _res = compute_histories_on_grids_MS_diffstar_scan_Xsfh_scan_Xmah_scan(
+        t_table,
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        diffmah_params_grid,
+        sfh_param_grids,
+    )
+    mstar_histories, sfr_histories, fstar_histories = _res
+
+    sfstar_histories = fstar_histories / mstar_histories[:, :, :, index_select]
+
+    weights_quench_bin = jnp.where(sfstar_histories > 1e-11, 1.0, 0.0)
+
+    weights = _get_pdf_weights_kern(sfh_param_grids, means, covs)
+
+    return compute_target_sumstats_from_histories(
+        weights, weights_quench_bin, mstar_histories, sfr_histories, fstar_histories
+    )
+
+
+def get_default_pdf_SFH_prediction_MS_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+    t_table,
+    sfh_lh_sig,
+    n_sfh_param_grid,
+    logm0_binmids,
+    logm0_bin_widths,
+    n_halos_per_bin,
+    halo_data,
+    fstar_tdelay,
+    pdf_model_params=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+):
+    """
+    Compute Diffstarpop summary statistic predictions for a population of
+    main sequence galaxies.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params : dict
+        Dictionary containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a unimodal Gaussian distribution on unbound Diffstar parameters.
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: scan
+        Diffstarpop Xmah loop: vmap
+        Diffstarpop Xsfh loop: vmap
+    """
+
+    index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
+    _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
+    index_select = np.arange(len(t_table))[_mask]
+    index_high = index_high[_mask]
+
+    lgt_table = jnp.log10(t_table)
+    dt_table = _jax_get_dt_array(t_table)
+
+    jran_key = jran.PRNGKey(0)
+    logm0_halos, mah_tauc_halos, mah_early_halos, mah_late_halos = halo_data
+
+    # the diffstar scan functions actually want log(tauc)
+    mah_logtauc_halos = np.log10(mah_tauc_halos)
+
+    diffmah_params_grid = get_binned_halo_sample(
+        n_halos_per_bin,
+        jran_key,
+        logm0_binmids,
+        logm0_bin_widths,
+        logm0_halos,
+        mah_logtauc_halos,
+        mah_early_halos,
+        mah_late_halos,
+    )
+    diffmah_params_grid = np.array(diffmah_params_grid)
+    diffmah_params_grid = diffmah_params_grid.reshape(
+        (4, len(logm0_binmids), n_halos_per_bin)
+    )
+    diffmah_params_grid = np.einsum("pmh->mhp", diffmah_params_grid)
+
+    sfh_param_grids = get_sfh_param_grid_MS(
+        pdf_model_params, logm0_binmids, sfh_lh_sig, n_sfh_param_grid
+    )
+
+    means, covs = get_binned_means_and_covs_MS(pdf_model_params, logm0_binmids)
+    _res = compute_histories_on_grids_MS_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+        t_table,
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        diffmah_params_grid,
+        sfh_param_grids,
+    )
+    mstar_histories, sfr_histories, fstar_histories = _res
+
+    sfstar_histories = fstar_histories / mstar_histories[:, :, :, index_select]
+
+    weights_quench_bin = jnp.where(sfstar_histories > 1e-11, 1.0, 0.0)
+
+    weights = _get_pdf_weights_kern(sfh_param_grids, means, covs)
+
+    return compute_target_sumstats_from_histories(
+        weights, weights_quench_bin, mstar_histories, sfr_histories, fstar_histories
+    )
+
+
+def get_default_pdf_SFH_prediction_MIX_diffstar_scan_Xsfh_scan_Xmah_scan(
+    t_table,
+    sfh_lh_sig,
+    n_sfh_param_grid,
+    logm0_binmids,
+    logm0_bin_widths,
+    n_halos_per_bin,
+    halo_data,
+    fstar_tdelay,
+    pdf_model_params_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    pdf_model_params_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+):
+    """
+    Compute Diffstarpop summary statistic predictions for a mixed population of
+    both main sequence and quenched galaxies.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params_MS : dict
+        Dictionary containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+    pdf_model_params_Q : dict
+        Dictionary containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a mixture Gaussian model distribution:
+        PDF = f_Q * PDF_Q + (1-f_Q) * PDF_MS
+    where:
+        f_Q: quenched Fraction
+        PDF_Q: Unimodal Gaussian for the quenched sub-population
+        PDF_MS: Unimodal Gaussian for the main sequence sub-population
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: scan
+        Diffstarpop Xmah loop: scan
+        Diffstarpop Xsfh loop: scan
+    """
+
+    index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
+    _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
+    index_select = np.arange(len(t_table))[_mask]
+    index_high = index_high[_mask]
+
+    lgt_table = jnp.log10(t_table)
+    dt_table = _jax_get_dt_array(t_table)
+
+    jran_key = jran.PRNGKey(0)
+    logm0_halos, mah_tauc_halos, mah_early_halos, mah_late_halos = halo_data
+
+    # the diffstar scan functions actually want log(tauc)
+    mah_logtauc_halos = np.log10(mah_tauc_halos)
+
+    diffmah_params_grid = get_binned_halo_sample(
+        n_halos_per_bin,
+        jran_key,
+        logm0_binmids,
+        logm0_bin_widths,
+        logm0_halos,
+        mah_logtauc_halos,
+        mah_early_halos,
+        mah_late_halos,
+    )
+    diffmah_params_grid = np.array(diffmah_params_grid)
+    diffmah_params_grid = diffmah_params_grid.reshape(
+        (4, len(logm0_binmids), n_halos_per_bin)
+    )
+    diffmah_params_grid = np.einsum("pmh->mhp", diffmah_params_grid)
+
+    # Main sequence histories and weights
+    sfh_param_grids_MS = get_sfh_param_grid_MS(
+        pdf_model_params_MS, logm0_binmids, sfh_lh_sig, n_sfh_param_grid
+    )
+
+    means_MS, covs_MS = get_binned_means_and_covs_MS(pdf_model_params_MS, logm0_binmids)
+    _res = compute_histories_on_grids_MS_diffstar_scan_Xsfh_scan_Xmah_scan(
+        t_table,
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        diffmah_params_grid,
+        sfh_param_grids_MS,
+    )
+    mstar_histories_MS, sfr_histories_MS, fstar_histories_MS = _res
+
+    sfstar_histories_MS = fstar_histories_MS / mstar_histories_MS[:, :, :, index_select]
+
+    weights_MS_bin = jnp.where(sfstar_histories_MS > 1e-11, 1.0, 0.0)
+    weights_MS = _get_pdf_weights_kern(sfh_param_grids_MS, means_MS, covs_MS)
+
+    # Quenched histories and weights
+    fracs_logm0, sfh_param_grids_Q = get_sfh_param_grid_Q(
+        pdf_model_params_Q, logm0_binmids, sfh_lh_sig, n_sfh_param_grid
+    )
+
+    fracs_Q, means_Q, covs_Q = get_binned_means_and_covs_Q(
+        pdf_model_params_Q, logm0_binmids
+    )
+    _res = compute_histories_on_grids_diffstar_scan_Xsfh_scan_Xmah_scan(
+        t_table,
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        diffmah_params_grid,
+        sfh_param_grids_Q,
+    )
+    mstar_histories_Q, sfr_histories_Q, fstar_histories_Q = _res
+    sfstar_histories_Q = fstar_histories_Q / mstar_histories_Q[:, :, :, index_select]
+    weights_Q_bin = jnp.where(sfstar_histories_Q > 1e-11, 1.0, 0.0)
+    weights_Q = _get_pdf_weights_kern(sfh_param_grids_Q, means_Q, covs_Q)
+
+    # Concatenate arrays
+    mstar_histories = jnp.concatenate((mstar_histories_MS, mstar_histories_Q), axis=1)
+    sfr_histories = jnp.concatenate((sfr_histories_MS, sfr_histories_Q), axis=1)
+    fstar_histories = jnp.concatenate((fstar_histories_MS, fstar_histories_Q), axis=1)
+
+    weights_MS /= weights_MS.sum()
+    weights_Q /= weights_Q.sum()
+
+    weights_MS = jnp.einsum("ij,i->ij", weights_MS, (1.0 - fracs_Q))
+    weights_Q = jnp.einsum("ij,i->ij", weights_Q, fracs_Q)
+
+    weights = jnp.concatenate((weights_MS, weights_Q), axis=1)
+    weights_bin = jnp.concatenate((weights_MS_bin, weights_Q_bin), axis=1)
+
+    return compute_target_sumstats_from_histories(
+        weights, weights_bin, mstar_histories, sfr_histories, fstar_histories
+    )
+
+
+def get_default_pdf_SFH_prediction_MIX_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+    t_table,
+    sfh_lh_sig,
+    n_sfh_param_grid,
+    logm0_binmids,
+    logm0_bin_widths,
+    n_halos_per_bin,
+    halo_data,
+    fstar_tdelay,
+    pdf_model_params_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    pdf_model_params_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+):
+    """
+    Compute Diffstarpop summary statistic predictions for a mixed population of
+    both main sequence and quenched galaxies.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params_MS : dict
+        Dictionary containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+    pdf_model_params_Q : dict
+        Dictionary containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+
+    Notes
+    -----
+    PDF is a mixture Gaussian model distribution:
+        PDF = f_Q * PDF_Q + (1-f_Q) * PDF_MS
+    where:
+        f_Q: quenched Fraction
+        PDF_Q: Unimodal Gaussian for the quenched sub-population
+        PDF_MS: Unimodal Gaussian for the main sequence sub-population
+
+    Details of kernel implementation:
+        Diffstar tobs and tcons loops: scan
+        Diffstarpop Xmah loop: vmap
+        Diffstarpop Xsfh loop: vmap
+    """
+
+    index_high = np.searchsorted(t_table, t_table - fstar_tdelay)
+    _mask = t_table > fstar_tdelay + fstar_tdelay / 2.0
+    index_select = np.arange(len(t_table))[_mask]
+    index_high = index_high[_mask]
+
+    lgt_table = jnp.log10(t_table)
+    dt_table = _jax_get_dt_array(t_table)
+
+    jran_key = jran.PRNGKey(0)
+    logm0_halos, mah_tauc_halos, mah_early_halos, mah_late_halos = halo_data
+
+    # the diffstar scan functions actually want log(tauc)
+    mah_logtauc_halos = np.log10(mah_tauc_halos)
+
+    diffmah_params_grid = get_binned_halo_sample(
+        n_halos_per_bin,
+        jran_key,
+        logm0_binmids,
+        logm0_bin_widths,
+        logm0_halos,
+        mah_logtauc_halos,
+        mah_early_halos,
+        mah_late_halos,
+    )
+    diffmah_params_grid = np.array(diffmah_params_grid)
+    diffmah_params_grid = diffmah_params_grid.reshape(
+        (4, len(logm0_binmids), n_halos_per_bin)
+    )
+    diffmah_params_grid = np.einsum("pmh->mhp", diffmah_params_grid)
+
+    # Main sequence histories and weights
+    sfh_param_grids_MS = get_sfh_param_grid_MS(
+        pdf_model_params_MS, logm0_binmids, sfh_lh_sig, n_sfh_param_grid
+    )
+
+    means_MS, covs_MS = get_binned_means_and_covs_MS(pdf_model_params_MS, logm0_binmids)
+    _res = compute_histories_on_grids_MS_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+        t_table,
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        diffmah_params_grid,
+        sfh_param_grids_MS,
+    )
+    mstar_histories_MS, sfr_histories_MS, fstar_histories_MS = _res
+
+    sfstar_histories_MS = fstar_histories_MS / mstar_histories_MS[:, :, :, index_select]
+
+    weights_MS_bin = jnp.where(sfstar_histories_MS > 1e-11, 1.0, 0.0)
+    weights_MS = _get_pdf_weights_kern(sfh_param_grids_MS, means_MS, covs_MS)
+
+    # Quenched histories and weights
+    fracs_logm0, sfh_param_grids_Q = get_sfh_param_grid_Q(
+        pdf_model_params_Q, logm0_binmids, sfh_lh_sig, n_sfh_param_grid
+    )
+
+    fracs_Q, means_Q, covs_Q = get_binned_means_and_covs_Q(
+        pdf_model_params_Q, logm0_binmids
+    )
+    _res = compute_histories_on_grids_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+        t_table,
+        lgt_table,
+        dt_table,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        diffmah_params_grid,
+        sfh_param_grids_Q,
+    )
+    mstar_histories_Q, sfr_histories_Q, fstar_histories_Q = _res
+    sfstar_histories_Q = fstar_histories_Q / mstar_histories_Q[:, :, :, index_select]
+    weights_Q_bin = jnp.where(sfstar_histories_Q > 1e-11, 1.0, 0.0)
+    weights_Q = _get_pdf_weights_kern(sfh_param_grids_Q, means_Q, covs_Q)
+
+    # Concatenate arrays
+    mstar_histories = jnp.concatenate((mstar_histories_MS, mstar_histories_Q), axis=1)
+    sfr_histories = jnp.concatenate((sfr_histories_MS, sfr_histories_Q), axis=1)
+    fstar_histories = jnp.concatenate((fstar_histories_MS, fstar_histories_Q), axis=1)
+
+    weights_MS /= weights_MS.sum()
+    weights_Q /= weights_Q.sum()
+
+    weights_MS = jnp.einsum("ij,i->ij", weights_MS, (1.0 - fracs_Q))
+    weights_Q = jnp.einsum("ij,i->ij", weights_Q, fracs_Q)
+
+    weights = jnp.concatenate((weights_MS, weights_Q), axis=1)
+    weights_bin = jnp.concatenate((weights_MS_bin, weights_Q_bin), axis=1)
+
+    return compute_target_sumstats_from_histories(
+        weights, weights_bin, mstar_histories, sfr_histories, fstar_histories
+    )
+
+
+def PDF_weight_sfh_population_sumstats_wrapper(
+    t_table,
+    sfh_lh_sig,
+    n_sfh_param_grid,
+    logm0_binmids,
+    logm0_bin_widths,
+    n_halos_per_bin,
+    halo_data,
+    fstar_tdelay,
+    population_model="Q",
+    diffstar_kernel="scan",
+    diffstarpop_kernel="vmap",
+    pdf_model_params_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    pdf_model_params_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+):
+    """
+    Wrapper function to compute Diffstarpop summary statistic predictions.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    sfh_lh_sig : float
+        Number of sigma used to define the latin hypercube box length.
+    n_sfh_param_grid : int
+        Number of sample points in latin hypercube box.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    halo_data : ndarray of shape (4, n_halos)
+        Array containing the following Diffmah parameters
+        (logm0, tauc, early, late):
+            logmp : float
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            tauc : float or ndarray of shape (n_halos, )
+                Transition time between the fast- and slow-accretion regimes in Gyr
+            early : float or ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : float or ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    population_model: string
+        Type of DiffstarPop model. Options are 'Q', 'MS', 'MIX'.
+    diffstar_kernel: string
+        Type of diffstar kernel implementation. Options are 'vmap', 'scan'.
+    diffstarpop_kernel: string
+        Type of diffstarpop kernel implementation. Options are 'vmap', 'scan'.
+    pdf_model_params_MS : dict
+        Dictionary containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+    pdf_model_params_Q : dict
+        Dictionary containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+    """
+    assert population_model in ["Q", "MS", "MIX"], NotImplementedError(
+        "Valid 'population_model' options are 'Q', 'MS', 'MIX'."
+    )
+    assert diffstar_kernel in ["scan", "vmap"], NotImplementedError(
+        "Valid 'diffstar_kernel' options are 'scan', 'vmap'."
+    )
+    assert diffstarpop_kernel in ["scan", "vmap"], NotImplementedError(
+        "Valid 'diffstarpop_kernel' options are 'scan', 'vmap'."
+    )
+
+    if population_model == "Q":
+        if diffstar_kernel == "vmap":
+            if diffstarpop_kernel == "scan":
+                return get_default_pdf_SFH_prediction_Q_diffstar_vmap_Xsfh_scan_Xmah_scan(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params=pdf_model_params_Q,
+                )
+            elif diffstarpop_kernel == "vmap":
+                return get_default_pdf_SFH_prediction_Q_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params=pdf_model_params_Q,
+                )
+        elif diffstar_kernel == "scan":
+            if diffstarpop_kernel == "scan":
+                return get_default_pdf_SFH_prediction_Q_diffstar_scan_Xsfh_scan_Xmah_scan(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params=pdf_model_params_Q,
+                )
+            elif diffstarpop_kernel == "vmap":
+                return get_default_pdf_SFH_prediction_Q_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params=pdf_model_params_Q,
+                )
+    elif population_model == "MS":
+        if diffstar_kernel == "vmap":
+            if diffstarpop_kernel == "scan":
+                return get_default_pdf_SFH_prediction_MS_diffstar_vmap_Xsfh_scan_Xmah_scan(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params=pdf_model_params_MS,
+                )
+            elif diffstarpop_kernel == "vmap":
+                return get_default_pdf_SFH_prediction_MS_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params=pdf_model_params_MS,
+                )
+        elif diffstar_kernel == "scan":
+            if diffstarpop_kernel == "scan":
+                return get_default_pdf_SFH_prediction_MS_diffstar_scan_Xsfh_scan_Xmah_scan(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params=pdf_model_params_MS,
+                )
+            elif diffstarpop_kernel == "vmap":
+                return get_default_pdf_SFH_prediction_MS_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params=pdf_model_params_MS,
+                )
+    elif population_model == "MIX":
+        if diffstar_kernel == "vmap":
+            if diffstarpop_kernel == "scan":
+                return get_default_pdf_SFH_prediction_MIX_diffstar_vmap_Xsfh_scan_Xmah_scan(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params_MS=pdf_model_params_MS,
+                    pdf_model_params_Q=pdf_model_params_Q,
+                )
+            elif diffstarpop_kernel == "vmap":
+                return get_default_pdf_SFH_prediction_MIX_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params_MS=pdf_model_params_MS,
+                    pdf_model_params_Q=pdf_model_params_Q,
+                )
+        elif diffstar_kernel == "scan":
+            if diffstarpop_kernel == "scan":
+                return get_default_pdf_SFH_prediction_MIX_diffstar_scan_Xsfh_scan_Xmah_scan(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params_MS=pdf_model_params_MS,
+                    pdf_model_params_Q=pdf_model_params_Q,
+                )
+            elif diffstarpop_kernel == "vmap":
+                return get_default_pdf_SFH_prediction_MIX_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+                    t_table,
+                    sfh_lh_sig,
+                    n_sfh_param_grid,
+                    logm0_binmids,
+                    logm0_bin_widths,
+                    n_halos_per_bin,
+                    halo_data,
+                    fstar_tdelay,
+                    pdf_model_params_MS=pdf_model_params_MS,
+                    pdf_model_params_Q=pdf_model_params_Q,
+                )
