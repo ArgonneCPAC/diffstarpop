@@ -2,6 +2,7 @@ from collections import OrderedDict
 from jax import jit as jjit
 from jax import numpy as jnp
 from jax import vmap
+from .utils import _sigmoid
 
 TODAY = 13.8
 LGT0 = jnp.log10(TODAY)
@@ -9,49 +10,37 @@ LGT0 = jnp.log10(TODAY)
 _LGM_X0, LGM_K = 13.0, 0.5
 
 DEFAULT_R_QUENCH_PARAMS = OrderedDict(
-    R_ulgm_quench_ylo=-0.71,
-    R_ulgm_quench_yhi=0.43,
-    R_ulgy_quench_ylo=-1.02,
-    R_ulgy_quench_yhi=0.69,
-    R_ul_quench_ylo=-0.19,
-    R_ul_quench_yhi=0.86,
-    R_utau_quench_ylo=0.83,
-    R_utau_quench_yhi=-1.40,
-    R_uqt_quench_ylo=0.35,
-    R_uqt_quench_yhi=0.16,
-    R_uqs_quench_ylo=0.77,
-    R_uqs_quench_yhi=-1.06,
-    R_udrop_quench_ylo=-0.56,
-    R_udrop_quench_yhi=1.10,
-    R_urej_quench_ylo=-0.30,
-    R_urej_quench_yhi=0.85,
+    R_ulgm_quench_ylo=-0.15,
+    R_ulgm_quench_yhi=-0.36,
+    R_ulgy_quench_ylo=-7.31,
+    R_ulgy_quench_yhi=8.04,
+    R_ul_quench_ylo=-0.41,
+    R_ul_quench_yhi=2.44,
+    R_utau_quench_ylo=5.90,
+    R_utau_quench_yhi=-8.93,
+    R_uqt_quench_ylo=-0.03,
+    R_uqt_quench_yhi=0.41,
+    R_uqs_quench_ylo=7.86,
+    R_uqs_quench_yhi=-10.64,
+    R_udrop_quench_ylo=-4.83,
+    R_udrop_quench_yhi=6.61,
+    R_urej_quench_ylo=1.51,
+    R_urej_quench_yhi=-0.57,
 )
 
 DEFAULT_R_MAINSEQ_PARAMS = OrderedDict(
-    R_ulgm_mainseq_ylo=-0.71,
-    R_ulgm_mainseq_yhi=0.43,
-    R_ulgy_mainseq_ylo=-1.02,
-    R_ulgy_mainseq_yhi=0.69,
-    R_ul_mainseq_ylo=-0.19,
-    R_ul_mainseq_yhi=0.86,
-    R_utau_mainseq_ylo=0.83,
-    R_utau_mainseq_yhi=-1.40,
+    R_ulgm_mainseq_ylo=-0.88,
+    R_ulgm_mainseq_yhi=0.99,
+    R_ulgy_mainseq_ylo=14.02,
+    R_ulgy_mainseq_yhi=-26.44,
+    R_ul_mainseq_ylo=-0.49,
+    R_ul_mainseq_yhi=6.91,
+    R_utau_mainseq_ylo=27.14,
+    R_utau_mainseq_yhi=-47.65,
 )
 
 
 # Helper functions
-@jjit
-def _sigmoid(x, logtc, k, ymin, ymax):
-    height_diff = ymax - ymin
-    return ymin + height_diff / (1.0 + jnp.exp(-k * (x - logtc)))
-
-
-@jjit
-def _inverse_sigmoid(y, x0=0, k=1, ymin=-1, ymax=1):
-    lnarg = (ymax - ymin) / (y - ymin) - 1
-    return x0 - jnp.log(lnarg) / k
-
-
 @jjit
 def _fun_Mcrit(x, ymin, ymax):
     return _sigmoid(x, 12.0, 4.0, ymin, ymax)

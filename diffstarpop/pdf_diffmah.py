@@ -148,6 +148,77 @@ def get_binned_halos(logm0_binmids, logm0_bin_widths, logm0_halos, *other_halo_p
     return binned_halos
 
 
+def get_binned_halo_sample_p50(
+    n_per_bin,
+    jran_key,
+    logm0_binmids,
+    logm0_bin_widths,
+    logm0_halos,
+    p50_binmids,
+    p50_bin_widths,
+    p50_halos,
+    *other_halo_props
+):
+    """Retrieve a downsampling of halos binned by the input logm0 and p50
+
+    Parameters
+    ----------
+    n_per_bin : int
+        Number of halos to select per bin
+    jran_key : obj
+        jran.PRNGKey(seed)
+    logm0_binmids : ndarray of shape (n_bins_mass, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_bins_mass, )
+        logarithmic width of the halo mass bin
+    logm0_halos : ndarray of shape (n_halos, )
+        Logarithmic halo mass values for each halo.
+    p50_binmids : ndarray of shape (n_bins_p50, )
+        Midpoint of the formation time percentile bins.
+    p50_bin_widths : ndarray of shape (n_bins_p50, )
+        Width of the formation time percentile bins.
+    p50_halos : ndarray of shape (n_halos, )
+        Formation time values for each halo.
+    other_halo_props : length m sequence of ndarrays of shape (n_halos, )
+        Description.
+    Returns
+    -------
+    binned_halo_sample : ndarray of shape (n_bins_mass, n_bins_p50, n_per_bin, m+1 )
+        The first element is the array of logm0
+        The remaining m elements are the input halo properties
+
+    Notes
+    -----
+    The binned_halo_sample is what is used to generate a diffmah grid
+
+    """
+
+    other_halo_props = np.array(other_halo_props)
+    n_bins_p = len(p50_binmids)
+    n_bins_h = len(logm0_binmids)
+    n_props = len(other_halo_props) + 1
+    ran_keys = jran.split(jran_key, n_bins_p)
+
+    result = []
+    for cen, w, ran_key_bin in zip(p50_binmids, p50_bin_widths, ran_keys):
+        msk = np.abs(p50_halos - cen) < w
+
+        binned_halos = get_binned_halo_sample(
+            n_per_bin,
+            ran_key_bin,
+            logm0_binmids,
+            logm0_bin_widths,
+            logm0_halos[msk],
+            *other_halo_props[:, msk]
+        )
+
+        binned_halos = np.array(binned_halos).reshape((n_props, n_bins_h, n_per_bin))
+        result.append(binned_halos)
+
+    result = np.einsum("phmn->mpnh", np.array(result))
+    return result
+
+
 def randomly_select_halos(n_sample, jran_key, *halo_sample_properties):
     n_halos = halo_sample_properties[0].size
     indx_all = np.arange(n_halos).astype("i8")

@@ -25,6 +25,13 @@ from diffmah.individual_halo_assembly import _calc_halo_history
 
 from .pdf_quenched import get_smah_means_and_covs_quench, DEFAULT_SFH_PDF_QUENCH_PARAMS
 from .pdf_mainseq import get_smah_means_and_covs_mainseq, DEFAULT_SFH_PDF_MAINSEQ_PARAMS
+from .pdf_model_assembly_bias_shifts import (
+    DEFAULT_R_QUENCH_PARAMS,
+    DEFAULT_R_MAINSEQ_PARAMS,
+    _get_slopes_quench,
+    _get_slopes_mainseq,
+    _get_shift_to_PDF_mean,
+)
 
 # from .pdf_model_assembly_bias_shifts import _get_shift_to_PDF_mean, _get_slopes
 
@@ -915,10 +922,7 @@ def mc_sfh_population_sumstats(
     return _out
 
 
-# Ignore the rest of this script for now.
-
-
-def mc_sfh_population_mah_correlation(
+def mc_sfh_histories_withR_Q(
     lgt,
     dt,
     logmh,
@@ -927,17 +931,23 @@ def mc_sfh_population_mah_correlation(
     index_select,
     index_high,
     fstar_tdelay,
-    sfh_correlation_param_id,
-    correlation,
+    p50,
     seed=0,
-    **kwargs
+    pdf_parameters=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+    R_model_params=DEFAULT_R_QUENCH_PARAMS,
+    diffstar_kernel="vmap",
 ):
-    """Generate Monte Carlo realization of the assembly of a population of halos.
+    """
+    Generate Monte Carlo realization of the star formation histories of
+    quenched galaxies for a single halo mass bin.
+
+    There is correlation with p50.
+
     Parameters
     ----------
-    lgt : ndarray
+    lgt : ndarray of shape (n_times, )
         Array of log10 cosmic times in units of Gyr
-    dt : float
+    dt : ndarray of shape (n_times, )
         Time step sizes in units of Gyr
     logmh : float
         Base-10 log of present-day halo mass of the halo population
@@ -945,19 +955,46 @@ def mc_sfh_population_mah_correlation(
         Array with the diffmah parameters that will be marginalized over. Could
         be either individual fits of n_mah_haloes haloes, or be n_mah_haloes
         samples from a population model. They are chosen at random n_halos times.
-    n_halos : int
-        Number of halos in the population.
+    mah_params : ndarray of shape (n_halos, 6)
+        Array containing the following Diffmah parameters
+        (logt0, logm0, log10tauc, k, early, late):
+            logt0 : ndarray of shape (n_halos, )
+                Base-10 log of present-day cosmic time.
+            logmp : ndarray of shape (n_halos, )
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            log10tauc : ndarray of shape (n_halos, )
+                Base-10 log of transition time between the fast- and slow-accretion regimes in Gyr
+            k : ndarray of shape (n_halos, )
+                Transition speed.
+            early : ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    n_histories : int
+        Number of SFH histories to generate by DiffstarPop.
+    index_select: ndarray of shape (n_times_fstar, )
+        Snapshot indices used in fstar computation
+    index_high: ndarray of shape (n_times_fstar, )
+        Indices of np.searchsorted(t, t - fstar_tdelay)[index_select]
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
     seed : int, optional
         Random number seed
-    **kwargs : floats
-        All parameters of the SFH PDF model are accepted as keyword arguments.
-        Default values are set by rockstar_pdf_model.DEFAULT_SFH_PDF_PARAMS
+    pdf_model_params : dict
+        Dictionary containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+    diffstar_kernel: string
+        Type of diffstar kernel implementation. Options are 'vmap', 'scan'.
+
     Returns
     -------
-    mstar : ndarray of shape (n_halos, n_times)
+    mstar : ndarray of shape (n_histories, n_times)
         Stores cumulative stellar mass history in units of Msun/yr.
-    sfr : ndarray of shape (n_halos, n_times)
+    sfr : ndarray of shape (n_histories, n_times)
         Stores star formation rate history in units of Msun/yr.
+    fstar : ndarray of shape (n_histories, n_times_fstar)
+        SFH averaged over timescale fstar_tdelay in units of Msun/yr assuming h=1.
     """
 
     logmh = np.atleast_1d(logmh).astype("f4")
@@ -967,60 +1004,274 @@ def mc_sfh_population_mah_correlation(
 
     sampled_mahs_inds = RandomState(seed).choice(n_mah, n_histories, replace=True)
     mah_params_sampled = mah_params[sampled_mahs_inds]
+    p50_sampled = p50[sampled_mahs_inds]
 
-    _res = get_smah_means_and_covs_quench(logmh, **kwargs)
+    _res = get_smah_means_and_covs_quench(logmh, **pdf_parameters)
     frac_quench, means_quench, covs_quench = _res
     frac_quench = frac_quench[0]
     means_quench = means_quench[0]
     covs_quench = covs_quench[0]
 
+    R_vals_quench = _get_slopes_quench(logmh, **R_model_params)
+    R_vals_quench = jnp.array(R_vals_quench)[:, 0]
+
+    shifts_quench = jnp.einsum("p,h->hp", R_vals_quench, (p50_sampled - 0.5))
+
     sfh_params = RandomState(seed + 1).multivariate_normal(
         means_quench, covs_quench, size=n_histories
     )
+    sfh_params = sfh_params + shifts_quench
 
-    sfh_correlation_param = sfh_params[:, sfh_correlation_param_id]
+    sfr_params = np.zeros((n_histories, 5))
+    sfr_params[:, :3] = sfh_params[:, :3]
+    sfr_params[:, 3] = UH
+    sfr_params[:, 4] = sfh_params[:, 3]
+    q_params = sfh_params[:, 4:8]
 
-    dmhdt, log_mah = _calc_halo_history_vmap(lgt, *mah_params_sampled.T)
+    if diffstar_kernel == "vmap":
+        _res = calculate_sm_vmap_batch(
+            lgt,
+            dt,
+            mah_params_sampled,
+            sfr_params,
+            q_params,
+            index_select,
+            index_high,
+            fstar_tdelay,
+        )
+    elif diffstar_kernel == "scan":
+        _res = calculate_sm_scan_batch(
+            lgt,
+            dt,
+            mah_params_sampled[:, [1, 2, 4, 5]],
+            sfr_params,
+            q_params,
+            index_select,
+            index_high,
+            fstar_tdelay,
+        )
 
-    mhalo = np.array(10 ** log_mah)
-
-    _index_high_50 = return_searchsorted_like_results(mhalo, 0.5)
-    t50 = jax_np_interp_vmap(mhalo[:, -1] * 0.5, mhalo, 10 ** lgt, _index_high_50)
-
-    argsort_mah = np.argsort(t50)
-    mah_params_sampled = mah_params_sampled[argsort_mah]
-
-    argsort_sfh = np.argsort(sfh_correlation_param)
-    if correlation == 1:
-        sfh_params = sfh_params[argsort_sfh]
-    elif correlation == -1:
-        sfh_params = sfh_params[argsort_sfh[::-1]]
-    elif correlation == 0:
-        sfh_params = sfh_params[argsort_mah]
-    else:
-        raise ValueError("Input correlation should be -1, 0, or 1")
-
-    sfr_params = np.zeros((n_histories, 6))
-    sfr_params[:, :2] = sfh_params[:, :2]
-    sfr_params[:, 2] = UK
-    sfr_params[:, 3:] = sfh_params[:, 2:5]
-    q_params = sfh_params[:, 5:9]
-
-    _res = calculate_sm_vmap_batch(
-        lgt,
-        dt,
-        mah_params_sampled,
-        sfr_params,
-        q_params,
-        index_select,
-        index_high,
-        fstar_tdelay,
-    )
     mstar = _res[0]
     sfr = _res[1]
     fstar = _res[2]
 
-    return mstar, sfr, fstar
+    return mstar, sfr, fstar, p50_sampled
+
+
+def mc_sfh_population_withR_sumstats(
+    t_table,
+    logm0_binmids,
+    logm0_bin_widths,
+    p50_bins,
+    n_halos_per_bin,
+    mah_params,
+    p50,
+    n_histories,
+    fstar_tdelay=1.0,
+    seed=0,
+    population="MIX",
+    pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+    R_model_params_MS=DEFAULT_R_MAINSEQ_PARAMS,
+    R_model_params_Q=DEFAULT_R_QUENCH_PARAMS,
+    diffstar_kernel="vmap",
+):
+    """
+    Wrapper function to compute Diffstarpop summary statistic predictions
+    from Monte Carlo realization of the star formation histories of galaxy
+    population for multiple halo mass bin.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    logm0_binmids : ndarray of shape (n_m0, )
+        Midpoint of the logarithmic halo mass bins
+    logm0_bin_widths : ndarray of shape (n_m0, )
+        Logarithmic width of the halo mass bin
+    n_halos_per_bin : int
+        Number of halos to be randomly sub-selected in each halo mass bin.
+    mah_params : ndarray, size (n_mah_haloes x n_mah_params)
+        Array with the diffmah parameters that will be marginalized over. Could
+        be either individual fits of n_mah_haloes haloes, or be n_mah_haloes
+        samples from a population model. They are chosen at random n_halos times.
+    mah_params : ndarray of shape (n_halos, 6)
+        Array containing the following Diffmah parameters
+        (logt0, logm0, log10tauc, k, early, late):
+            logt0 : ndarray of shape (n_halos, )
+                Base-10 log of present-day cosmic time.
+            logmp : ndarray of shape (n_halos, )
+                Base-10 log of present-day peak halo mass in units of Msun assuming h=1
+            log10tauc : ndarray of shape (n_halos, )
+                Base-10 log of transition time between the fast- and slow-accretion regimes in Gyr
+            k : ndarray of shape (n_halos, )
+                Transition speed.
+            early : ndarray of shape (n_halos, )
+                Early-time power-law index in the scaling relation M(t)~t^a
+            late : ndarray of shape (n_halos, )
+                Late-time power-law index in the scaling relation M(t)~t^a
+    n_histories : int
+        Number of SFH histories to generate by DiffstarPop.
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    seed : int, optional
+        Random number seed
+    population: string
+        Type of DiffstarPop model. Options are 'Q', 'MS', 'MIX'.
+    pdf_model_params_MS : dict
+        Dictionary containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+    pdf_model_params_Q : dict
+        Dictionary containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+    diffstar_kernel: string
+        Type of diffstar kernel implementation. Options are 'vmap', 'scan'.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_m0, n_t)
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_m0, n_t)
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_m0, n_t)
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_m0, n_t)
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_m0, n_t)
+        Fraction of quenched galaxies.
+    """
+
+    index_select, index_high = fstar_tools(t_table, fstar_tdelay)
+    lgt = jnp.log10(t_table)
+    dt = _get_dt_array(t_table)
+
+    sm_mean_MC = np.zeros((len(logm0_binmids), len(t_table)))
+    sm_var_MC = np.zeros((len(logm0_binmids), len(t_table)))
+    fstar_mean_MS_MC = np.zeros((len(logm0_binmids), len(index_select)))
+    fstar_mean_Q_MC = np.zeros((len(logm0_binmids), len(index_select)))
+    fstar_var_MS_MC = np.zeros((len(logm0_binmids), len(index_select)))
+    fstar_var_Q_MC = np.zeros((len(logm0_binmids), len(index_select)))
+    quench_frac_MC = np.zeros((len(logm0_binmids), len(index_select)))
+
+    sm_mean_MC_p50 = np.zeros((len(logm0_binmids), len(p50_bins) - 1, len(t_table)))
+    sm_var_MC_p50 = np.zeros((len(logm0_binmids), len(p50_bins) - 1, len(t_table)))
+    quench_frac_MC_p50 = np.zeros(
+        (len(logm0_binmids), len(p50_bins) - 1, len(index_select))
+    )
+
+    logmpeak = mah_params[:, 1]
+
+    for i in range(len(logm0_binmids)):
+
+        mask = (logmpeak > logm0_binmids[i] - logm0_bin_widths[i]) & (
+            logmpeak < logm0_binmids[i] + logm0_bin_widths[i]
+        )
+
+        mah_params_bin = mah_params[mask]
+        p50_bin = p50[mask]
+        choose = np.random.choice(len(mah_params_bin), n_halos_per_bin, replace=False)
+        mah_params_bin = mah_params_bin[choose]
+        p50_bin = p50_bin[choose]
+
+        logm0_bin = np.array([logm0_binmids[i]])
+
+        if population == "Q":
+            _res = mc_sfh_histories_withR_Q(
+                lgt,
+                dt,
+                logm0_bin,
+                mah_params_bin,
+                n_histories,
+                index_select,
+                index_high,
+                fstar_tdelay,
+                p50_bin,
+                seed=0,
+                pdf_parameters=pdf_parameters_Q,
+                R_model_params=R_model_params_Q,
+            )
+        elif population == "MS":
+            _res = mc_sfh_histories_MS(
+                lgt,
+                dt,
+                logm0_bin,
+                mah_params_bin,
+                n_histories,
+                index_select,
+                index_high,
+                fstar_tdelay,
+                seed=0,
+                pdf_parameters=pdf_parameters_MS,
+            )
+        elif population == "MIX":
+            _res = mc_sfh_histories_MIX(
+                lgt,
+                dt,
+                logm0_bin,
+                mah_params_bin,
+                n_histories,
+                index_select,
+                index_high,
+                fstar_tdelay,
+                seed=0,
+                pdf_parameters_MS=pdf_parameters_MS,
+                pdf_parameters_Q=pdf_parameters_Q,
+                diffstar_kernel=diffstar_kernel,
+            )
+        else:
+            raise NotImplementedError("'population' needs to be 'Q', 'MS' or 'MIX'")
+
+        mstar_MC, sfr_MC, fstar_MC, p50_MC = _res
+
+        sFstar = fstar_MC / mstar_MC[:, index_select]
+
+        sm_mean_MC[i] = np.nanmean(np.log10(mstar_MC), axis=0)
+        sm_var_MC[i] = np.nanstd(np.log10(mstar_MC), axis=0) ** 2
+
+        fstar_MC_MS = fstar_MC.copy()
+        fstar_MC_Q = fstar_MC.copy()
+        fstar_MC_MS[(sFstar < 1e-11)] = np.nan
+        fstar_MC_Q[(sFstar > 1e-11)] = np.nan
+        fstar_mean_MS_MC[i] = np.nanmean(np.log10(fstar_MC_MS), axis=0)
+        fstar_mean_Q_MC[i] = np.nanmean(np.log10(fstar_MC_Q), axis=0)
+        fstar_var_MS_MC[i] = np.nanstd(np.log10(fstar_MC_MS), axis=0) ** 2
+        fstar_var_Q_MC[i] = np.nanstd(np.log10(fstar_MC_Q), axis=0) ** 2
+        quench_frac_MC[i] = np.sum(sFstar < 1e-11, axis=0) / (
+            np.sum(sFstar < 1e-11, axis=0) + np.sum(sFstar > 1e-11, axis=0)
+        )
+
+        p50_bin_id = np.digitize(p50_MC, p50_bins) - 1
+        p50_bin_id = np.clip(p50_bin_id, 0, len(p50_bins) - 1).astype(int)
+        for j in range(len(p50_bins) - 1):
+            msk = p50_bin_id == j
+            sm_mean_MC_p50[i, j] = np.nanmean(np.log10(mstar_MC[msk]), axis=0)
+            sm_var_MC_p50[i, j] = np.nanstd(np.log10(mstar_MC[msk]), axis=0) ** 2
+            quench_frac_MC_p50[i, j] = np.sum(sFstar[msk] < 1e-11, axis=0) / (
+                np.sum(sFstar[msk] < 1e-11, axis=0)
+                + np.sum(sFstar[msk] > 1e-11, axis=0)
+            )
+    _out = (
+        sm_mean_MC,
+        sm_var_MC,
+        fstar_mean_MS_MC,
+        fstar_mean_Q_MC,
+        fstar_var_MS_MC,
+        fstar_var_Q_MC,
+        quench_frac_MC,
+        sm_mean_MC_p50,
+        sm_var_MC_p50,
+        quench_frac_MC_p50,
+    )
+
+    return _out
+
+
+# Ignore the rest of this script for now.
 
 
 def mc_sfh_population_R(
