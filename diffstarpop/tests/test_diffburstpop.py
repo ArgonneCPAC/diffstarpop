@@ -4,7 +4,10 @@ import numpy as np
 from jax import numpy as jnp
 from jax import random as jran
 from diffmah.monte_carlo_halo_population import mc_halo_population
-from ..diffburstpop import _get_bursty_age_weights
+from ..diffburstpop import _get_bursty_age_weights, _get_lgfburst
+from ..diffburstpop import LGFBURST_BOUNDS_PDICT, DEFAULT_LGFBURST_PDICT
+from ..diffburstpop import LGFBURST_BOUNDS
+from ..diffburstpop import _get_bounded_lgfburst_params, _get_unbounded_lgfburst_params
 from .. import sfhpop
 
 
@@ -47,3 +50,34 @@ def test_get_bursty_age_weights():
     assert age_weights.shape == (n_gals, n_ages)
     assert np.allclose(np.sum(age_weights, axis=1), 1.0, rtol=1e-3)
     assert np.all(np.isfinite(age_weights))
+
+
+def test_fburst_params_is_bounded():
+    for key, bound in LGFBURST_BOUNDS_PDICT.items():
+        default_val = DEFAULT_LGFBURST_PDICT[key]
+        assert bound[0] < default_val < bound[1]
+
+
+def test_fburst_params_bounding_functions():
+    n_tests = 20
+    nparams = len(LGFBURST_BOUNDS_PDICT)
+    for __ in range(n_tests):
+        uran = np.random.uniform(0, 1, nparams)
+        gen = zip(uran, LGFBURST_BOUNDS)
+        pran = np.array([lo + u * (hi - lo) for u, (lo, hi) in gen])
+        u_p = _get_unbounded_lgfburst_params(pran)
+        pran2 = _get_bounded_lgfburst_params(u_p)
+        assert np.allclose(pran, pran2, atol=1e-4)
+
+
+def test_get_fburst_is_sensible():
+    ngals = 50_000
+    logsm_obs = np.linspace(5, 15, ngals)
+    logssfr_obs = np.random.uniform(-15, -5, ngals)
+
+    fburst_params = np.array(list(DEFAULT_LGFBURST_PDICT.values()))
+    lgfburst = _get_lgfburst(logsm_obs, logssfr_obs, fburst_params)
+    assert np.all(np.isfinite(lgfburst))
+
+    assert np.all(lgfburst < 0)
+    assert np.all(lgfburst > -12)
