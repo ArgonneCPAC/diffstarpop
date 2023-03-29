@@ -132,6 +132,16 @@ sm_sfr_history_diffstar_scan_MS_Xsfh_vmap_Xmah_vmap = jjit(
     vmap(vmap(sm_sfr_history_diffstar_scan_MS, in_axes=_A), _B)
 )
 
+_A = (*[None] * 3, *[0] * 3, *[None] * 3)
+sm_sfr_history_diffstar_scan_XsfhXmah_vmap = jjit(
+    vmap(sm_sfr_history_diffstar_scan, in_axes=_A)
+)
+
+_A = (*[None] * 3, *[0] * 2, *[None] * 3)
+sm_sfr_history_diffstar_scan_MS_XsfhXmah_vmap = jjit(
+    vmap(sm_sfr_history_diffstar_scan_MS, in_axes=_A)
+)
+
 
 @jjit
 def sm_sfr_history_diffstar_vmap_Xsfh_scan_Xmah_vmap(
