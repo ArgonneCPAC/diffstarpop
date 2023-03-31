@@ -595,9 +595,17 @@ def draw_sfh_MIX(
     fquench_random = jran.uniform(fquench_key, shape=(n_histories,))
     fquench_random = fquench_random[:, None]
 
-    sfr_params = jnp.where(fquench_random < frac_quench, sfr_params_Q, sfr_params_MS,)
+    sfr_params = jnp.where(
+        fquench_random < frac_quench,
+        sfr_params_Q,
+        sfr_params_MS,
+    )
 
-    q_params = jnp.where(fquench_random < frac_quench, q_params_Q, q_params_MS,)
+    q_params = jnp.where(
+        fquench_random < frac_quench,
+        q_params_Q,
+        q_params_MS,
+    )
 
     _res = sm_sfr_history_diffstar_scan_XsfhXmah_vmap(
         t_table,
@@ -770,13 +778,20 @@ def compute_sumstats(mstar_histories, sfr_histories, fstar_histories, p50, weigh
     mean_fstar_MS = jnp.average(fstar_histories, weights=weights_MS, axis=0)
     mean_fstar_Q = jnp.average(fstar_histories, weights=weights_Q, axis=0)
 
-    variance_sm = jnp.average((mstar_histories - mean_sm[None, :]) ** 2, axis=0,)
+    variance_sm = jnp.average(
+        (mstar_histories - mean_sm[None, :]) ** 2,
+        axis=0,
+    )
 
     variance_fstar_MS = jnp.average(
-        (fstar_histories - mean_fstar_MS[None, :]) ** 2, weights=weights_MS, axis=0,
+        (fstar_histories - mean_fstar_MS[None, :]) ** 2,
+        weights=weights_MS,
+        axis=0,
     )
     variance_fstar_Q = jnp.average(
-        (fstar_histories - mean_fstar_Q[None, :]) ** 2, weights=weights_Q, axis=0,
+        (fstar_histories - mean_fstar_Q[None, :]) ** 2,
+        weights=weights_Q,
+        axis=0,
     )
 
     NHALO_MS = jnp.sum(weights_MS, axis=0)

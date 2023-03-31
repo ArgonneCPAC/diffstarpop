@@ -107,7 +107,7 @@ def sm_sfr_history_diffstar_scan(
     qfrac = quenching_function(lgt, *q_params)
     sfr = qfrac * ms_sfr
     mstar = _integrate_sfr(sfr, dt)
-    fstar = compute_fstar(10 ** lgt, mstar, index_select, index_high, fstar_tdelay)
+    fstar = compute_fstar(10**lgt, mstar, index_select, index_high, fstar_tdelay)
     return mstar, sfr, fstar
 
 
@@ -156,7 +156,7 @@ def calculate_sm_scan_batch(
     sfr = np.zeros((ng, nt))
     fstar = np.zeros((ng, nt2))
 
-    tarr = 10 ** lgt
+    tarr = 10**lgt
 
     indices = np.array_split(np.arange(ng), max(int(ng / 5000), 1))
 
