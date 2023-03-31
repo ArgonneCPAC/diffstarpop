@@ -16,8 +16,8 @@ from diffstar.quenching import DEFAULT_Q_PARAMS as DEFAULT_Q_PARAMS_DICT
 from diffstar.quenching import _get_unbounded_q_params
 from diffstar.main_sequence import get_ms_sfh_from_mah_kern
 from diffstar.utils import _jax_get_dt_array
-from dsps.stellar_ages import _get_age_weights_from_tables
-from dsps.stellar_ages import _get_lg_age_bin_edges, _get_lgt_birth
+from dsps.ssp.stellar_ages import _get_age_weights_from_tables
+from dsps.ssp.stellar_ages import _get_lg_age_bin_edges, _get_lgt_birth
 from .diffburst import _burst_age_weights_pop
 
 
