@@ -5,7 +5,7 @@ from collections import OrderedDict
 from jax import jit as jjit
 from jax import vmap
 from jax import numpy as jnp
-from dsps.stellar_ages import _get_age_weights_from_tables, _get_lg_age_bin_edges
+from dsps.ssp.stellar_ages import _get_age_weights_from_tables, _get_lg_age_bin_edges
 from .diffburst import _burst_age_weights_pop
 
 

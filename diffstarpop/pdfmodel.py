@@ -6,10 +6,6 @@ from jax.scipy.stats import multivariate_normal as jnorm
 from collections import OrderedDict
 
 
-# from diffmah.individual_halo_assembly import _calc_halo_history
-# from diffmah.individual_halo_assembly import calc_halo_history
-
-
 from diffstar.stars import (
     DEFAULT_SFR_PARAMS as DEFAULT_SFR_PARAMS_DICT,
     _get_unbounded_sfr_params,
@@ -2308,104 +2304,120 @@ def PDF_weight_sfh_population_sumstats_wrapper(
     if population_model == "Q":
         if diffstar_kernel == "vmap":
             if diffstarpop_kernel == "scan":
-                return get_default_pdf_SFH_prediction_Q_diffstar_vmap_Xsfh_scan_Xmah_scan(
-                    t_table,
-                    sfh_lh_sig,
-                    n_sfh_param_grid,
-                    logm0_binmids,
-                    logm0_bin_widths,
-                    n_halos_per_bin,
-                    halo_data,
-                    fstar_tdelay,
-                    pdf_model_params=pdf_model_params_Q,
+                return (
+                    get_default_pdf_SFH_prediction_Q_diffstar_vmap_Xsfh_scan_Xmah_scan(
+                        t_table,
+                        sfh_lh_sig,
+                        n_sfh_param_grid,
+                        logm0_binmids,
+                        logm0_bin_widths,
+                        n_halos_per_bin,
+                        halo_data,
+                        fstar_tdelay,
+                        pdf_model_params=pdf_model_params_Q,
+                    )
                 )
             elif diffstarpop_kernel == "vmap":
-                return get_default_pdf_SFH_prediction_Q_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
-                    t_table,
-                    sfh_lh_sig,
-                    n_sfh_param_grid,
-                    logm0_binmids,
-                    logm0_bin_widths,
-                    n_halos_per_bin,
-                    halo_data,
-                    fstar_tdelay,
-                    pdf_model_params=pdf_model_params_Q,
+                return (
+                    get_default_pdf_SFH_prediction_Q_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
+                        t_table,
+                        sfh_lh_sig,
+                        n_sfh_param_grid,
+                        logm0_binmids,
+                        logm0_bin_widths,
+                        n_halos_per_bin,
+                        halo_data,
+                        fstar_tdelay,
+                        pdf_model_params=pdf_model_params_Q,
+                    )
                 )
         elif diffstar_kernel == "scan":
             if diffstarpop_kernel == "scan":
-                return get_default_pdf_SFH_prediction_Q_diffstar_scan_Xsfh_scan_Xmah_scan(
-                    t_table,
-                    sfh_lh_sig,
-                    n_sfh_param_grid,
-                    logm0_binmids,
-                    logm0_bin_widths,
-                    n_halos_per_bin,
-                    halo_data,
-                    fstar_tdelay,
-                    pdf_model_params=pdf_model_params_Q,
+                return (
+                    get_default_pdf_SFH_prediction_Q_diffstar_scan_Xsfh_scan_Xmah_scan(
+                        t_table,
+                        sfh_lh_sig,
+                        n_sfh_param_grid,
+                        logm0_binmids,
+                        logm0_bin_widths,
+                        n_halos_per_bin,
+                        halo_data,
+                        fstar_tdelay,
+                        pdf_model_params=pdf_model_params_Q,
+                    )
                 )
             elif diffstarpop_kernel == "vmap":
-                return get_default_pdf_SFH_prediction_Q_diffstar_scan_Xsfh_vmap_Xmah_vmap(
-                    t_table,
-                    sfh_lh_sig,
-                    n_sfh_param_grid,
-                    logm0_binmids,
-                    logm0_bin_widths,
-                    n_halos_per_bin,
-                    halo_data,
-                    fstar_tdelay,
-                    pdf_model_params=pdf_model_params_Q,
+                return (
+                    get_default_pdf_SFH_prediction_Q_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+                        t_table,
+                        sfh_lh_sig,
+                        n_sfh_param_grid,
+                        logm0_binmids,
+                        logm0_bin_widths,
+                        n_halos_per_bin,
+                        halo_data,
+                        fstar_tdelay,
+                        pdf_model_params=pdf_model_params_Q,
+                    )
                 )
     elif population_model == "MS":
         if diffstar_kernel == "vmap":
             if diffstarpop_kernel == "scan":
-                return get_default_pdf_SFH_prediction_MS_diffstar_vmap_Xsfh_scan_Xmah_scan(
-                    t_table,
-                    sfh_lh_sig,
-                    n_sfh_param_grid,
-                    logm0_binmids,
-                    logm0_bin_widths,
-                    n_halos_per_bin,
-                    halo_data,
-                    fstar_tdelay,
-                    pdf_model_params=pdf_model_params_MS,
+                return (
+                    get_default_pdf_SFH_prediction_MS_diffstar_vmap_Xsfh_scan_Xmah_scan(
+                        t_table,
+                        sfh_lh_sig,
+                        n_sfh_param_grid,
+                        logm0_binmids,
+                        logm0_bin_widths,
+                        n_halos_per_bin,
+                        halo_data,
+                        fstar_tdelay,
+                        pdf_model_params=pdf_model_params_MS,
+                    )
                 )
             elif diffstarpop_kernel == "vmap":
-                return get_default_pdf_SFH_prediction_MS_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
-                    t_table,
-                    sfh_lh_sig,
-                    n_sfh_param_grid,
-                    logm0_binmids,
-                    logm0_bin_widths,
-                    n_halos_per_bin,
-                    halo_data,
-                    fstar_tdelay,
-                    pdf_model_params=pdf_model_params_MS,
+                return (
+                    get_default_pdf_SFH_prediction_MS_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
+                        t_table,
+                        sfh_lh_sig,
+                        n_sfh_param_grid,
+                        logm0_binmids,
+                        logm0_bin_widths,
+                        n_halos_per_bin,
+                        halo_data,
+                        fstar_tdelay,
+                        pdf_model_params=pdf_model_params_MS,
+                    )
                 )
         elif diffstar_kernel == "scan":
             if diffstarpop_kernel == "scan":
-                return get_default_pdf_SFH_prediction_MS_diffstar_scan_Xsfh_scan_Xmah_scan(
-                    t_table,
-                    sfh_lh_sig,
-                    n_sfh_param_grid,
-                    logm0_binmids,
-                    logm0_bin_widths,
-                    n_halos_per_bin,
-                    halo_data,
-                    fstar_tdelay,
-                    pdf_model_params=pdf_model_params_MS,
+                return (
+                    get_default_pdf_SFH_prediction_MS_diffstar_scan_Xsfh_scan_Xmah_scan(
+                        t_table,
+                        sfh_lh_sig,
+                        n_sfh_param_grid,
+                        logm0_binmids,
+                        logm0_bin_widths,
+                        n_halos_per_bin,
+                        halo_data,
+                        fstar_tdelay,
+                        pdf_model_params=pdf_model_params_MS,
+                    )
                 )
             elif diffstarpop_kernel == "vmap":
-                return get_default_pdf_SFH_prediction_MS_diffstar_scan_Xsfh_vmap_Xmah_vmap(
-                    t_table,
-                    sfh_lh_sig,
-                    n_sfh_param_grid,
-                    logm0_binmids,
-                    logm0_bin_widths,
-                    n_halos_per_bin,
-                    halo_data,
-                    fstar_tdelay,
-                    pdf_model_params=pdf_model_params_MS,
+                return (
+                    get_default_pdf_SFH_prediction_MS_diffstar_scan_Xsfh_vmap_Xmah_vmap(
+                        t_table,
+                        sfh_lh_sig,
+                        n_sfh_param_grid,
+                        logm0_binmids,
+                        logm0_bin_widths,
+                        n_halos_per_bin,
+                        halo_data,
+                        fstar_tdelay,
+                        pdf_model_params=pdf_model_params_MS,
+                    )
                 )
     elif population_model == "MIX":
         if diffstar_kernel == "vmap":

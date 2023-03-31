@@ -98,10 +98,10 @@ def _get_cov_scalar(
     utau_ul,
 ):
     cov = jnp.zeros((4, 4)).astype("f4")
-    cov = cov.at[(0, 0)].set(ulgm_ulgm ** 2)
-    cov = cov.at[(1, 1)].set(ulgy_ulgy ** 2)
-    cov = cov.at[(2, 2)].set(ul_ul ** 2)
-    cov = cov.at[(3, 3)].set(utau_utau ** 2)
+    cov = cov.at[(0, 0)].set(ulgm_ulgm**2)
+    cov = cov.at[(1, 1)].set(ulgy_ulgy**2)
+    cov = cov.at[(2, 2)].set(ul_ul**2)
+    cov = cov.at[(3, 3)].set(utau_utau**2)
 
     cov = cov.at[(1, 0)].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
     cov = cov.at[(0, 1)].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
