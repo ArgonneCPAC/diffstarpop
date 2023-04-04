@@ -42,8 +42,15 @@ def test_get_bursty_age_weights():
     dburst_pop = np.random.uniform(2, 2.5, n_gals)
     lgfburst_pop = np.random.uniform(-3, -2, n_gals)
 
+    t_obs = 13.0
     _res = _get_bursty_age_weights(
-        log_age_gyr, lgtarr_gyr, ms_logsmh_pop, dburst_pop, lgfburst_pop
+        log_age_gyr,
+        lgtarr_gyr,
+        ms_logsmh_pop,
+        dburst_pop,
+        lgfburst_pop,
+        log_age_gyr,
+        t_obs,
     )
     age_weights, age_weights_smooth, age_weights_burst = _res
 

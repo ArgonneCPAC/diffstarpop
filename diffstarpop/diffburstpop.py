@@ -5,12 +5,14 @@ from collections import OrderedDict
 from jax import jit as jjit
 from jax import vmap
 from jax import numpy as jnp
-from dsps.ssp.stellar_ages import _get_age_weights_from_tables, _get_lg_age_bin_edges
-from .diffburst import _burst_age_weights_pop
+from dsps.sed.stellar_age_weights import _calc_age_weights_from_logsm_table
+from dsps.experimental.diffburst import _burst_age_weights_pop
 
 
-_A = (None, None, 0)
-_get_age_weights_from_tables_pop = jjit(vmap(_get_age_weights_from_tables, in_axes=_A))
+_A = (None, 0, None, None)
+_get_age_weights_from_tables_pop = jjit(
+    vmap(_calc_age_weights_from_logsm_table, in_axes=_A)
+)
 
 DEFAULT_LGFBURST_PDICT = OrderedDict(
     lgf_ssfr_x0_ylo=-9.5,
@@ -36,12 +38,12 @@ LGF_SSFR_K = 2.0
 
 @jjit
 def _get_bursty_age_weights(
-    lgt_ages, lgt_table, logsm_tables, dburst_pop, lgfburst_pop
+    lgt_ages, lgt_table, logsm_tables, dburst_pop, lgfburst_pop, ssp_lg_age, t_obs
 ):
-    lgt_birth_bin_edges = _get_lg_age_bin_edges(lgt_ages)
     age_weights_smooth = _get_age_weights_from_tables_pop(
-        lgt_birth_bin_edges, lgt_table, logsm_tables
-    )
+        lgt_table, logsm_tables, ssp_lg_age, t_obs
+    )[1]
+
     age_weights_burst = _burst_age_weights_pop(lgt_ages, dburst_pop)
 
     fburst_pop = 10 ** lgfburst_pop.reshape((-1, 1))

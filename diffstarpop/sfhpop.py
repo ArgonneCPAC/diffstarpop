@@ -16,9 +16,8 @@ from diffstar.quenching import DEFAULT_Q_PARAMS as DEFAULT_Q_PARAMS_DICT
 from diffstar.quenching import _get_unbounded_q_params
 from diffstar.main_sequence import get_ms_sfh_from_mah_kern
 from diffstar.utils import _jax_get_dt_array
-from dsps.ssp.stellar_ages import _get_age_weights_from_tables
-from dsps.ssp.stellar_ages import _get_lg_age_bin_edges, _get_lgt_birth
-from .diffburst import _burst_age_weights_pop
+from dsps.sed.stellar_age_weights import _calc_age_weights_from_logsm_table
+from dsps.experimental.diffburst import _burst_age_weights_pop
 
 
 get_ms_sfh_scan_tobs_lgm0 = get_ms_sfh_from_mah_kern(
@@ -51,19 +50,19 @@ def _integrate_sfr(sfr, dt):
 
 _integrate_sfrpop = jjit(vmap(_integrate_sfr, in_axes=[0, None]))
 
-_A = [None, None, 0]
-_get_age_weights_from_tables_pop = jjit(vmap(_get_age_weights_from_tables, in_axes=_A))
+
+_A = (None, 0, None, None)
+_get_age_weights_from_tables_pop = jjit(
+    vmap(_calc_age_weights_from_logsm_table, in_axes=_A)
+)
 
 
 @jjit
-def _get_stellar_age_distributions(log_age_gyr, tarr_gyr, tobs_gyr, logsmh_pop):
-    log_age_gyr_bin_edges = _get_lg_age_bin_edges(log_age_gyr)
-    log_obs_gyr_bin_edges = _get_lgt_birth(tobs_gyr, log_age_gyr_bin_edges)
-
-    lgtarr_gyr = jnp.log10(tarr_gyr)
+def _get_stellar_age_distributions(log_age_gyr, lgtarr_gyr, tobs_gyr, logsmh_pop):
     age_distributions = _get_age_weights_from_tables_pop(
-        log_obs_gyr_bin_edges, lgtarr_gyr, logsmh_pop
-    )
+        lgtarr_gyr, logsmh_pop, log_age_gyr, tobs_gyr
+    )[1]
+
     return age_distributions
 
 
@@ -170,8 +169,9 @@ def mc_age_weights_ms_lgmpop(ran_key, mah_params_pop, tarr_gyr, log_age_gyr, tob
     _res = mc_galhalo_ms_lgmpop(ran_key, mah_params_pop, tarr_gyr)
     ms_u_params_pop, q_u_params_pop, ms_sfh_pop, ms_logsmh_pop = _res
 
+    lgtarr_gyr = jnp.log10(tarr_gyr)
     age_pdfs_pop = _get_stellar_age_distributions(
-        log_age_gyr, tarr_gyr, tobs_gyr, ms_logsmh_pop
+        log_age_gyr, lgtarr_gyr, tobs_gyr, ms_logsmh_pop
     )
     return ms_u_params_pop, q_u_params_pop, ms_sfh_pop, ms_logsmh_pop, age_pdfs_pop
 
