@@ -118,11 +118,11 @@ def draw_sfh_Q(
     fstar_tdelay: float
         Time interval in Gyr for fstar definition.
         fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
-    pdf_model_params : dict
-        Dictionary containing the Diffstarpop parameters for the quenched population.
+    pdf_model_params : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the quenched population.
         Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
-    R_model_params: dict
-        Dictionary containing the Diffstarpop parameters for the correlation between
+    R_model_params: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
         diffstar and diffmah parameters for the quenched population.
 
     Returns
@@ -147,13 +147,13 @@ def draw_sfh_Q(
     mah_params_sampled = mah_params[sampled_mahs_inds]
     p50_sampled = p50[sampled_mahs_inds]
 
-    _res = get_smah_means_and_covs_quench(logmh, **pdf_parameters)
+    _res = get_smah_means_and_covs_quench(logmh, *pdf_parameters)
     frac_quench, means_quench, covs_quench = _res
     frac_quench = frac_quench[0]
     means_quench = means_quench[0]
     covs_quench = covs_quench[0]
 
-    R_vals_quench = _get_slopes_quench(logmh, **R_model_params)
+    R_vals_quench = _get_slopes_quench(logmh, *R_model_params)
     R_vals_quench = jnp.array(R_vals_quench)[:, 0]
 
     shifts_quench = jnp.einsum("p,h->hp", R_vals_quench, (p50_sampled - 0.5))
@@ -227,11 +227,11 @@ def sumstats_sfh_Q(
     fstar_tdelay: float
         Time interval in Gyr for fstar definition.
         fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
-    pdf_model_params : dict
-        Dictionary containing the Diffstarpop parameters for the quenched population.
+    pdf_model_params : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the quenched population.
         Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
-    R_model_params: dict
-        Dictionary containing the Diffstarpop parameters for the correlation between
+    R_model_params: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
         diffstar and diffmah parameters for the quenched population.
 
     Returns
@@ -322,11 +322,11 @@ def draw_sfh_MS(
     fstar_tdelay: float
         Time interval in Gyr for fstar definition.
         fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
-    pdf_model_params : dict
-        Dictionary containing the Diffstarpop parameters for the main sequence population.
+    pdf_model_params : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the main sequence population.
         Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
-    R_model_params: dict
-        Dictionary containing the Diffstarpop parameters for the correlation between
+    R_model_params: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
         diffstar and diffmah parameters for the main sequence population.
 
     Returns
@@ -351,12 +351,12 @@ def draw_sfh_MS(
     mah_params_sampled = mah_params[sampled_mahs_inds]
     p50_sampled = p50[sampled_mahs_inds]
 
-    _res = get_smah_means_and_covs_mainseq(logmh, **pdf_parameters)
+    _res = get_smah_means_and_covs_mainseq(logmh, *pdf_parameters)
     means_mainseq, covs_mainseq = _res
     means_mainseq = means_mainseq[0]
     covs_mainseq = covs_mainseq[0]
 
-    R_vals_mainseq = _get_slopes_mainseq(logmh, **R_model_params)
+    R_vals_mainseq = _get_slopes_mainseq(logmh, *R_model_params)
     R_vals_mainseq = jnp.array(R_vals_mainseq)[:, 0]
 
     shifts_mainseq = jnp.einsum("p,h->hp", R_vals_mainseq, (p50_sampled - 0.5))
@@ -427,11 +427,11 @@ def sumstats_sfh_MS(
     fstar_tdelay: float
         Time interval in Gyr for fstar definition.
         fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
-    pdf_model_params : dict
-        Dictionary containing the Diffstarpop parameters for the main sequence population.
+    pdf_model_params : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the main sequence population.
         Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
-    R_model_params: dict
-        Dictionary containing the Diffstarpop parameters for the correlation between
+    R_model_params: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
         diffstar and diffmah parameters for the main sequence population.
 
     Returns
@@ -524,17 +524,17 @@ def draw_sfh_MIX(
     fstar_tdelay: float
         Time interval in Gyr for fstar definition.
         fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
-    pdf_model_params_Q : dict
-        Dictionary containing the Diffstarpop parameters for the quenched population.
+    pdf_model_params_Q : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the quenched population.
         Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
-    pdf_model_params_MS : dict
-        Dictionary containing the Diffstarpop parameters for the main sequence population.
+    pdf_model_params_MS : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the main sequence population.
         Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
-    R_model_params_Q: dict
-        Dictionary containing the Diffstarpop parameters for the correlation between
+    R_model_params_Q: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
         diffstar and diffmah parameters for the quenched population.
-    R_model_params_MS: dict
-        Dictionary containing the Diffstarpop parameters for the correlation between
+    R_model_params_MS: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
         diffstar and diffmah parameters for the main sequence population.
 
     Returns
@@ -559,22 +559,22 @@ def draw_sfh_MIX(
     mah_params_sampled = mah_params[sampled_mahs_inds]
     p50_sampled = p50[sampled_mahs_inds]
 
-    _res = get_smah_means_and_covs_mainseq(logmh, **pdf_parameters_MS)
+    _res = get_smah_means_and_covs_mainseq(logmh, *pdf_parameters_MS)
     means_mainseq, covs_mainseq = _res
     means_mainseq = means_mainseq[0]
     covs_mainseq = covs_mainseq[0]
 
-    R_vals_mainseq = _get_slopes_mainseq(logmh, **R_model_params_MS)
+    R_vals_mainseq = _get_slopes_mainseq(logmh, *R_model_params_MS)
     R_vals_mainseq = jnp.array(R_vals_mainseq)[:, 0]
     shifts_mainseq = jnp.einsum("p,h->hp", R_vals_mainseq, (p50_sampled - 0.5))
 
-    _res = get_smah_means_and_covs_quench(logmh, **pdf_parameters_Q)
+    _res = get_smah_means_and_covs_quench(logmh, *pdf_parameters_Q)
     frac_quench, means_quench, covs_quench = _res
     frac_quench = frac_quench[0]
     means_quench = means_quench[0]
     covs_quench = covs_quench[0]
 
-    R_vals_quench = _get_slopes_quench(logmh, **R_model_params_Q)
+    R_vals_quench = _get_slopes_quench(logmh, *R_model_params_Q)
     R_vals_quench = jnp.array(R_vals_quench)[:, 0]
     shifts_quench = jnp.einsum("p,h->hp", R_vals_quench, (p50_sampled - 0.5))
 
@@ -595,17 +595,9 @@ def draw_sfh_MIX(
     fquench_random = jran.uniform(fquench_key, shape=(n_histories,))
     fquench_random = fquench_random[:, None]
 
-    sfr_params = jnp.where(
-        fquench_random < frac_quench,
-        sfr_params_Q,
-        sfr_params_MS,
-    )
+    sfr_params = jnp.where(fquench_random < frac_quench, sfr_params_Q, sfr_params_MS,)
 
-    q_params = jnp.where(
-        fquench_random < frac_quench,
-        q_params_Q,
-        q_params_MS,
-    )
+    q_params = jnp.where(fquench_random < frac_quench, q_params_Q, q_params_MS,)
 
     _res = sm_sfr_history_diffstar_scan_XsfhXmah_vmap(
         t_table,
@@ -671,17 +663,17 @@ def sumstats_sfh_MIX(
     fstar_tdelay: float
         Time interval in Gyr for fstar definition.
         fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
-    pdf_model_params_Q : dict
-        Dictionary containing the Diffstarpop parameters for the quenched population.
+    pdf_model_params_Q : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the quenched population.
         Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
-    pdf_model_params_MS : dict
-        Dictionary containing the Diffstarpop parameters for the main sequence population.
+    pdf_model_params_MS : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the main sequence population.
         Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
-    R_model_params_Q: dict
-        Dictionary containing the Diffstarpop parameters for the correlation between
+    R_model_params_Q: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
         diffstar and diffmah parameters for the quenched population.
-    R_model_params_MS: dict
-        Dictionary containing the Diffstarpop parameters for the correlation between
+    R_model_params_MS: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
         diffstar and diffmah parameters for the main sequence population.
 
     Returns
@@ -732,6 +724,7 @@ sumstats_sfh_MIX_vmap = jjit(
 )
 
 
+@jjit
 def compute_sumstats(mstar_histories, sfr_histories, fstar_histories, p50, weights_MS):
     """
     Compute differentiable summary statistics from monte carlo sampled histories
@@ -778,20 +771,13 @@ def compute_sumstats(mstar_histories, sfr_histories, fstar_histories, p50, weigh
     mean_fstar_MS = jnp.average(fstar_histories, weights=weights_MS, axis=0)
     mean_fstar_Q = jnp.average(fstar_histories, weights=weights_Q, axis=0)
 
-    variance_sm = jnp.average(
-        (mstar_histories - mean_sm[None, :]) ** 2,
-        axis=0,
-    )
+    variance_sm = jnp.average((mstar_histories - mean_sm[None, :]) ** 2, axis=0,)
 
     variance_fstar_MS = jnp.average(
-        (fstar_histories - mean_fstar_MS[None, :]) ** 2,
-        weights=weights_MS,
-        axis=0,
+        (fstar_histories - mean_fstar_MS[None, :]) ** 2, weights=weights_MS, axis=0,
     )
     variance_fstar_Q = jnp.average(
-        (fstar_histories - mean_fstar_Q[None, :]) ** 2,
-        weights=weights_Q,
-        axis=0,
+        (fstar_histories - mean_fstar_Q[None, :]) ** 2, weights=weights_Q, axis=0,
     )
 
     NHALO_MS = jnp.sum(weights_MS, axis=0)
