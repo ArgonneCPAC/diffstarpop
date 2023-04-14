@@ -590,14 +590,14 @@ def draw_sfh_MIX(
         mainseq_key, means_mainseq, covs_mainseq, shape=(n_histories,)
     )
     sfr_params_MS = sfr_params_MS + shifts_mainseq
-    q_params_MS = jnp.ones_like(q_params_Q) * 10.0
+    # q_params_MS = jnp.ones_like(q_params_Q) * 10.0
 
     fquench_random = jran.uniform(fquench_key, shape=(n_histories,))
     fquench_random = fquench_random[:, None]
 
-    sfr_params = jnp.where(fquench_random < frac_quench, sfr_params_Q, sfr_params_MS,)
-
-    q_params = jnp.where(fquench_random < frac_quench, q_params_Q, q_params_MS,)
+    """
+    sfr_params = jnp.where(fquench_random < frac_quench, sfr_params_Q, sfr_params_MS)
+    q_params = jnp.where(fquench_random < frac_quench, q_params_Q, q_params_MS)
 
     _res = sm_sfr_history_diffstar_scan_XsfhXmah_vmap(
         t_table,
@@ -610,12 +610,43 @@ def draw_sfh_MIX(
         index_high,
         fstar_tdelay,
     )
-
     mstar = _res[0]
     sfr = _res[1]
     fstar = _res[2]
+    """
+    mstar_Q, sfr_Q, fstar_Q = sm_sfr_history_diffstar_scan_XsfhXmah_vmap(
+        t_table,
+        lgt,
+        dt,
+        mah_params_sampled,
+        sfr_params_Q,
+        q_params_Q,
+        index_select,
+        index_high,
+        fstar_tdelay,
+    )
+    mstar_MS, sfr_MS, fstar_MS = sm_sfr_history_diffstar_scan_MS_XsfhXmah_vmap(
+        t_table,
+        lgt,
+        dt,
+        mah_params_sampled,
+        sfr_params_MS,
+        index_select,
+        index_high,
+        fstar_tdelay,
+    )
+    mstar = jnp.concatenate((mstar_Q, mstar_MS))
+    sfr = jnp.concatenate((sfr_Q, sfr_MS))
+    fstar = jnp.concatenate((fstar_Q, fstar_MS))
 
-    return mstar, sfr, fstar, p50_sampled
+    weight = jnp.concatenate(
+        (
+            frac_quench * jnp.ones(n_histories),
+            (1.0 - frac_quench) * jnp.ones(n_histories),
+        )
+    )
+
+    return mstar, sfr, fstar, p50_sampled, weight
 
 
 @partial(jjit, static_argnames=["n_histories"])
@@ -693,7 +724,7 @@ def sumstats_sfh_MIX(
     quench_frac : ndarray of shape (n_t_fstar, )
         Fraction of quenched galaxies.
     """
-    mstar, sfr, fstar, p50_sampled = draw_sfh_MIX(
+    mstar, sfr, fstar, p50_sampled, weight = draw_sfh_MIX(
         t_table,
         logmh,
         mah_params,
@@ -712,7 +743,9 @@ def sumstats_sfh_MIX(
     sFstar = fstar / mstar[:, index_select]
     weights_quench_bin = jnp.where(sFstar > 1e-11, 1.0, 0.0)
 
-    return compute_sumstats(mstar, sfr, fstar, p50_sampled, weights_quench_bin)
+    return compute_sumstats_MIX(
+        mstar, sfr, fstar, p50_sampled, weights_quench_bin, weight
+    )
 
 
 _A = (None, 0, 0, 0, *[None] * 9)
@@ -722,6 +755,111 @@ draw_sfh_MIX_vmap = jjit(
 sumstats_sfh_MIX_vmap = jjit(
     vmap(sumstats_sfh_MIX, in_axes=_A), static_argnames=["n_histories"]
 )
+
+
+@jjit
+def compute_sumstats_MIX(
+    mstar_histories, sfr_histories, fstar_histories, p50, weights_MS, w_frac_quench,
+):
+    """
+    Compute differentiable summary statistics from monte carlo sampled histories
+    for a single mass bin.
+
+    Parameters
+    ----------
+    mstar_histories : ndarray of shape (n_histories, n_t)
+        SMH history samples
+    sfr_histories : ndarray of shape (n_histories, n_t)
+        SFH history samples
+    fstar_histories : ndarray of shape (n_histories, n_t_fstar)
+        Fstar samples
+    p50 : ...
+    weights_MS : ndarray of shape (n_histories, n_t_fstar)
+        Weight array indicating when galaxy history is quenched.
+            0: sSFR(t) < 1e-11
+            1: sSFR(t) > 1e-11
+    w_frac_quench : ndarray of shape (n_histories, )
+        Weight array indicating which the population of a SFH history.
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_t, )
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_t, )
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_t_fstar, )
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_t_fstar, )
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_t_fstar, )
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_t_fstar, )
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_t_fstar, )
+        Fraction of quenched galaxies.
+    """
+    weights_Q = 1.0 - weights_MS
+
+    # Clip weights. When all weights in a time
+    # step are 0, Nans will occur in gradients.
+    eps = 1e-10
+    weights_Q = jnp.clip(weights_Q * w_frac_quench[:, None], eps, None)
+    weights_MS = jnp.clip(weights_MS * w_frac_quench[:, None], eps, None)
+    w_frac_quench = jnp.clip(w_frac_quench, eps, None)
+
+    mstar_histories = jnp.where(mstar_histories > 0.0, jnp.log10(mstar_histories), 0.0)
+    sfr_histories = jnp.where(sfr_histories > 0.0, jnp.log10(sfr_histories), 0.0)
+    fstar_histories = jnp.where(fstar_histories > 0.0, jnp.log10(fstar_histories), 0.0)
+
+    mean_sm = jnp.average(mstar_histories, weights=w_frac_quench, axis=0)
+    mean_fstar_MS = jnp.average(fstar_histories, weights=weights_MS, axis=0)
+    mean_fstar_Q = jnp.average(fstar_histories, weights=weights_Q, axis=0)
+
+    variance_sm = jnp.average(
+        (mstar_histories - mean_sm[None, :]) ** 2, weights=w_frac_quench, axis=0,
+    )
+
+    variance_fstar_MS = jnp.average(
+        (fstar_histories - mean_fstar_MS[None, :]) ** 2, weights=weights_MS, axis=0,
+    )
+    variance_fstar_Q = jnp.average(
+        (fstar_histories - mean_fstar_Q[None, :]) ** 2, weights=weights_Q, axis=0,
+    )
+
+    NHALO_MS = jnp.sum(weights_MS, axis=0)
+    NHALO_Q = jnp.sum(weights_Q, axis=0)
+    quench_frac = NHALO_Q / (NHALO_Q + NHALO_MS)
+
+    mean_fstar_Q = jnp.where(quench_frac == 0.0, 0.0, mean_fstar_Q)
+    variance_fstar_Q = jnp.where(quench_frac == 0.0, 0.0, variance_fstar_Q)
+    mean_fstar_MS = jnp.where(quench_frac == 1.0, 0.0, mean_fstar_MS)
+    variance_fstar_MS = jnp.where(quench_frac == 1.0, 0.0, variance_fstar_MS)
+
+    """
+    p50_bin_id = np.digitize(p50_MC, p50_bins) - 1
+    p50_bin_id = np.clip(p50_bin_id, 0, len(p50_bins) - 1).astype(int)
+    for j in range(len(p50_bins) - 1):
+        msk = p50_bin_id == j
+        sm_mean_MC_p50[i, j] = np.nanmean(np.log10(mstar_MC[msk]), axis=0)
+        sm_var_MC_p50[i, j] = np.nanstd(np.log10(mstar_MC[msk]), axis=0) ** 2
+        quench_frac_MC_p50[i, j] = np.sum(sFstar[msk] < 1e-11, axis=0) / (
+            np.sum(sFstar[msk] < 1e-11, axis=0)
+            + np.sum(sFstar[msk] > 1e-11, axis=0)
+        )
+    """
+
+    _out = (
+        mean_sm,
+        variance_sm,
+        mean_fstar_MS,
+        mean_fstar_Q,
+        variance_fstar_MS,
+        variance_fstar_Q,
+        quench_frac,
+        # mean_sm_p50,
+        # variance_sm_p50,
+        # quench_frac_p50,
+    )
+    return _out
 
 
 @jjit
@@ -762,6 +900,12 @@ def compute_sumstats(mstar_histories, sfr_histories, fstar_histories, p50, weigh
         Fraction of quenched galaxies.
     """
     weights_Q = 1.0 - weights_MS
+
+    # Clip weights. When all weights in a time
+    # step are 0, Nans will occur in gradients.
+    eps = 1e-10
+    weights_Q = jnp.clip(weights_Q, eps, None)
+    weights_MS = jnp.clip(weights_MS, eps, None)
 
     mstar_histories = jnp.where(mstar_histories > 0.0, jnp.log10(mstar_histories), 0.0)
     sfr_histories = jnp.where(sfr_histories > 0.0, jnp.log10(sfr_histories), 0.0)
