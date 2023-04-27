@@ -66,10 +66,8 @@ def get_mah_params(runname, data_path=smdpl_params_path):
 
     mah_params = np.array(
         [
-            np.log10(fitting_data["fit_t0"]),
             fitting_data["fit_logmp_fit"],
             fitting_data["fit_mah_logtc"],
-            fitting_data["fit_mah_k"],
             fitting_data["fit_early_index"],
             fitting_data["fit_late_index"],
         ]
