@@ -10,33 +10,34 @@ LGT0 = jnp.log10(TODAY)
 _LGM_X0, LGM_K = 13.0, 0.5
 
 DEFAULT_R_QUENCH_PARAMS = OrderedDict(
-    R_ulgm_quench_ylo=-0.15,
-    R_ulgm_quench_yhi=-0.36,
-    R_ulgy_quench_ylo=-7.31,
-    R_ulgy_quench_yhi=8.04,
-    R_ul_quench_ylo=-0.41,
-    R_ul_quench_yhi=2.44,
-    R_utau_quench_ylo=5.90,
-    R_utau_quench_yhi=-8.93,
-    R_uqt_quench_ylo=-0.03,
-    R_uqt_quench_yhi=0.41,
-    R_uqs_quench_ylo=7.86,
-    R_uqs_quench_yhi=-10.64,
-    R_udrop_quench_ylo=-4.83,
-    R_udrop_quench_yhi=6.61,
-    R_urej_quench_ylo=1.51,
-    R_urej_quench_yhi=-0.57,
+    R_Fquench=0.70,
+    R_ulgm_quench_ylo=-0.29,
+    R_ulgm_quench_yhi=-0.15,
+    R_ulgy_quench_ylo=-0.46,
+    R_ulgy_quench_yhi=-0.13,
+    R_ul_quench_ylo=6.22,
+    R_ul_quench_yhi=-4.57,
+    R_utau_quench_ylo=4.77,
+    R_utau_quench_yhi=-7.31,
+    R_uqt_quench_ylo=-0.18,
+    R_uqt_quench_yhi=0.62,
+    R_uqs_quench_ylo=2.38,
+    R_uqs_quench_yhi=-3.47,
+    R_udrop_quench_ylo=0.52,
+    R_udrop_quench_yhi=-0.16,
+    R_urej_quench_ylo=1.08,
+    R_urej_quench_yhi=-0.24,
 )
 
 DEFAULT_R_MAINSEQ_PARAMS = OrderedDict(
-    R_ulgm_mainseq_ylo=-0.88,
-    R_ulgm_mainseq_yhi=0.99,
-    R_ulgy_mainseq_ylo=14.02,
-    R_ulgy_mainseq_yhi=-26.44,
-    R_ul_mainseq_ylo=-0.49,
-    R_ul_mainseq_yhi=6.91,
-    R_utau_mainseq_ylo=27.14,
-    R_utau_mainseq_yhi=-47.65,
+    R_ulgm_mainseq_ylo=-0.36,
+    R_ulgm_mainseq_yhi=0.36,
+    R_ulgy_mainseq_ylo=-1.64,
+    R_ulgy_mainseq_yhi=1.32,
+    R_ul_mainseq_ylo=4.61,
+    R_ul_mainseq_yhi=-3.98,
+    R_utau_mainseq_ylo=4.07,
+    R_utau_mainseq_yhi=-7.10,
 )
 
 
@@ -131,6 +132,7 @@ def R_urej_quench_vs_lgm0(
 @jjit
 def _get_slopes_quench(
     lgm,
+    R_Fquench=DEFAULT_R_QUENCH_PARAMS["R_Fquench"],
     R_ulgm_quench_ylo=DEFAULT_R_QUENCH_PARAMS["R_ulgm_quench_ylo"],
     R_ulgm_quench_yhi=DEFAULT_R_QUENCH_PARAMS["R_ulgm_quench_yhi"],
     R_ulgy_quench_ylo=DEFAULT_R_QUENCH_PARAMS["R_ulgy_quench_ylo"],
@@ -158,6 +160,7 @@ def _get_slopes_quench(
     R_urej = R_urej_quench_vs_lgm0(lgm, R_urej_quench_ylo, R_urej_quench_yhi)
 
     slopes = (
+        R_Fquench,
         R_ulgm,
         R_ulgy,
         R_ul,

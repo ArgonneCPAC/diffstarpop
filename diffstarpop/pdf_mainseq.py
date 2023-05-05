@@ -10,34 +10,34 @@ LGT0 = jnp.log10(TODAY)
 LGM_X0, LGM_K = 13.0, 0.5
 
 DEFAULT_SFH_PDF_MAINSEQ_PARAMS = OrderedDict(
-    mean_ulgm_mainseq_ylo=10.04,
-    mean_ulgm_mainseq_yhi=14.98,
-    mean_ulgy_mainseq_ylo=-2.69,
-    mean_ulgy_mainseq_yhi=3.83,
-    mean_ul_mainseq_ylo=-23.74,
-    mean_ul_mainseq_yhi=33.59,
-    mean_utau_mainseq_ylo=37.79,
-    mean_utau_mainseq_yhi=-34.69,
-    cov_ulgm_ulgm_mainseq_ylo=0.12,
-    cov_ulgm_ulgm_mainseq_yhi=-1.30,
-    cov_ulgy_ulgy_mainseq_ylo=-0.55,
-    cov_ulgy_ulgy_mainseq_yhi=-0.12,
-    cov_ul_ul_mainseq_ylo=2.16,
-    cov_ul_ul_mainseq_yhi=-2.22,
-    cov_utau_utau_mainseq_ylo=0.14,
-    cov_utau_utau_mainseq_yhi=1.53,
-    cov_ulgy_ulgm_mainseq_ylo=-0.00,
-    cov_ulgy_ulgm_mainseq_yhi=-0.04,
-    cov_ul_ulgm_mainseq_ylo=0.15,
-    cov_ul_ulgm_mainseq_yhi=-0.51,
-    cov_ul_ulgy_mainseq_ylo=-0.06,
-    cov_ul_ulgy_mainseq_yhi=0.10,
-    cov_utau_ulgm_mainseq_ylo=0.04,
-    cov_utau_ulgm_mainseq_yhi=-0.06,
-    cov_utau_ulgy_mainseq_ylo=-0.17,
-    cov_utau_ulgy_mainseq_yhi=0.70,
-    cov_utau_ul_mainseq_ylo=-0.04,
-    cov_utau_ul_mainseq_yhi=-0.30,
+    mean_ulgm_mainseq_ylo=10.15,
+    mean_ulgm_mainseq_yhi=14.60,
+    mean_ulgy_mainseq_ylo=-1.73,
+    mean_ulgy_mainseq_yhi=1.92,
+    mean_ul_mainseq_ylo=-6.48,
+    mean_ul_mainseq_yhi=9.43,
+    mean_utau_mainseq_ylo=49.57,
+    mean_utau_mainseq_yhi=-55.17,
+    chol_ulgm_ulgm_mainseq_ylo=-1.32,
+    chol_ulgm_ulgm_mainseq_yhi=0.23,
+    chol_ulgy_ulgy_mainseq_ylo=-0.60,
+    chol_ulgy_ulgy_mainseq_yhi=-0.10,
+    chol_ul_ul_mainseq_ylo=1.64,
+    chol_ul_ul_mainseq_yhi=-2.01,
+    chol_utau_utau_mainseq_ylo=-0.22,
+    chol_utau_utau_mainseq_yhi=2.17,
+    chol_ulgy_ulgm_mainseq_ylo=-0.00,
+    chol_ulgy_ulgm_mainseq_yhi=-0.00,
+    chol_ul_ulgm_mainseq_ylo=0.00,
+    chol_ul_ulgm_mainseq_yhi=-0.00,
+    chol_ul_ulgy_mainseq_ylo=-0.00,
+    chol_ul_ulgy_mainseq_yhi=0.00,
+    chol_utau_ulgm_mainseq_ylo=0.00,
+    chol_utau_ulgm_mainseq_yhi=0.00,
+    chol_utau_ulgy_mainseq_ylo=-0.00,
+    chol_utau_ulgy_mainseq_yhi=0.00,
+    chol_utau_ul_mainseq_ylo=0.00,
+    chol_utau_ul_mainseq_yhi=0.00,
 )
 
 
@@ -59,32 +59,11 @@ def _fun(x, ymin, ymax):
 
 
 @jjit
-def _fun_cov_diag(x, ymin, ymax):
-    _res = 10 ** _sigmoid(x, 13.0, 0.5, ymin, ymax)
+def _fun_chol_diag(x, ymin, ymax):
+    _res = 10 ** _fun(x, ymin, ymax)
     return _res
 
 
-@jjit
-def _bound_cov_diag(x):
-    return _sigmoid(x, 0.5, 4.0, 0.0, 1.0)
-
-
-@jjit
-def _bound_cov_offdiag(x):
-    return _sigmoid(x, 0.0, 4.0, -1.0, 1.0)
-
-
-@jjit
-def _unbound_cov_diag(x):
-    return _inverse_sigmoid(x, 0.5, 4.0, 0.0, 1.0)
-
-
-@jjit
-def _unbound_cov_offdiag(x):
-    return _inverse_sigmoid(x, 0.0, 4.0, -1.0, 1.0)
-
-
-@jjit
 def _get_cov_scalar(
     ulgm_ulgm,
     ulgy_ulgy,
@@ -97,24 +76,20 @@ def _get_cov_scalar(
     utau_ulgy,
     utau_ul,
 ):
-    cov = jnp.zeros((4, 4)).astype("f4")
-    cov = cov.at[(0, 0)].set(ulgm_ulgm**2)
-    cov = cov.at[(1, 1)].set(ulgy_ulgy**2)
-    cov = cov.at[(2, 2)].set(ul_ul**2)
-    cov = cov.at[(3, 3)].set(utau_utau**2)
+    chol = jnp.zeros((4, 4)).astype("f4")
+    chol = chol.at[(0, 0)].set(ulgm_ulgm)
+    chol = chol.at[(1, 1)].set(ulgy_ulgy)
+    chol = chol.at[(2, 2)].set(ul_ul)
+    chol = chol.at[(3, 3)].set(utau_utau)
 
-    cov = cov.at[(1, 0)].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
-    cov = cov.at[(0, 1)].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
-    cov = cov.at[(2, 0)].set(ul_ulgm * ul_ul * ulgm_ulgm)
-    cov = cov.at[(0, 2)].set(ul_ulgm * ul_ul * ulgm_ulgm)
-    cov = cov.at[(2, 1)].set(ul_ulgy * ul_ul * ulgy_ulgy)
-    cov = cov.at[(1, 2)].set(ul_ulgy * ul_ul * ulgy_ulgy)
-    cov = cov.at[(3, 0)].set(utau_ulgm * utau_utau * ulgm_ulgm)
-    cov = cov.at[(0, 3)].set(utau_ulgm * utau_utau * ulgm_ulgm)
-    cov = cov.at[(3, 1)].set(utau_ulgy * utau_utau * ulgy_ulgy)
-    cov = cov.at[(1, 3)].set(utau_ulgy * utau_utau * ulgy_ulgy)
-    cov = cov.at[(3, 2)].set(utau_ul * utau_utau * ul_ul)
-    cov = cov.at[(2, 3)].set(utau_ul * utau_utau * ul_ul)
+    chol = chol.at[(1, 0)].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
+    chol = chol.at[(2, 0)].set(ul_ulgm * ul_ul * ulgm_ulgm)
+    chol = chol.at[(2, 1)].set(ul_ulgy * ul_ul * ulgy_ulgy)
+    chol = chol.at[(3, 0)].set(utau_ulgm * utau_utau * ulgm_ulgm)
+    chol = chol.at[(3, 1)].set(utau_ulgy * utau_utau * ulgy_ulgy)
+    chol = chol.at[(3, 2)].set(utau_ul * utau_utau * ul_ul)
+
+    cov = jnp.dot(chol, chol.T)
     return cov
 
 
@@ -158,145 +133,145 @@ def mean_utau_mainseq_vs_lgm0(
 
 
 @jjit
-def cov_ulgm_ulgm_mainseq_vs_lgm0(
+def chol_ulgm_ulgm_mainseq_vs_lgm0(
     lgm0,
-    cov_ulgm_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgm_ulgm_mainseq_ylo"
+    chol_ulgm_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgm_ulgm_mainseq_ylo"
     ],
-    cov_ulgm_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgm_ulgm_mainseq_yhi"
+    chol_ulgm_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgm_ulgm_mainseq_yhi"
     ],
 ):
-    _res = _fun_cov_diag(lgm0, cov_ulgm_ulgm_mainseq_ylo, cov_ulgm_ulgm_mainseq_yhi)
+    _res = _fun_chol_diag(lgm0, chol_ulgm_ulgm_mainseq_ylo, chol_ulgm_ulgm_mainseq_yhi)
     return _res
 
 
 @jjit
-def cov_ulgy_ulgy_mainseq_vs_lgm0(
+def chol_ulgy_ulgy_mainseq_vs_lgm0(
     lgm0,
-    cov_ulgy_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgy_mainseq_ylo"
+    chol_ulgy_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgy_mainseq_ylo"
     ],
-    cov_ulgy_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgy_mainseq_yhi"
+    chol_ulgy_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgy_mainseq_yhi"
     ],
 ):
-    _res = _fun_cov_diag(lgm0, cov_ulgy_ulgy_mainseq_ylo, cov_ulgy_ulgy_mainseq_yhi)
+    _res = _fun_chol_diag(lgm0, chol_ulgy_ulgy_mainseq_ylo, chol_ulgy_ulgy_mainseq_yhi)
     return _res
 
 
 @jjit
-def cov_ul_ul_mainseq_vs_lgm0(
+def chol_ul_ul_mainseq_vs_lgm0(
     lgm0,
-    cov_ul_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ul_mainseq_ylo"],
-    cov_ul_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ul_mainseq_yhi"],
+    chol_ul_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ul_mainseq_ylo"],
+    chol_ul_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ul_mainseq_yhi"],
 ):
-    _res = _fun_cov_diag(lgm0, cov_ul_ul_mainseq_ylo, cov_ul_ul_mainseq_yhi)
+    _res = _fun_chol_diag(lgm0, chol_ul_ul_mainseq_ylo, chol_ul_ul_mainseq_yhi)
     return _res
 
 
 @jjit
-def cov_utau_utau_mainseq_vs_lgm0(
+def chol_utau_utau_mainseq_vs_lgm0(
     lgm0,
-    cov_utau_utau_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_utau_mainseq_ylo"
+    chol_utau_utau_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_utau_mainseq_ylo"
     ],
-    cov_utau_utau_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_utau_mainseq_yhi"
+    chol_utau_utau_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_utau_mainseq_yhi"
     ],
 ):
-    _res = _fun_cov_diag(lgm0, cov_utau_utau_mainseq_ylo, cov_utau_utau_mainseq_yhi)
+    _res = _fun_chol_diag(lgm0, chol_utau_utau_mainseq_ylo, chol_utau_utau_mainseq_yhi)
     return _res
 
 
 @jjit
-def cov_ulgy_ulgm_mainseq_vs_lgm0(
+def chol_ulgy_ulgm_mainseq_vs_lgm0(
     lgm0,
-    cov_ulgy_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgm_mainseq_ylo"
+    chol_ulgy_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgm_mainseq_ylo"
     ],
-    cov_ulgy_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgm_mainseq_yhi"
+    chol_ulgy_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgm_mainseq_yhi"
     ],
 ):
-    _res = _fun(lgm0, cov_ulgy_ulgm_mainseq_ylo, cov_ulgy_ulgm_mainseq_yhi)
-    return _bound_cov_offdiag(_res)
+    _res = _fun(lgm0, chol_ulgy_ulgm_mainseq_ylo, chol_ulgy_ulgm_mainseq_yhi)
+    return _res
 
 
 @jjit
-def cov_ul_ulgm_mainseq_vs_lgm0(
+def chol_ul_ulgm_mainseq_vs_lgm0(
     lgm0,
-    cov_ul_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgm_mainseq_ylo"],
-    cov_ul_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgm_mainseq_yhi"],
+    chol_ul_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgm_mainseq_ylo"],
+    chol_ul_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgm_mainseq_yhi"],
 ):
-    _res = _fun(lgm0, cov_ul_ulgm_mainseq_ylo, cov_ul_ulgm_mainseq_yhi)
-    return _bound_cov_offdiag(_res)
+    _res = _fun(lgm0, chol_ul_ulgm_mainseq_ylo, chol_ul_ulgm_mainseq_yhi)
+    return _res
 
 
 @jjit
-def cov_ul_ulgy_mainseq_vs_lgm0(
+def chol_ul_ulgy_mainseq_vs_lgm0(
     lgm0,
-    cov_ul_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgy_mainseq_ylo"],
-    cov_ul_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgy_mainseq_yhi"],
+    chol_ul_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgy_mainseq_ylo"],
+    chol_ul_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgy_mainseq_yhi"],
 ):
-    _res = _fun(lgm0, cov_ul_ulgy_mainseq_ylo, cov_ul_ulgy_mainseq_yhi)
-    return _bound_cov_offdiag(_res)
+    _res = _fun(lgm0, chol_ul_ulgy_mainseq_ylo, chol_ul_ulgy_mainseq_yhi)
+    return _res
 
 
 @jjit
-def cov_utau_ulgm_mainseq_vs_lgm0(
+def chol_utau_ulgm_mainseq_vs_lgm0(
     lgm0,
-    cov_utau_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgm_mainseq_ylo"
+    chol_utau_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgm_mainseq_ylo"
     ],
-    cov_utau_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgm_mainseq_yhi"
-    ],
-):
-    _res = _fun(lgm0, cov_utau_ulgm_mainseq_ylo, cov_utau_ulgm_mainseq_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_utau_ulgy_mainseq_vs_lgm0(
-    lgm0,
-    cov_utau_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgy_mainseq_ylo"
-    ],
-    cov_utau_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgy_mainseq_yhi"
+    chol_utau_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgm_mainseq_yhi"
     ],
 ):
-    _res = _fun(lgm0, cov_utau_ulgy_mainseq_ylo, cov_utau_ulgy_mainseq_yhi)
-    return _bound_cov_offdiag(_res)
+    _res = _fun(lgm0, chol_utau_ulgm_mainseq_ylo, chol_utau_ulgm_mainseq_yhi)
+    return _res
 
 
 @jjit
-def cov_utau_ul_mainseq_vs_lgm0(
+def chol_utau_ulgy_mainseq_vs_lgm0(
     lgm0,
-    cov_utau_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_utau_ul_mainseq_ylo"],
-    cov_utau_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_utau_ul_mainseq_yhi"],
+    chol_utau_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgy_mainseq_ylo"
+    ],
+    chol_utau_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgy_mainseq_yhi"
+    ],
 ):
-    _res = _fun(lgm0, cov_utau_ul_mainseq_ylo, cov_utau_ul_mainseq_yhi)
-    return _bound_cov_offdiag(_res)
+    _res = _fun(lgm0, chol_utau_ulgy_mainseq_ylo, chol_utau_ulgy_mainseq_yhi)
+    return _res
 
 
 @jjit
+def chol_utau_ul_mainseq_vs_lgm0(
+    lgm0,
+    chol_utau_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_utau_ul_mainseq_ylo"],
+    chol_utau_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_utau_ul_mainseq_yhi"],
+):
+    _res = _fun(lgm0, chol_utau_ul_mainseq_ylo, chol_utau_ul_mainseq_yhi)
+    return _res
+
+
 def get_default_params(lgm):
+
     ulgm_MS = mean_ulgm_mainseq_vs_lgm0(lgm)
     ulgy_MS = mean_ulgy_mainseq_vs_lgm0(lgm)
     ul_MS = mean_ul_mainseq_vs_lgm0(lgm)
     utau_MS = mean_utau_mainseq_vs_lgm0(lgm)
-    ulgm_ulgm_MS = cov_ulgm_ulgm_mainseq_vs_lgm0(lgm)
-    ulgy_ulgy_MS = cov_ulgy_ulgy_mainseq_vs_lgm0(lgm)
-    ul_ul_MS = cov_ul_ul_mainseq_vs_lgm0(lgm)
-    utau_utau_MS = cov_utau_utau_mainseq_vs_lgm0(lgm)
-    ulgy_ulgm_MS = cov_ulgy_ulgm_mainseq_vs_lgm0(lgm)
-    ul_ulgm_MS = cov_ul_ulgm_mainseq_vs_lgm0(lgm)
-    ul_ulgy_MS = cov_ul_ulgy_mainseq_vs_lgm0(lgm)
-    utau_ulgm_MS = cov_utau_ulgm_mainseq_vs_lgm0(lgm)
-    utau_ulgy_MS = cov_utau_ulgy_mainseq_vs_lgm0(lgm)
-    utau_ul_MS = cov_utau_ul_mainseq_vs_lgm0(lgm)
+    ulgm_ulgm_MS = chol_ulgm_ulgm_mainseq_vs_lgm0(lgm)
+    ulgy_ulgy_MS = chol_ulgy_ulgy_mainseq_vs_lgm0(lgm)
+    ul_ul_MS = chol_ul_ul_mainseq_vs_lgm0(lgm)
+    utau_utau_MS = chol_utau_utau_mainseq_vs_lgm0(lgm)
+    ulgy_ulgm_MS = chol_ulgy_ulgm_mainseq_vs_lgm0(lgm)
+    ul_ulgm_MS = chol_ul_ulgm_mainseq_vs_lgm0(lgm)
+    ul_ulgy_MS = chol_ul_ulgy_mainseq_vs_lgm0(lgm)
+    utau_ulgm_MS = chol_utau_ulgm_mainseq_vs_lgm0(lgm)
+    utau_ulgy_MS = chol_utau_ulgy_mainseq_vs_lgm0(lgm)
+    utau_ul_MS = chol_utau_ul_mainseq_vs_lgm0(lgm)
 
     all_params = (
         ulgm_MS,
@@ -328,50 +303,50 @@ def get_smah_means_and_covs_mainseq(
     mean_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["mean_ul_mainseq_yhi"],
     mean_utau_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["mean_utau_mainseq_ylo"],
     mean_utau_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["mean_utau_mainseq_yhi"],
-    cov_ulgm_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgm_ulgm_mainseq_ylo"
+    chol_ulgm_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgm_ulgm_mainseq_ylo"
     ],
-    cov_ulgm_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgm_ulgm_mainseq_yhi"
+    chol_ulgm_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgm_ulgm_mainseq_yhi"
     ],
-    cov_ulgy_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgy_mainseq_ylo"
+    chol_ulgy_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgy_mainseq_ylo"
     ],
-    cov_ulgy_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgy_mainseq_yhi"
+    chol_ulgy_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgy_mainseq_yhi"
     ],
-    cov_ul_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ul_mainseq_ylo"],
-    cov_ul_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ul_mainseq_yhi"],
-    cov_utau_utau_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_utau_mainseq_ylo"
+    chol_ul_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ul_mainseq_ylo"],
+    chol_ul_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ul_mainseq_yhi"],
+    chol_utau_utau_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_utau_mainseq_ylo"
     ],
-    cov_utau_utau_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_utau_mainseq_yhi"
+    chol_utau_utau_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_utau_mainseq_yhi"
     ],
-    cov_ulgy_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgm_mainseq_ylo"
+    chol_ulgy_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgm_mainseq_ylo"
     ],
-    cov_ulgy_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgm_mainseq_yhi"
+    chol_ulgy_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgm_mainseq_yhi"
     ],
-    cov_ul_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgm_mainseq_ylo"],
-    cov_ul_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgm_mainseq_yhi"],
-    cov_ul_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgy_mainseq_ylo"],
-    cov_ul_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgy_mainseq_yhi"],
-    cov_utau_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgm_mainseq_ylo"
+    chol_ul_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgm_mainseq_ylo"],
+    chol_ul_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgm_mainseq_yhi"],
+    chol_ul_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgy_mainseq_ylo"],
+    chol_ul_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgy_mainseq_yhi"],
+    chol_utau_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgm_mainseq_ylo"
     ],
-    cov_utau_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgm_mainseq_yhi"
+    chol_utau_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgm_mainseq_yhi"
     ],
-    cov_utau_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgy_mainseq_ylo"
+    chol_utau_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgy_mainseq_ylo"
     ],
-    cov_utau_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgy_mainseq_yhi"
+    chol_utau_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgy_mainseq_yhi"
     ],
-    cov_utau_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_utau_ul_mainseq_ylo"],
-    cov_utau_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_utau_ul_mainseq_yhi"],
+    chol_utau_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_utau_ul_mainseq_ylo"],
+    chol_utau_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_utau_ul_mainseq_yhi"],
 ):
 
     _res = _get_mean_smah_params_mainseq(
@@ -390,26 +365,26 @@ def get_smah_means_and_covs_mainseq(
 
     covs_mainseq = _get_covs_mainseq(
         logmp_arr,
-        cov_ulgm_ulgm_mainseq_ylo,
-        cov_ulgm_ulgm_mainseq_yhi,
-        cov_ulgy_ulgy_mainseq_ylo,
-        cov_ulgy_ulgy_mainseq_yhi,
-        cov_ul_ul_mainseq_ylo,
-        cov_ul_ul_mainseq_yhi,
-        cov_utau_utau_mainseq_ylo,
-        cov_utau_utau_mainseq_yhi,
-        cov_ulgy_ulgm_mainseq_ylo,
-        cov_ulgy_ulgm_mainseq_yhi,
-        cov_ul_ulgm_mainseq_ylo,
-        cov_ul_ulgm_mainseq_yhi,
-        cov_ul_ulgy_mainseq_ylo,
-        cov_ul_ulgy_mainseq_yhi,
-        cov_utau_ulgm_mainseq_ylo,
-        cov_utau_ulgm_mainseq_yhi,
-        cov_utau_ulgy_mainseq_ylo,
-        cov_utau_ulgy_mainseq_yhi,
-        cov_utau_ul_mainseq_ylo,
-        cov_utau_ul_mainseq_yhi,
+        chol_ulgm_ulgm_mainseq_ylo,
+        chol_ulgm_ulgm_mainseq_yhi,
+        chol_ulgy_ulgy_mainseq_ylo,
+        chol_ulgy_ulgy_mainseq_yhi,
+        chol_ul_ul_mainseq_ylo,
+        chol_ul_ul_mainseq_yhi,
+        chol_utau_utau_mainseq_ylo,
+        chol_utau_utau_mainseq_yhi,
+        chol_ulgy_ulgm_mainseq_ylo,
+        chol_ulgy_ulgm_mainseq_yhi,
+        chol_ul_ulgm_mainseq_ylo,
+        chol_ul_ulgm_mainseq_yhi,
+        chol_ul_ulgy_mainseq_ylo,
+        chol_ul_ulgy_mainseq_yhi,
+        chol_utau_ulgm_mainseq_ylo,
+        chol_utau_ulgm_mainseq_yhi,
+        chol_utau_ulgy_mainseq_ylo,
+        chol_utau_ulgy_mainseq_yhi,
+        chol_utau_ul_mainseq_ylo,
+        chol_utau_ul_mainseq_yhi,
     )
     return means_mainseq, covs_mainseq
 
@@ -436,156 +411,158 @@ def _get_mean_smah_params_mainseq(
 @jjit
 def _get_covs_mainseq(
     lgmp_arr,
-    cov_ulgm_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgm_ulgm_mainseq_ylo"
+    chol_ulgm_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgm_ulgm_mainseq_ylo"
     ],
-    cov_ulgm_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgm_ulgm_mainseq_yhi"
+    chol_ulgm_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgm_ulgm_mainseq_yhi"
     ],
-    cov_ulgy_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgy_mainseq_ylo"
+    chol_ulgy_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgy_mainseq_ylo"
     ],
-    cov_ulgy_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgy_mainseq_yhi"
+    chol_ulgy_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgy_mainseq_yhi"
     ],
-    cov_ul_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ul_mainseq_ylo"],
-    cov_ul_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ul_mainseq_yhi"],
-    cov_utau_utau_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_utau_mainseq_ylo"
+    chol_ul_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ul_mainseq_ylo"],
+    chol_ul_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ul_mainseq_yhi"],
+    chol_utau_utau_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_utau_mainseq_ylo"
     ],
-    cov_utau_utau_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_utau_mainseq_yhi"
+    chol_utau_utau_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_utau_mainseq_yhi"
     ],
-    cov_ulgy_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgm_mainseq_ylo"
+    chol_ulgy_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgm_mainseq_ylo"
     ],
-    cov_ulgy_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgm_mainseq_yhi"
+    chol_ulgy_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgm_mainseq_yhi"
     ],
-    cov_ul_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgm_mainseq_ylo"],
-    cov_ul_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgm_mainseq_yhi"],
-    cov_ul_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgy_mainseq_ylo"],
-    cov_ul_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgy_mainseq_yhi"],
-    cov_utau_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgm_mainseq_ylo"
+    chol_ul_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgm_mainseq_ylo"],
+    chol_ul_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgm_mainseq_yhi"],
+    chol_ul_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgy_mainseq_ylo"],
+    chol_ul_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgy_mainseq_yhi"],
+    chol_utau_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgm_mainseq_ylo"
     ],
-    cov_utau_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgm_mainseq_yhi"
+    chol_utau_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgm_mainseq_yhi"
     ],
-    cov_utau_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgy_mainseq_ylo"
+    chol_utau_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgy_mainseq_ylo"
     ],
-    cov_utau_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgy_mainseq_yhi"
+    chol_utau_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgy_mainseq_yhi"
     ],
-    cov_utau_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_utau_ul_mainseq_ylo"],
-    cov_utau_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_utau_ul_mainseq_yhi"],
+    chol_utau_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_utau_ul_mainseq_ylo"],
+    chol_utau_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_utau_ul_mainseq_yhi"],
 ):
 
-    _res = _get_cov_params_mainseq(
+    _res = _get_chol_params_mainseq(
         lgmp_arr,
-        cov_ulgm_ulgm_mainseq_ylo,
-        cov_ulgm_ulgm_mainseq_yhi,
-        cov_ulgy_ulgy_mainseq_ylo,
-        cov_ulgy_ulgy_mainseq_yhi,
-        cov_ul_ul_mainseq_ylo,
-        cov_ul_ul_mainseq_yhi,
-        cov_utau_utau_mainseq_ylo,
-        cov_utau_utau_mainseq_yhi,
-        cov_ulgy_ulgm_mainseq_ylo,
-        cov_ulgy_ulgm_mainseq_yhi,
-        cov_ul_ulgm_mainseq_ylo,
-        cov_ul_ulgm_mainseq_yhi,
-        cov_ul_ulgy_mainseq_ylo,
-        cov_ul_ulgy_mainseq_yhi,
-        cov_utau_ulgm_mainseq_ylo,
-        cov_utau_ulgm_mainseq_yhi,
-        cov_utau_ulgy_mainseq_ylo,
-        cov_utau_ulgy_mainseq_yhi,
-        cov_utau_ul_mainseq_ylo,
-        cov_utau_ul_mainseq_yhi,
+        chol_ulgm_ulgm_mainseq_ylo,
+        chol_ulgm_ulgm_mainseq_yhi,
+        chol_ulgy_ulgy_mainseq_ylo,
+        chol_ulgy_ulgy_mainseq_yhi,
+        chol_ul_ul_mainseq_ylo,
+        chol_ul_ul_mainseq_yhi,
+        chol_utau_utau_mainseq_ylo,
+        chol_utau_utau_mainseq_yhi,
+        chol_ulgy_ulgm_mainseq_ylo,
+        chol_ulgy_ulgm_mainseq_yhi,
+        chol_ul_ulgm_mainseq_ylo,
+        chol_ul_ulgm_mainseq_yhi,
+        chol_ul_ulgy_mainseq_ylo,
+        chol_ul_ulgy_mainseq_yhi,
+        chol_utau_ulgm_mainseq_ylo,
+        chol_utau_ulgm_mainseq_yhi,
+        chol_utau_ulgy_mainseq_ylo,
+        chol_utau_ulgy_mainseq_yhi,
+        chol_utau_ul_mainseq_ylo,
+        chol_utau_ul_mainseq_yhi,
     )
     return _get_cov_vmap(*_res)
 
 
 @jjit
-def _get_cov_params_mainseq(
+def _get_chol_params_mainseq(
     lgm,
-    cov_ulgm_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgm_ulgm_mainseq_ylo"
+    chol_ulgm_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgm_ulgm_mainseq_ylo"
     ],
-    cov_ulgm_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgm_ulgm_mainseq_yhi"
+    chol_ulgm_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgm_ulgm_mainseq_yhi"
     ],
-    cov_ulgy_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgy_mainseq_ylo"
+    chol_ulgy_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgy_mainseq_ylo"
     ],
-    cov_ulgy_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgy_mainseq_yhi"
+    chol_ulgy_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgy_mainseq_yhi"
     ],
-    cov_ul_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ul_mainseq_ylo"],
-    cov_ul_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ul_mainseq_yhi"],
-    cov_utau_utau_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_utau_mainseq_ylo"
+    chol_ul_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ul_mainseq_ylo"],
+    chol_ul_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ul_mainseq_yhi"],
+    chol_utau_utau_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_utau_mainseq_ylo"
     ],
-    cov_utau_utau_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_utau_mainseq_yhi"
+    chol_utau_utau_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_utau_mainseq_yhi"
     ],
-    cov_ulgy_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgm_mainseq_ylo"
+    chol_ulgy_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgm_mainseq_ylo"
     ],
-    cov_ulgy_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_ulgy_ulgm_mainseq_yhi"
+    chol_ulgy_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_ulgy_ulgm_mainseq_yhi"
     ],
-    cov_ul_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgm_mainseq_ylo"],
-    cov_ul_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgm_mainseq_yhi"],
-    cov_ul_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgy_mainseq_ylo"],
-    cov_ul_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_ul_ulgy_mainseq_yhi"],
-    cov_utau_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgm_mainseq_ylo"
+    chol_ul_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgm_mainseq_ylo"],
+    chol_ul_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgm_mainseq_yhi"],
+    chol_ul_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgy_mainseq_ylo"],
+    chol_ul_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_ul_ulgy_mainseq_yhi"],
+    chol_utau_ulgm_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgm_mainseq_ylo"
     ],
-    cov_utau_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgm_mainseq_yhi"
+    chol_utau_ulgm_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgm_mainseq_yhi"
     ],
-    cov_utau_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgy_mainseq_ylo"
+    chol_utau_ulgy_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgy_mainseq_ylo"
     ],
-    cov_utau_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
-        "cov_utau_ulgy_mainseq_yhi"
+    chol_utau_ulgy_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS[
+        "chol_utau_ulgy_mainseq_yhi"
     ],
-    cov_utau_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_utau_ul_mainseq_ylo"],
-    cov_utau_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["cov_utau_ul_mainseq_yhi"],
+    chol_utau_ul_mainseq_ylo=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_utau_ul_mainseq_ylo"],
+    chol_utau_ul_mainseq_yhi=DEFAULT_SFH_PDF_MAINSEQ_PARAMS["chol_utau_ul_mainseq_yhi"],
 ):
-    ulgm_ulgm = cov_ulgm_ulgm_mainseq_vs_lgm0(
-        lgm, cov_ulgm_ulgm_mainseq_ylo, cov_ulgm_ulgm_mainseq_yhi
+    ulgm_ulgm = chol_ulgm_ulgm_mainseq_vs_lgm0(
+        lgm, chol_ulgm_ulgm_mainseq_ylo, chol_ulgm_ulgm_mainseq_yhi
     )
-    ulgy_ulgy = cov_ulgy_ulgy_mainseq_vs_lgm0(
-        lgm, cov_ulgy_ulgy_mainseq_ylo, cov_ulgy_ulgy_mainseq_yhi
+    ulgy_ulgy = chol_ulgy_ulgy_mainseq_vs_lgm0(
+        lgm, chol_ulgy_ulgy_mainseq_ylo, chol_ulgy_ulgy_mainseq_yhi
     )
-    ul_ul = cov_ul_ul_mainseq_vs_lgm0(lgm, cov_ul_ul_mainseq_ylo, cov_ul_ul_mainseq_yhi)
-    utau_utau = cov_utau_utau_mainseq_vs_lgm0(
-        lgm, cov_utau_utau_mainseq_ylo, cov_utau_utau_mainseq_yhi
+    ul_ul = chol_ul_ul_mainseq_vs_lgm0(
+        lgm, chol_ul_ul_mainseq_ylo, chol_ul_ul_mainseq_yhi
     )
-    ulgy_ulgm = cov_ulgy_ulgm_mainseq_vs_lgm0(
-        lgm, cov_ulgy_ulgm_mainseq_ylo, cov_ulgy_ulgm_mainseq_yhi
+    utau_utau = chol_utau_utau_mainseq_vs_lgm0(
+        lgm, chol_utau_utau_mainseq_ylo, chol_utau_utau_mainseq_yhi
     )
-    ul_ulgm = cov_ul_ulgm_mainseq_vs_lgm0(
-        lgm, cov_ul_ulgm_mainseq_ylo, cov_ul_ulgm_mainseq_yhi
+    ulgy_ulgm = chol_ulgy_ulgm_mainseq_vs_lgm0(
+        lgm, chol_ulgy_ulgm_mainseq_ylo, chol_ulgy_ulgm_mainseq_yhi
     )
-    ul_ulgy = cov_ul_ulgy_mainseq_vs_lgm0(
-        lgm, cov_ul_ulgy_mainseq_ylo, cov_ul_ulgy_mainseq_yhi
+    ul_ulgm = chol_ul_ulgm_mainseq_vs_lgm0(
+        lgm, chol_ul_ulgm_mainseq_ylo, chol_ul_ulgm_mainseq_yhi
     )
-    utau_ulgm = cov_utau_ulgm_mainseq_vs_lgm0(
-        lgm, cov_utau_ulgm_mainseq_ylo, cov_utau_ulgm_mainseq_yhi
+    ul_ulgy = chol_ul_ulgy_mainseq_vs_lgm0(
+        lgm, chol_ul_ulgy_mainseq_ylo, chol_ul_ulgy_mainseq_yhi
     )
-    utau_ulgy = cov_utau_ulgy_mainseq_vs_lgm0(
-        lgm, cov_utau_ulgy_mainseq_ylo, cov_utau_ulgy_mainseq_yhi
+    utau_ulgm = chol_utau_ulgm_mainseq_vs_lgm0(
+        lgm, chol_utau_ulgm_mainseq_ylo, chol_utau_ulgm_mainseq_yhi
     )
-    utau_ul = cov_utau_ul_mainseq_vs_lgm0(
-        lgm, cov_utau_ul_mainseq_ylo, cov_utau_ul_mainseq_yhi
+    utau_ulgy = chol_utau_ulgy_mainseq_vs_lgm0(
+        lgm, chol_utau_ulgy_mainseq_ylo, chol_utau_ulgy_mainseq_yhi
+    )
+    utau_ul = chol_utau_ul_mainseq_vs_lgm0(
+        lgm, chol_utau_ul_mainseq_ylo, chol_utau_ul_mainseq_yhi
     )
 
-    cov_params = (
+    chol_params = (
         ulgm_ulgm,
         ulgy_ulgy,
         ul_ul,
@@ -598,4 +575,4 @@ def _get_cov_params_mainseq(
         utau_ul,
     )
 
-    return cov_params
+    return chol_params

@@ -10,98 +10,98 @@ LGT0 = jnp.log10(TODAY)
 LGM_X0, LGM_K = 13.0, 0.5
 
 DEFAULT_SFH_PDF_QUENCH_PARAMS = OrderedDict(
-    frac_quench_x0=12.06,
-    frac_quench_k=1.27,
-    frac_quench_ylo=-0.81,
-    frac_quench_yhi=1.78,
-    mean_ulgm_quench_ylo=11.75,
-    mean_ulgm_quench_yhi=12.32,
-    mean_ulgy_quench_ylo=0.96,
-    mean_ulgy_quench_yhi=-0.63,
-    mean_ul_quench_ylo=-2.23,
-    mean_ul_quench_yhi=2.48,
-    mean_utau_quench_ylo=23.20,
-    mean_utau_quench_yhi=-21.89,
-    mean_uqt_quench_ylo=1.67,
-    mean_uqt_quench_yhi=-0.01,
-    mean_uqs_quench_ylo=-3.61,
-    mean_uqs_quench_yhi=4.13,
-    mean_udrop_quench_ylo=0.33,
-    mean_udrop_quench_yhi=-5.13,
-    mean_urej_quench_ylo=1.24,
-    mean_urej_quench_yhi=-3.41,
-    cov_ulgm_ulgm_quench_ylo=-0.12,
-    cov_ulgm_ulgm_quench_yhi=-0.94,
-    cov_ulgy_ulgy_quench_ylo=0.40,
-    cov_ulgy_ulgy_quench_yhi=-1.29,
-    cov_ul_ul_quench_ylo=0.20,
-    cov_ul_ul_quench_yhi=-0.21,
-    cov_utau_utau_quench_ylo=0.88,
-    cov_utau_utau_quench_yhi=0.28,
-    cov_uqt_uqt_quench_ylo=-0.05,
-    cov_uqt_uqt_quench_yhi=-1.81,
-    cov_uqs_uqs_quench_ylo=-1.45,
-    cov_uqs_uqs_quench_yhi=1.29,
-    cov_udrop_udrop_quench_ylo=-1.18,
-    cov_udrop_udrop_quench_yhi=1.05,
-    cov_urej_urej_quench_ylo=0.12,
-    cov_urej_urej_quench_yhi=-0.44,
-    cov_ulgy_ulgm_quench_ylo=0.45,
-    cov_ulgy_ulgm_quench_yhi=-0.51,
-    cov_ul_ulgm_quench_ylo=-0.17,
-    cov_ul_ulgm_quench_yhi=0.04,
-    cov_ul_ulgy_quench_ylo=0.12,
-    cov_ul_ulgy_quench_yhi=-0.23,
-    cov_utau_ulgm_quench_ylo=0.00,
-    cov_utau_ulgm_quench_yhi=0.04,
-    cov_utau_ulgy_quench_ylo=0.19,
-    cov_utau_ulgy_quench_yhi=-0.09,
-    cov_utau_ul_quench_ylo=-0.15,
-    cov_utau_ul_quench_yhi=-0.20,
-    cov_uqt_ulgm_quench_ylo=-0.05,
-    cov_uqt_ulgm_quench_yhi=0.08,
-    cov_uqt_ulgy_quench_ylo=-0.06,
-    cov_uqt_ulgy_quench_yhi=0.04,
-    cov_uqt_ul_quench_ylo=0.09,
-    cov_uqt_ul_quench_yhi=-0.17,
-    cov_uqt_utau_quench_ylo=-0.18,
-    cov_uqt_utau_quench_yhi=0.20,
-    cov_uqs_ulgm_quench_ylo=0.10,
-    cov_uqs_ulgm_quench_yhi=-0.11,
-    cov_uqs_ulgy_quench_ylo=-0.11,
-    cov_uqs_ulgy_quench_yhi=0.21,
-    cov_uqs_ul_quench_ylo=-0.10,
-    cov_uqs_ul_quench_yhi=0.12,
-    cov_uqs_utau_quench_ylo=0.13,
-    cov_uqs_utau_quench_yhi=-0.06,
-    cov_uqs_uqt_quench_ylo=0.16,
-    cov_uqs_uqt_quench_yhi=-0.16,
-    cov_udrop_ulgm_quench_ylo=-0.13,
-    cov_udrop_ulgm_quench_yhi=0.08,
-    cov_udrop_ulgy_quench_ylo=0.20,
-    cov_udrop_ulgy_quench_yhi=-0.28,
-    cov_udrop_ul_quench_ylo=0.05,
-    cov_udrop_ul_quench_yhi=-0.03,
-    cov_udrop_utau_quench_ylo=-0.22,
-    cov_udrop_utau_quench_yhi=0.16,
-    cov_udrop_uqt_quench_ylo=0.02,
-    cov_udrop_uqt_quench_yhi=0.31,
-    cov_udrop_uqs_quench_ylo=0.31,
-    cov_udrop_uqs_quench_yhi=-0.40,
-    cov_urej_ulgm_quench_ylo=0.49,
-    cov_urej_ulgm_quench_yhi=-0.42,
-    cov_urej_ulgy_quench_ylo=0.56,
-    cov_urej_ulgy_quench_yhi=-0.46,
-    cov_urej_ul_quench_ylo=-0.36,
-    cov_urej_ul_quench_yhi=0.29,
-    cov_urej_utau_quench_ylo=-0.02,
-    cov_urej_utau_quench_yhi=0.15,
-    cov_urej_uqt_quench_ylo=-0.14,
-    cov_urej_uqt_quench_yhi=0.22,
-    cov_urej_uqs_quench_ylo=-0.03,
-    cov_urej_uqs_quench_yhi=-0.04,
-    cov_urej_udrop_quench_ylo=-0.18,
-    cov_urej_udrop_quench_yhi=0.17,
+    frac_quench_x0=12.18,
+    frac_quench_k=1.24,
+    frac_quench_ylo=-0.85,
+    frac_quench_yhi=2.01,
+    mean_ulgm_quench_ylo=11.47,
+    mean_ulgm_quench_yhi=12.35,
+    mean_ulgy_quench_ylo=0.09,
+    mean_ulgy_quench_yhi=-0.38,
+    mean_ul_quench_ylo=-1.42,
+    mean_ul_quench_yhi=1.76,
+    mean_utau_quench_ylo=57.18,
+    mean_utau_quench_yhi=-65.38,
+    mean_uqt_quench_ylo=1.69,
+    mean_uqt_quench_yhi=-0.02,
+    mean_uqs_quench_ylo=-2.75,
+    mean_uqs_quench_yhi=2.95,
+    mean_udrop_quench_ylo=-0.59,
+    mean_udrop_quench_yhi=-3.83,
+    mean_urej_quench_ylo=2.28,
+    mean_urej_quench_yhi=-3.99,
+    chol_ulgm_ulgm_quench_ylo=-1.33,
+    chol_ulgm_ulgm_quench_yhi=0.33,
+    chol_ulgy_ulgy_quench_ylo=-0.42,
+    chol_ulgy_ulgy_quench_yhi=0.12,
+    chol_ul_ul_quench_ylo=-0.64,
+    chol_ul_ul_quench_yhi=0.70,
+    chol_utau_utau_quench_ylo=0.66,
+    chol_utau_utau_quench_yhi=0.59,
+    chol_uqt_uqt_quench_ylo=-1.55,
+    chol_uqt_uqt_quench_yhi=-0.52,
+    chol_uqs_uqs_quench_ylo=-0.37,
+    chol_uqs_uqs_quench_yhi=-0.11,
+    chol_udrop_udrop_quench_ylo=-0.30,
+    chol_udrop_udrop_quench_yhi=0.01,
+    chol_urej_urej_quench_ylo=0.54,
+    chol_urej_urej_quench_yhi=-0.70,
+    chol_ulgy_ulgm_quench_ylo=0.00,
+    chol_ulgy_ulgm_quench_yhi=0.00,
+    chol_ul_ulgm_quench_ylo=0.00,
+    chol_ul_ulgm_quench_yhi=0.00,
+    chol_ul_ulgy_quench_ylo=0.00,
+    chol_ul_ulgy_quench_yhi=0.00,
+    chol_utau_ulgm_quench_ylo=0.00,
+    chol_utau_ulgm_quench_yhi=0.00,
+    chol_utau_ulgy_quench_ylo=0.00,
+    chol_utau_ulgy_quench_yhi=0.00,
+    chol_utau_ul_quench_ylo=0.00,
+    chol_utau_ul_quench_yhi=0.00,
+    chol_uqt_ulgm_quench_ylo=0.00,
+    chol_uqt_ulgm_quench_yhi=0.00,
+    chol_uqt_ulgy_quench_ylo=0.00,
+    chol_uqt_ulgy_quench_yhi=0.00,
+    chol_uqt_ul_quench_ylo=0.00,
+    chol_uqt_ul_quench_yhi=0.00,
+    chol_uqt_utau_quench_ylo=0.00,
+    chol_uqt_utau_quench_yhi=0.00,
+    chol_uqs_ulgm_quench_ylo=0.00,
+    chol_uqs_ulgm_quench_yhi=0.00,
+    chol_uqs_ulgy_quench_ylo=0.00,
+    chol_uqs_ulgy_quench_yhi=0.00,
+    chol_uqs_ul_quench_ylo=0.00,
+    chol_uqs_ul_quench_yhi=0.00,
+    chol_uqs_utau_quench_ylo=0.00,
+    chol_uqs_utau_quench_yhi=0.00,
+    chol_uqs_uqt_quench_ylo=0.00,
+    chol_uqs_uqt_quench_yhi=0.00,
+    chol_udrop_ulgm_quench_ylo=0.00,
+    chol_udrop_ulgm_quench_yhi=0.00,
+    chol_udrop_ulgy_quench_ylo=0.00,
+    chol_udrop_ulgy_quench_yhi=0.00,
+    chol_udrop_ul_quench_ylo=0.00,
+    chol_udrop_ul_quench_yhi=0.00,
+    chol_udrop_utau_quench_ylo=0.00,
+    chol_udrop_utau_quench_yhi=0.00,
+    chol_udrop_uqt_quench_ylo=0.00,
+    chol_udrop_uqt_quench_yhi=0.00,
+    chol_udrop_uqs_quench_ylo=0.00,
+    chol_udrop_uqs_quench_yhi=0.00,
+    chol_urej_ulgm_quench_ylo=0.00,
+    chol_urej_ulgm_quench_yhi=0.00,
+    chol_urej_ulgy_quench_ylo=0.00,
+    chol_urej_ulgy_quench_yhi=0.00,
+    chol_urej_ul_quench_ylo=0.00,
+    chol_urej_ul_quench_yhi=0.00,
+    chol_urej_utau_quench_ylo=0.00,
+    chol_urej_utau_quench_yhi=0.00,
+    chol_urej_uqt_quench_ylo=0.00,
+    chol_urej_uqt_quench_yhi=0.00,
+    chol_urej_uqs_quench_ylo=0.00,
+    chol_urej_uqs_quench_yhi=0.00,
+    chol_urej_udrop_quench_ylo=0.00,
+    chol_urej_udrop_quench_yhi=0.00,
 )
 
 
@@ -128,34 +128,9 @@ def _fun_Mcrit(x, ymin, ymax):
 
 
 @jjit
-def _fun_QT(x, ymin, ymax):
-    return _sigmoid(x, 13.0, 4.0, ymin, ymax)
-
-
-@jjit
-def _fun_cov_diag(x, ymin, ymax):
-    _res = 10 ** _sigmoid(x, 13.0, 0.5, ymin, ymax)
+def _fun_chol_diag(x, ymin, ymax):
+    _res = 10 ** _fun(x, ymin, ymax)
     return _res
-
-
-@jjit
-def _bound_cov_diag(x):
-    return _sigmoid(x, 0.5, 4.0, 0.0, 1.0)
-
-
-@jjit
-def _bound_cov_offdiag(x):
-    return _sigmoid(x, 0.0, 4.0, -1.0, 1.0)
-
-
-@jjit
-def _unbound_cov_diag(x):
-    return _inverse_sigmoid(x, 0.5, 4.0, 0.0, 1.0)
-
-
-@jjit
-def _unbound_cov_offdiag(x):
-    return _inverse_sigmoid(x, 0.0, 4.0, -1.0, 1.0)
 
 
 @jjit
@@ -208,72 +183,46 @@ def _get_cov_scalar(
     urej_uqs,
     urej_udrop,
 ):
-    cov = jnp.zeros((8, 8)).astype("f4")
-    cov = cov.at[(0, 0)].set(ulgm_ulgm ** 2)
-    cov = cov.at[(1, 1)].set(ulgy_ulgy ** 2)
-    cov = cov.at[(2, 2)].set(ul_ul ** 2)
-    cov = cov.at[(3, 3)].set(utau_utau ** 2)
-    cov = cov.at[(4, 4)].set(uqt_uqt ** 2)
-    cov = cov.at[(5, 5)].set(uqs_uqs ** 2)
-    cov = cov.at[(6, 6)].set(udrop_udrop ** 2)
-    cov = cov.at[(7, 7)].set(urej_urej ** 2)
+    chol = jnp.zeros((8, 8)).astype("f4")
+    chol = chol.at[(0, 0)].set(ulgm_ulgm)
+    chol = chol.at[(1, 1)].set(ulgy_ulgy)
+    chol = chol.at[(2, 2)].set(ul_ul)
+    chol = chol.at[(3, 3)].set(utau_utau)
+    chol = chol.at[(4, 4)].set(uqt_uqt)
+    chol = chol.at[(5, 5)].set(uqs_uqs)
+    chol = chol.at[(6, 6)].set(udrop_udrop)
+    chol = chol.at[(7, 7)].set(urej_urej)
 
-    cov = cov.at[(1, 0)].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
-    cov = cov.at[(0, 1)].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
-    cov = cov.at[(2, 0)].set(ul_ulgm * ul_ul * ulgm_ulgm)
-    cov = cov.at[(0, 2)].set(ul_ulgm * ul_ul * ulgm_ulgm)
-    cov = cov.at[(2, 1)].set(ul_ulgy * ul_ul * ulgy_ulgy)
-    cov = cov.at[(1, 2)].set(ul_ulgy * ul_ul * ulgy_ulgy)
-    cov = cov.at[(3, 0)].set(utau_ulgm * utau_utau * ulgm_ulgm)
-    cov = cov.at[(0, 3)].set(utau_ulgm * utau_utau * ulgm_ulgm)
-    cov = cov.at[(3, 1)].set(utau_ulgy * utau_utau * ulgy_ulgy)
-    cov = cov.at[(1, 3)].set(utau_ulgy * utau_utau * ulgy_ulgy)
-    cov = cov.at[(3, 2)].set(utau_ul * utau_utau * ul_ul)
-    cov = cov.at[(2, 3)].set(utau_ul * utau_utau * ul_ul)
-    cov = cov.at[(4, 0)].set(uqt_ulgm * uqt_uqt * ulgm_ulgm)
-    cov = cov.at[(0, 4)].set(uqt_ulgm * uqt_uqt * ulgm_ulgm)
-    cov = cov.at[(4, 1)].set(uqt_ulgy * uqt_uqt * ulgy_ulgy)
-    cov = cov.at[(1, 4)].set(uqt_ulgy * uqt_uqt * ulgy_ulgy)
-    cov = cov.at[(4, 2)].set(uqt_ul * uqt_uqt * ul_ul)
-    cov = cov.at[(2, 4)].set(uqt_ul * uqt_uqt * ul_ul)
-    cov = cov.at[(4, 3)].set(uqt_utau * uqt_uqt * utau_utau)
-    cov = cov.at[(3, 4)].set(uqt_utau * uqt_uqt * utau_utau)
-    cov = cov.at[(5, 0)].set(uqs_ulgm * uqs_uqs * ulgm_ulgm)
-    cov = cov.at[(0, 5)].set(uqs_ulgm * uqs_uqs * ulgm_ulgm)
-    cov = cov.at[(5, 1)].set(uqs_ulgy * uqs_uqs * ulgy_ulgy)
-    cov = cov.at[(1, 5)].set(uqs_ulgy * uqs_uqs * ulgy_ulgy)
-    cov = cov.at[(5, 2)].set(uqs_ul * uqs_uqs * ul_ul)
-    cov = cov.at[(2, 5)].set(uqs_ul * uqs_uqs * ul_ul)
-    cov = cov.at[(5, 3)].set(uqs_utau * uqs_uqs * utau_utau)
-    cov = cov.at[(3, 5)].set(uqs_utau * uqs_uqs * utau_utau)
-    cov = cov.at[(5, 4)].set(uqs_uqt * uqs_uqs * uqt_uqt)
-    cov = cov.at[(4, 5)].set(uqs_uqt * uqs_uqs * uqt_uqt)
-    cov = cov.at[(6, 0)].set(udrop_ulgm * udrop_udrop * ulgm_ulgm)
-    cov = cov.at[(0, 6)].set(udrop_ulgm * udrop_udrop * ulgm_ulgm)
-    cov = cov.at[(6, 1)].set(udrop_ulgy * udrop_udrop * ulgy_ulgy)
-    cov = cov.at[(1, 6)].set(udrop_ulgy * udrop_udrop * ulgy_ulgy)
-    cov = cov.at[(6, 2)].set(udrop_ul * udrop_udrop * ul_ul)
-    cov = cov.at[(2, 6)].set(udrop_ul * udrop_udrop * ul_ul)
-    cov = cov.at[(6, 3)].set(udrop_utau * udrop_udrop * utau_utau)
-    cov = cov.at[(3, 6)].set(udrop_utau * udrop_udrop * utau_utau)
-    cov = cov.at[(6, 4)].set(udrop_uqt * udrop_udrop * uqt_uqt)
-    cov = cov.at[(4, 6)].set(udrop_uqt * udrop_udrop * uqt_uqt)
-    cov = cov.at[(6, 5)].set(udrop_uqs * udrop_udrop * uqs_uqs)
-    cov = cov.at[(5, 6)].set(udrop_uqs * udrop_udrop * uqs_uqs)
-    cov = cov.at[(7, 0)].set(urej_ulgm * urej_urej * ulgm_ulgm)
-    cov = cov.at[(0, 7)].set(urej_ulgm * urej_urej * ulgm_ulgm)
-    cov = cov.at[(7, 1)].set(urej_ulgy * urej_urej * ulgy_ulgy)
-    cov = cov.at[(1, 7)].set(urej_ulgy * urej_urej * ulgy_ulgy)
-    cov = cov.at[(7, 2)].set(urej_ul * urej_urej * ul_ul)
-    cov = cov.at[(2, 7)].set(urej_ul * urej_urej * ul_ul)
-    cov = cov.at[(7, 3)].set(urej_utau * urej_urej * utau_utau)
-    cov = cov.at[(3, 7)].set(urej_utau * urej_urej * utau_utau)
-    cov = cov.at[(7, 4)].set(urej_uqt * urej_urej * uqt_uqt)
-    cov = cov.at[(4, 7)].set(urej_uqt * urej_urej * uqt_uqt)
-    cov = cov.at[(7, 5)].set(urej_uqs * urej_urej * uqs_uqs)
-    cov = cov.at[(5, 7)].set(urej_uqs * urej_urej * uqs_uqs)
-    cov = cov.at[(7, 6)].set(urej_udrop * urej_urej * udrop_udrop)
-    cov = cov.at[(6, 7)].set(urej_udrop * urej_urej * udrop_udrop)
+    chol = chol.at[(1, 0)].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
+    chol = chol.at[(2, 0)].set(ul_ulgm * ul_ul * ulgm_ulgm)
+    chol = chol.at[(2, 1)].set(ul_ulgy * ul_ul * ulgy_ulgy)
+    chol = chol.at[(3, 0)].set(utau_ulgm * utau_utau * ulgm_ulgm)
+    chol = chol.at[(3, 1)].set(utau_ulgy * utau_utau * ulgy_ulgy)
+    chol = chol.at[(3, 2)].set(utau_ul * utau_utau * ul_ul)
+    chol = chol.at[(4, 0)].set(uqt_ulgm * uqt_uqt * ulgm_ulgm)
+    chol = chol.at[(4, 1)].set(uqt_ulgy * uqt_uqt * ulgy_ulgy)
+    chol = chol.at[(4, 2)].set(uqt_ul * uqt_uqt * ul_ul)
+    chol = chol.at[(4, 3)].set(uqt_utau * uqt_uqt * utau_utau)
+    chol = chol.at[(5, 0)].set(uqs_ulgm * uqs_uqs * ulgm_ulgm)
+    chol = chol.at[(5, 1)].set(uqs_ulgy * uqs_uqs * ulgy_ulgy)
+    chol = chol.at[(5, 2)].set(uqs_ul * uqs_uqs * ul_ul)
+    chol = chol.at[(5, 3)].set(uqs_utau * uqs_uqs * utau_utau)
+    chol = chol.at[(5, 4)].set(uqs_uqt * uqs_uqs * uqt_uqt)
+    chol = chol.at[(6, 0)].set(udrop_ulgm * udrop_udrop * ulgm_ulgm)
+    chol = chol.at[(6, 1)].set(udrop_ulgy * udrop_udrop * ulgy_ulgy)
+    chol = chol.at[(6, 2)].set(udrop_ul * udrop_udrop * ul_ul)
+    chol = chol.at[(6, 3)].set(udrop_utau * udrop_udrop * utau_utau)
+    chol = chol.at[(6, 4)].set(udrop_uqt * udrop_udrop * uqt_uqt)
+    chol = chol.at[(6, 5)].set(udrop_uqs * udrop_udrop * uqs_uqs)
+    chol = chol.at[(7, 0)].set(urej_ulgm * urej_urej * ulgm_ulgm)
+    chol = chol.at[(7, 1)].set(urej_ulgy * urej_urej * ulgy_ulgy)
+    chol = chol.at[(7, 2)].set(urej_ul * urej_urej * ul_ul)
+    chol = chol.at[(7, 3)].set(urej_utau * urej_urej * utau_utau)
+    chol = chol.at[(7, 4)].set(urej_uqt * urej_urej * uqt_uqt)
+    chol = chol.at[(7, 5)].set(urej_uqs * urej_urej * uqs_uqs)
+    chol = chol.at[(7, 6)].set(urej_udrop * urej_urej * udrop_udrop)
+
+    cov = jnp.dot(chol, chol.T)
     return cov
 
 
@@ -366,386 +315,435 @@ def mean_urej_quench_vs_lgm0(
 
 
 @jjit
-def cov_ulgm_ulgm_quench_vs_lgm0(
+def chol_ulgm_ulgm_quench_vs_lgm0(
     lgm0,
-    cov_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgm_ulgm_quench_ylo"],
-    cov_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgm_ulgm_quench_yhi"],
+    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgm_ulgm_quench_ylo"
+    ],
+    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgm_ulgm_quench_yhi"
+    ],
 ):
-    _res = _fun_cov_diag(lgm0, cov_ulgm_ulgm_quench_ylo, cov_ulgm_ulgm_quench_yhi)
+    _res = _fun_chol_diag(lgm0, chol_ulgm_ulgm_quench_ylo, chol_ulgm_ulgm_quench_yhi)
     return _res
 
 
 @jjit
-def cov_ulgy_ulgy_quench_vs_lgm0(
+def chol_ulgy_ulgy_quench_vs_lgm0(
     lgm0,
-    cov_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgy_quench_ylo"],
-    cov_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgy_quench_yhi"],
+    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgy_quench_ylo"
+    ],
+    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgy_quench_yhi"
+    ],
 ):
-    _res = _fun_cov_diag(lgm0, cov_ulgy_ulgy_quench_ylo, cov_ulgy_ulgy_quench_yhi)
+    _res = _fun_chol_diag(lgm0, chol_ulgy_ulgy_quench_ylo, chol_ulgy_ulgy_quench_yhi)
     return _res
 
 
 @jjit
-def cov_ul_ul_quench_vs_lgm0(
+def chol_ul_ul_quench_vs_lgm0(
     lgm0,
-    cov_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ul_quench_ylo"],
-    cov_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ul_quench_yhi"],
+    chol_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ul_quench_ylo"],
+    chol_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ul_quench_yhi"],
 ):
-    _res = _fun_cov_diag(lgm0, cov_ul_ul_quench_ylo, cov_ul_ul_quench_yhi)
+    _res = _fun_chol_diag(lgm0, chol_ul_ul_quench_ylo, chol_ul_ul_quench_yhi)
     return _res
 
 
 @jjit
-def cov_utau_utau_quench_vs_lgm0(
+def chol_utau_utau_quench_vs_lgm0(
     lgm0,
-    cov_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_utau_quench_ylo"],
-    cov_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_utau_quench_yhi"],
+    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_utau_quench_ylo"
+    ],
+    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_utau_quench_yhi"
+    ],
 ):
-    _res = _fun_cov_diag(lgm0, cov_utau_utau_quench_ylo, cov_utau_utau_quench_yhi)
+    _res = _fun_chol_diag(lgm0, chol_utau_utau_quench_ylo, chol_utau_utau_quench_yhi)
     return _res
 
 
 @jjit
-def cov_uqt_uqt_quench_vs_lgm0(
+def chol_uqt_uqt_quench_vs_lgm0(
     lgm0,
-    cov_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_uqt_quench_ylo"],
-    cov_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_uqt_quench_yhi"],
+    chol_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_uqt_quench_ylo"],
+    chol_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_uqt_quench_yhi"],
 ):
-    _res = _fun_cov_diag(lgm0, cov_uqt_uqt_quench_ylo, cov_uqt_uqt_quench_yhi)
+    _res = _fun_chol_diag(lgm0, chol_uqt_uqt_quench_ylo, chol_uqt_uqt_quench_yhi)
     return _res
 
 
 @jjit
-def cov_uqs_uqs_quench_vs_lgm0(
+def chol_uqs_uqs_quench_vs_lgm0(
     lgm0,
-    cov_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqs_quench_ylo"],
-    cov_uqs_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqs_quench_yhi"],
+    chol_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqs_quench_ylo"],
+    chol_uqs_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqs_quench_yhi"],
 ):
-    _res = _fun_cov_diag(lgm0, cov_uqs_uqs_quench_ylo, cov_uqs_uqs_quench_yhi)
+    _res = _fun_chol_diag(lgm0, chol_uqs_uqs_quench_ylo, chol_uqs_uqs_quench_yhi)
     return _res
 
 
 @jjit
-def cov_udrop_udrop_quench_vs_lgm0(
+def chol_udrop_udrop_quench_vs_lgm0(
     lgm0,
-    cov_udrop_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_udrop_quench_ylo"
+    chol_udrop_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_udrop_quench_ylo"
     ],
-    cov_udrop_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_udrop_quench_yhi"
+    chol_udrop_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_udrop_quench_yhi"
     ],
 ):
-    _res = _fun_cov_diag(lgm0, cov_udrop_udrop_quench_ylo, cov_udrop_udrop_quench_yhi)
+    _res = _fun_chol_diag(
+        lgm0, chol_udrop_udrop_quench_ylo, chol_udrop_udrop_quench_yhi
+    )
     return _res
 
 
 @jjit
-def cov_urej_urej_quench_vs_lgm0(
+def chol_urej_urej_quench_vs_lgm0(
     lgm0,
-    cov_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_urej_quench_ylo"],
-    cov_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_urej_quench_yhi"],
+    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_urej_quench_ylo"
+    ],
+    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_urej_quench_yhi"
+    ],
 ):
-    _res = _fun_cov_diag(lgm0, cov_urej_urej_quench_ylo, cov_urej_urej_quench_yhi)
+    _res = _fun_chol_diag(lgm0, chol_urej_urej_quench_ylo, chol_urej_urej_quench_yhi)
     return _res
 
 
 @jjit
-def cov_ulgy_ulgm_quench_vs_lgm0(
+def chol_ulgy_ulgm_quench_vs_lgm0(
     lgm0,
-    cov_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgm_quench_ylo"],
-    cov_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgm_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_ulgy_ulgm_quench_ylo, cov_ulgy_ulgm_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_ul_ulgm_quench_vs_lgm0(
-    lgm0,
-    cov_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgm_quench_ylo"],
-    cov_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgm_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_ul_ulgm_quench_ylo, cov_ul_ulgm_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_ul_ulgy_quench_vs_lgm0(
-    lgm0,
-    cov_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgy_quench_ylo"],
-    cov_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgy_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_ul_ulgy_quench_ylo, cov_ul_ulgy_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_utau_ulgm_quench_vs_lgm0(
-    lgm0,
-    cov_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgm_quench_ylo"],
-    cov_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgm_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_utau_ulgm_quench_ylo, cov_utau_ulgm_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_utau_ulgy_quench_vs_lgm0(
-    lgm0,
-    cov_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgy_quench_ylo"],
-    cov_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgy_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_utau_ulgy_quench_ylo, cov_utau_ulgy_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_utau_ul_quench_vs_lgm0(
-    lgm0,
-    cov_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ul_quench_ylo"],
-    cov_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ul_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_utau_ul_quench_ylo, cov_utau_ul_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_uqt_ulgm_quench_vs_lgm0(
-    lgm0,
-    cov_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgm_quench_ylo"],
-    cov_uqt_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgm_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_uqt_ulgm_quench_ylo, cov_uqt_ulgm_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_uqt_ulgy_quench_vs_lgm0(
-    lgm0,
-    cov_uqt_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgy_quench_ylo"],
-    cov_uqt_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgy_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_uqt_ulgy_quench_ylo, cov_uqt_ulgy_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_uqt_ul_quench_vs_lgm0(
-    lgm0,
-    cov_uqt_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ul_quench_ylo"],
-    cov_uqt_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ul_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_uqt_ul_quench_ylo, cov_uqt_ul_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_uqt_utau_quench_vs_lgm0(
-    lgm0,
-    cov_uqt_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_utau_quench_ylo"],
-    cov_uqt_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_utau_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_uqt_utau_quench_ylo, cov_uqt_utau_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_uqs_ulgm_quench_vs_lgm0(
-    lgm0,
-    cov_uqs_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgm_quench_ylo"],
-    cov_uqs_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgm_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_uqs_ulgm_quench_ylo, cov_uqs_ulgm_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_uqs_ulgy_quench_vs_lgm0(
-    lgm0,
-    cov_uqs_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgy_quench_ylo"],
-    cov_uqs_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgy_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_uqs_ulgy_quench_ylo, cov_uqs_ulgy_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_uqs_ul_quench_vs_lgm0(
-    lgm0,
-    cov_uqs_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ul_quench_ylo"],
-    cov_uqs_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ul_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_uqs_ul_quench_ylo, cov_uqs_ul_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_uqs_utau_quench_vs_lgm0(
-    lgm0,
-    cov_uqs_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_utau_quench_ylo"],
-    cov_uqs_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_utau_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_uqs_utau_quench_ylo, cov_uqs_utau_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_uqs_uqt_quench_vs_lgm0(
-    lgm0,
-    cov_uqs_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqt_quench_ylo"],
-    cov_uqs_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqt_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_uqs_uqt_quench_ylo, cov_uqs_uqt_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_udrop_ulgm_quench_vs_lgm0(
-    lgm0,
-    cov_udrop_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgm_quench_ylo"
+    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgm_quench_ylo"
     ],
-    cov_udrop_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgm_quench_yhi"
+    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgm_quench_yhi"
     ],
 ):
-    _res = _fun(lgm0, cov_udrop_ulgm_quench_ylo, cov_udrop_ulgm_quench_yhi)
-    return _bound_cov_offdiag(_res)
+    _res = _fun(lgm0, chol_ulgy_ulgm_quench_ylo, chol_ulgy_ulgm_quench_yhi)
+    return _res
 
 
 @jjit
-def cov_udrop_ulgy_quench_vs_lgm0(
+def chol_ul_ulgm_quench_vs_lgm0(
     lgm0,
-    cov_udrop_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgy_quench_ylo"
-    ],
-    cov_udrop_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgy_quench_yhi"
-    ],
+    chol_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgm_quench_ylo"],
+    chol_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgm_quench_yhi"],
 ):
-    _res = _fun(lgm0, cov_udrop_ulgy_quench_ylo, cov_udrop_ulgy_quench_yhi)
-    return _bound_cov_offdiag(_res)
+    _res = _fun(lgm0, chol_ul_ulgm_quench_ylo, chol_ul_ulgm_quench_yhi)
+    return _res
 
 
 @jjit
-def cov_udrop_ul_quench_vs_lgm0(
+def chol_ul_ulgy_quench_vs_lgm0(
     lgm0,
-    cov_udrop_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_ul_quench_ylo"],
-    cov_udrop_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_ul_quench_yhi"],
+    chol_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgy_quench_ylo"],
+    chol_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgy_quench_yhi"],
 ):
-    _res = _fun(lgm0, cov_udrop_ul_quench_ylo, cov_udrop_ul_quench_yhi)
-    return _bound_cov_offdiag(_res)
+    _res = _fun(lgm0, chol_ul_ulgy_quench_ylo, chol_ul_ulgy_quench_yhi)
+    return _res
 
 
 @jjit
-def cov_udrop_utau_quench_vs_lgm0(
+def chol_utau_ulgm_quench_vs_lgm0(
     lgm0,
-    cov_udrop_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_utau_quench_ylo"
+    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgm_quench_ylo"
     ],
-    cov_udrop_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_utau_quench_yhi"
+    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgm_quench_yhi"
     ],
 ):
-    _res = _fun(lgm0, cov_udrop_utau_quench_ylo, cov_udrop_utau_quench_yhi)
-    return _bound_cov_offdiag(_res)
+    _res = _fun(lgm0, chol_utau_ulgm_quench_ylo, chol_utau_ulgm_quench_yhi)
+    return _res
 
 
 @jjit
-def cov_udrop_uqt_quench_vs_lgm0(
+def chol_utau_ulgy_quench_vs_lgm0(
     lgm0,
-    cov_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqt_quench_ylo"],
-    cov_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqt_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_udrop_uqt_quench_ylo, cov_udrop_uqt_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_udrop_uqs_quench_vs_lgm0(
-    lgm0,
-    cov_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqs_quench_ylo"],
-    cov_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqs_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_udrop_uqs_quench_ylo, cov_udrop_uqs_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_urej_ulgm_quench_vs_lgm0(
-    lgm0,
-    cov_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgm_quench_ylo"],
-    cov_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgm_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_urej_ulgm_quench_ylo, cov_urej_ulgm_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_urej_ulgy_quench_vs_lgm0(
-    lgm0,
-    cov_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgy_quench_ylo"],
-    cov_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgy_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_urej_ulgy_quench_ylo, cov_urej_ulgy_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_urej_ul_quench_vs_lgm0(
-    lgm0,
-    cov_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ul_quench_ylo"],
-    cov_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ul_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_urej_ul_quench_ylo, cov_urej_ul_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_urej_utau_quench_vs_lgm0(
-    lgm0,
-    cov_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_utau_quench_ylo"],
-    cov_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_utau_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_urej_utau_quench_ylo, cov_urej_utau_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_urej_uqt_quench_vs_lgm0(
-    lgm0,
-    cov_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqt_quench_ylo"],
-    cov_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqt_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_urej_uqt_quench_ylo, cov_urej_uqt_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_urej_uqs_quench_vs_lgm0(
-    lgm0,
-    cov_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqs_quench_ylo"],
-    cov_urej_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqs_quench_yhi"],
-):
-    _res = _fun(lgm0, cov_urej_uqs_quench_ylo, cov_urej_uqs_quench_yhi)
-    return _bound_cov_offdiag(_res)
-
-
-@jjit
-def cov_urej_udrop_quench_vs_lgm0(
-    lgm0,
-    cov_urej_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_urej_udrop_quench_ylo"
+    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgy_quench_ylo"
     ],
-    cov_urej_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_urej_udrop_quench_yhi"
+    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgy_quench_yhi"
     ],
 ):
-    _res = _fun(lgm0, cov_urej_udrop_quench_ylo, cov_urej_udrop_quench_yhi)
-    return _bound_cov_offdiag(_res)
+    _res = _fun(lgm0, chol_utau_ulgy_quench_ylo, chol_utau_ulgy_quench_yhi)
+    return _res
 
 
 @jjit
+def chol_utau_ul_quench_vs_lgm0(
+    lgm0,
+    chol_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_utau_ul_quench_ylo"],
+    chol_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_utau_ul_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_utau_ul_quench_ylo, chol_utau_ul_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_uqt_ulgm_quench_vs_lgm0(
+    lgm0,
+    chol_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgm_quench_ylo"],
+    chol_uqt_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgm_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_uqt_ulgm_quench_ylo, chol_uqt_ulgm_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_uqt_ulgy_quench_vs_lgm0(
+    lgm0,
+    chol_uqt_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgy_quench_ylo"],
+    chol_uqt_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgy_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_uqt_ulgy_quench_ylo, chol_uqt_ulgy_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_uqt_ul_quench_vs_lgm0(
+    lgm0,
+    chol_uqt_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ul_quench_ylo"],
+    chol_uqt_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ul_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_uqt_ul_quench_ylo, chol_uqt_ul_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_uqt_utau_quench_vs_lgm0(
+    lgm0,
+    chol_uqt_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_utau_quench_ylo"],
+    chol_uqt_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_utau_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_uqt_utau_quench_ylo, chol_uqt_utau_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_uqs_ulgm_quench_vs_lgm0(
+    lgm0,
+    chol_uqs_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgm_quench_ylo"],
+    chol_uqs_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgm_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_uqs_ulgm_quench_ylo, chol_uqs_ulgm_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_uqs_ulgy_quench_vs_lgm0(
+    lgm0,
+    chol_uqs_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgy_quench_ylo"],
+    chol_uqs_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgy_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_uqs_ulgy_quench_ylo, chol_uqs_ulgy_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_uqs_ul_quench_vs_lgm0(
+    lgm0,
+    chol_uqs_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ul_quench_ylo"],
+    chol_uqs_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ul_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_uqs_ul_quench_ylo, chol_uqs_ul_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_uqs_utau_quench_vs_lgm0(
+    lgm0,
+    chol_uqs_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_utau_quench_ylo"],
+    chol_uqs_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_utau_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_uqs_utau_quench_ylo, chol_uqs_utau_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_uqs_uqt_quench_vs_lgm0(
+    lgm0,
+    chol_uqs_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqt_quench_ylo"],
+    chol_uqs_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqt_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_uqs_uqt_quench_ylo, chol_uqs_uqt_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_udrop_ulgm_quench_vs_lgm0(
+    lgm0,
+    chol_udrop_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgm_quench_ylo"
+    ],
+    chol_udrop_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgm_quench_yhi"
+    ],
+):
+    _res = _fun(lgm0, chol_udrop_ulgm_quench_ylo, chol_udrop_ulgm_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_udrop_ulgy_quench_vs_lgm0(
+    lgm0,
+    chol_udrop_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgy_quench_ylo"
+    ],
+    chol_udrop_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgy_quench_yhi"
+    ],
+):
+    _res = _fun(lgm0, chol_udrop_ulgy_quench_ylo, chol_udrop_ulgy_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_udrop_ul_quench_vs_lgm0(
+    lgm0,
+    chol_udrop_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_udrop_ul_quench_ylo"],
+    chol_udrop_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_udrop_ul_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_udrop_ul_quench_ylo, chol_udrop_ul_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_udrop_utau_quench_vs_lgm0(
+    lgm0,
+    chol_udrop_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_utau_quench_ylo"
+    ],
+    chol_udrop_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_utau_quench_yhi"
+    ],
+):
+    _res = _fun(lgm0, chol_udrop_utau_quench_ylo, chol_udrop_utau_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_udrop_uqt_quench_vs_lgm0(
+    lgm0,
+    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqt_quench_ylo"
+    ],
+    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqt_quench_yhi"
+    ],
+):
+    _res = _fun(lgm0, chol_udrop_uqt_quench_ylo, chol_udrop_uqt_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_udrop_uqs_quench_vs_lgm0(
+    lgm0,
+    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqs_quench_ylo"
+    ],
+    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqs_quench_yhi"
+    ],
+):
+    _res = _fun(lgm0, chol_udrop_uqs_quench_ylo, chol_udrop_uqs_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_urej_ulgm_quench_vs_lgm0(
+    lgm0,
+    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgm_quench_ylo"
+    ],
+    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgm_quench_yhi"
+    ],
+):
+    _res = _fun(lgm0, chol_urej_ulgm_quench_ylo, chol_urej_ulgm_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_urej_ulgy_quench_vs_lgm0(
+    lgm0,
+    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgy_quench_ylo"
+    ],
+    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgy_quench_yhi"
+    ],
+):
+    _res = _fun(lgm0, chol_urej_ulgy_quench_ylo, chol_urej_ulgy_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_urej_ul_quench_vs_lgm0(
+    lgm0,
+    chol_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_ul_quench_ylo"],
+    chol_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_ul_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_urej_ul_quench_ylo, chol_urej_ul_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_urej_utau_quench_vs_lgm0(
+    lgm0,
+    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_utau_quench_ylo"
+    ],
+    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_utau_quench_yhi"
+    ],
+):
+    _res = _fun(lgm0, chol_urej_utau_quench_ylo, chol_urej_utau_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_urej_uqt_quench_vs_lgm0(
+    lgm0,
+    chol_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqt_quench_ylo"],
+    chol_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqt_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_urej_uqt_quench_ylo, chol_urej_uqt_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_urej_uqs_quench_vs_lgm0(
+    lgm0,
+    chol_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqs_quench_ylo"],
+    chol_urej_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqs_quench_yhi"],
+):
+    _res = _fun(lgm0, chol_urej_uqs_quench_ylo, chol_urej_uqs_quench_yhi)
+    return _res
+
+
+@jjit
+def chol_urej_udrop_quench_vs_lgm0(
+    lgm0,
+    chol_urej_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_udrop_quench_ylo"
+    ],
+    chol_urej_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_udrop_quench_yhi"
+    ],
+):
+    _res = _fun(lgm0, chol_urej_udrop_quench_ylo, chol_urej_udrop_quench_yhi)
+    return _res
+
+
 def get_default_params(lgm):
     frac_quench = frac_quench_vs_lgm0(lgm)
     ulgm_q = mean_ulgm_quench_vs_lgm0(lgm)
@@ -756,42 +754,42 @@ def get_default_params(lgm):
     uqs_q = mean_uqs_quench_vs_lgm0(lgm)
     udrop_q = mean_udrop_quench_vs_lgm0(lgm)
     urej_q = mean_urej_quench_vs_lgm0(lgm)
-    ulgm_ulgm_q = cov_ulgm_ulgm_quench_vs_lgm0(lgm)
-    ulgy_ulgy_q = cov_ulgy_ulgy_quench_vs_lgm0(lgm)
-    ul_ul_q = cov_ul_ul_quench_vs_lgm0(lgm)
-    utau_utau_q = cov_utau_utau_quench_vs_lgm0(lgm)
-    uqt_uqt_q = cov_uqt_uqt_quench_vs_lgm0(lgm)
-    uqs_uqs_q = cov_uqs_uqs_quench_vs_lgm0(lgm)
-    udrop_udrop_q = cov_udrop_udrop_quench_vs_lgm0(lgm)
-    urej_urej_q = cov_urej_urej_quench_vs_lgm0(lgm)
-    ulgy_ulgm_q = cov_ulgy_ulgm_quench_vs_lgm0(lgm)
-    ul_ulgm_q = cov_ul_ulgm_quench_vs_lgm0(lgm)
-    ul_ulgy_q = cov_ul_ulgy_quench_vs_lgm0(lgm)
-    utau_ulgm_q = cov_utau_ulgm_quench_vs_lgm0(lgm)
-    utau_ulgy_q = cov_utau_ulgy_quench_vs_lgm0(lgm)
-    utau_ul_q = cov_utau_ul_quench_vs_lgm0(lgm)
-    uqt_ulgm_q = cov_uqt_ulgm_quench_vs_lgm0(lgm)
-    uqt_ulgy_q = cov_uqt_ulgy_quench_vs_lgm0(lgm)
-    uqt_ul_q = cov_uqt_ul_quench_vs_lgm0(lgm)
-    uqt_utau_q = cov_uqt_utau_quench_vs_lgm0(lgm)
-    uqs_ulgm_q = cov_uqs_ulgm_quench_vs_lgm0(lgm)
-    uqs_ulgy_q = cov_uqs_ulgy_quench_vs_lgm0(lgm)
-    uqs_ul_q = cov_uqs_ul_quench_vs_lgm0(lgm)
-    uqs_utau_q = cov_uqs_utau_quench_vs_lgm0(lgm)
-    uqs_uqt_q = cov_uqs_uqt_quench_vs_lgm0(lgm)
-    udrop_ulgm_q = cov_udrop_ulgm_quench_vs_lgm0(lgm)
-    udrop_ulgy_q = cov_udrop_ulgy_quench_vs_lgm0(lgm)
-    udrop_ul_q = cov_udrop_ul_quench_vs_lgm0(lgm)
-    udrop_utau_q = cov_udrop_utau_quench_vs_lgm0(lgm)
-    udrop_uqt_q = cov_udrop_uqt_quench_vs_lgm0(lgm)
-    udrop_uqs_q = cov_udrop_uqs_quench_vs_lgm0(lgm)
-    urej_ulgm_q = cov_urej_ulgm_quench_vs_lgm0(lgm)
-    urej_ulgy_q = cov_urej_ulgy_quench_vs_lgm0(lgm)
-    urej_ul_q = cov_urej_ul_quench_vs_lgm0(lgm)
-    urej_utau_q = cov_urej_utau_quench_vs_lgm0(lgm)
-    urej_uqt_q = cov_urej_uqt_quench_vs_lgm0(lgm)
-    urej_uqs_q = cov_urej_uqs_quench_vs_lgm0(lgm)
-    urej_udrop_q = cov_urej_udrop_quench_vs_lgm0(lgm)
+    ulgm_ulgm_q = chol_ulgm_ulgm_quench_vs_lgm0(lgm)
+    ulgy_ulgy_q = chol_ulgy_ulgy_quench_vs_lgm0(lgm)
+    ul_ul_q = chol_ul_ul_quench_vs_lgm0(lgm)
+    utau_utau_q = chol_utau_utau_quench_vs_lgm0(lgm)
+    uqt_uqt_q = chol_uqt_uqt_quench_vs_lgm0(lgm)
+    uqs_uqs_q = chol_uqs_uqs_quench_vs_lgm0(lgm)
+    udrop_udrop_q = chol_udrop_udrop_quench_vs_lgm0(lgm)
+    urej_urej_q = chol_urej_urej_quench_vs_lgm0(lgm)
+    ulgy_ulgm_q = chol_ulgy_ulgm_quench_vs_lgm0(lgm)
+    ul_ulgm_q = chol_ul_ulgm_quench_vs_lgm0(lgm)
+    ul_ulgy_q = chol_ul_ulgy_quench_vs_lgm0(lgm)
+    utau_ulgm_q = chol_utau_ulgm_quench_vs_lgm0(lgm)
+    utau_ulgy_q = chol_utau_ulgy_quench_vs_lgm0(lgm)
+    utau_ul_q = chol_utau_ul_quench_vs_lgm0(lgm)
+    uqt_ulgm_q = chol_uqt_ulgm_quench_vs_lgm0(lgm)
+    uqt_ulgy_q = chol_uqt_ulgy_quench_vs_lgm0(lgm)
+    uqt_ul_q = chol_uqt_ul_quench_vs_lgm0(lgm)
+    uqt_utau_q = chol_uqt_utau_quench_vs_lgm0(lgm)
+    uqs_ulgm_q = chol_uqs_ulgm_quench_vs_lgm0(lgm)
+    uqs_ulgy_q = chol_uqs_ulgy_quench_vs_lgm0(lgm)
+    uqs_ul_q = chol_uqs_ul_quench_vs_lgm0(lgm)
+    uqs_utau_q = chol_uqs_utau_quench_vs_lgm0(lgm)
+    uqs_uqt_q = chol_uqs_uqt_quench_vs_lgm0(lgm)
+    udrop_ulgm_q = chol_udrop_ulgm_quench_vs_lgm0(lgm)
+    udrop_ulgy_q = chol_udrop_ulgy_quench_vs_lgm0(lgm)
+    udrop_ul_q = chol_udrop_ul_quench_vs_lgm0(lgm)
+    udrop_utau_q = chol_udrop_utau_quench_vs_lgm0(lgm)
+    udrop_uqt_q = chol_udrop_uqt_quench_vs_lgm0(lgm)
+    udrop_uqs_q = chol_udrop_uqs_quench_vs_lgm0(lgm)
+    urej_ulgm_q = chol_urej_ulgm_quench_vs_lgm0(lgm)
+    urej_ulgy_q = chol_urej_ulgy_quench_vs_lgm0(lgm)
+    urej_ul_q = chol_urej_ul_quench_vs_lgm0(lgm)
+    urej_utau_q = chol_urej_utau_quench_vs_lgm0(lgm)
+    urej_uqt_q = chol_urej_uqt_quench_vs_lgm0(lgm)
+    urej_uqs_q = chol_urej_uqs_quench_vs_lgm0(lgm)
+    urej_udrop_q = chol_urej_udrop_quench_vs_lgm0(lgm)
 
     all_params = (
         frac_quench,
@@ -866,97 +864,145 @@ def get_smah_means_and_covs_quench(
     mean_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["mean_udrop_quench_yhi"],
     mean_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["mean_urej_quench_ylo"],
     mean_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["mean_urej_quench_yhi"],
-    cov_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgm_ulgm_quench_ylo"],
-    cov_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgm_ulgm_quench_yhi"],
-    cov_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgy_quench_ylo"],
-    cov_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgy_quench_yhi"],
-    cov_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ul_quench_ylo"],
-    cov_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ul_quench_yhi"],
-    cov_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_utau_quench_ylo"],
-    cov_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_utau_quench_yhi"],
-    cov_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_uqt_quench_ylo"],
-    cov_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_uqt_quench_yhi"],
-    cov_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqs_quench_ylo"],
-    cov_uqs_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqs_quench_yhi"],
-    cov_udrop_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_udrop_quench_ylo"
+    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgm_ulgm_quench_ylo"
     ],
-    cov_udrop_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_udrop_quench_yhi"
+    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgm_ulgm_quench_yhi"
     ],
-    cov_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_urej_quench_ylo"],
-    cov_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_urej_quench_yhi"],
-    cov_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgm_quench_ylo"],
-    cov_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgm_quench_yhi"],
-    cov_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgm_quench_ylo"],
-    cov_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgm_quench_yhi"],
-    cov_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgy_quench_ylo"],
-    cov_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgy_quench_yhi"],
-    cov_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgm_quench_ylo"],
-    cov_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgm_quench_yhi"],
-    cov_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgy_quench_ylo"],
-    cov_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgy_quench_yhi"],
-    cov_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ul_quench_ylo"],
-    cov_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ul_quench_yhi"],
-    cov_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgm_quench_ylo"],
-    cov_uqt_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgm_quench_yhi"],
-    cov_uqt_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgy_quench_ylo"],
-    cov_uqt_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgy_quench_yhi"],
-    cov_uqt_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ul_quench_ylo"],
-    cov_uqt_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ul_quench_yhi"],
-    cov_uqt_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_utau_quench_ylo"],
-    cov_uqt_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_utau_quench_yhi"],
-    cov_uqs_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgm_quench_ylo"],
-    cov_uqs_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgm_quench_yhi"],
-    cov_uqs_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgy_quench_ylo"],
-    cov_uqs_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgy_quench_yhi"],
-    cov_uqs_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ul_quench_ylo"],
-    cov_uqs_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ul_quench_yhi"],
-    cov_uqs_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_utau_quench_ylo"],
-    cov_uqs_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_utau_quench_yhi"],
-    cov_uqs_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqt_quench_ylo"],
-    cov_uqs_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqt_quench_yhi"],
-    cov_udrop_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgm_quench_ylo"
+    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgy_quench_ylo"
     ],
-    cov_udrop_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgm_quench_yhi"
+    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgy_quench_yhi"
     ],
-    cov_udrop_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgy_quench_ylo"
+    chol_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ul_quench_ylo"],
+    chol_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ul_quench_yhi"],
+    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_utau_quench_ylo"
     ],
-    cov_udrop_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgy_quench_yhi"
+    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_utau_quench_yhi"
     ],
-    cov_udrop_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_ul_quench_ylo"],
-    cov_udrop_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_ul_quench_yhi"],
-    cov_udrop_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_utau_quench_ylo"
+    chol_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_uqt_quench_ylo"],
+    chol_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_uqt_quench_yhi"],
+    chol_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqs_quench_ylo"],
+    chol_uqs_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqs_quench_yhi"],
+    chol_udrop_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_udrop_quench_ylo"
     ],
-    cov_udrop_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_utau_quench_yhi"
+    chol_udrop_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_udrop_quench_yhi"
     ],
-    cov_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqt_quench_ylo"],
-    cov_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqt_quench_yhi"],
-    cov_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqs_quench_ylo"],
-    cov_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqs_quench_yhi"],
-    cov_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgm_quench_ylo"],
-    cov_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgm_quench_yhi"],
-    cov_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgy_quench_ylo"],
-    cov_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgy_quench_yhi"],
-    cov_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ul_quench_ylo"],
-    cov_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ul_quench_yhi"],
-    cov_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_utau_quench_ylo"],
-    cov_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_utau_quench_yhi"],
-    cov_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqt_quench_ylo"],
-    cov_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqt_quench_yhi"],
-    cov_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqs_quench_ylo"],
-    cov_urej_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqs_quench_yhi"],
-    cov_urej_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_urej_udrop_quench_ylo"
+    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_urej_quench_ylo"
     ],
-    cov_urej_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_urej_udrop_quench_yhi"
+    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_urej_quench_yhi"
+    ],
+    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgm_quench_ylo"
+    ],
+    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgm_quench_yhi"
+    ],
+    chol_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgm_quench_ylo"],
+    chol_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgm_quench_yhi"],
+    chol_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgy_quench_ylo"],
+    chol_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgy_quench_yhi"],
+    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgm_quench_ylo"
+    ],
+    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgm_quench_yhi"
+    ],
+    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgy_quench_ylo"
+    ],
+    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgy_quench_yhi"
+    ],
+    chol_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_utau_ul_quench_ylo"],
+    chol_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_utau_ul_quench_yhi"],
+    chol_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgm_quench_ylo"],
+    chol_uqt_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgm_quench_yhi"],
+    chol_uqt_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgy_quench_ylo"],
+    chol_uqt_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgy_quench_yhi"],
+    chol_uqt_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ul_quench_ylo"],
+    chol_uqt_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ul_quench_yhi"],
+    chol_uqt_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_utau_quench_ylo"],
+    chol_uqt_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_utau_quench_yhi"],
+    chol_uqs_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgm_quench_ylo"],
+    chol_uqs_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgm_quench_yhi"],
+    chol_uqs_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgy_quench_ylo"],
+    chol_uqs_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgy_quench_yhi"],
+    chol_uqs_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ul_quench_ylo"],
+    chol_uqs_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ul_quench_yhi"],
+    chol_uqs_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_utau_quench_ylo"],
+    chol_uqs_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_utau_quench_yhi"],
+    chol_uqs_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqt_quench_ylo"],
+    chol_uqs_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqt_quench_yhi"],
+    chol_udrop_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgm_quench_ylo"
+    ],
+    chol_udrop_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgm_quench_yhi"
+    ],
+    chol_udrop_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgy_quench_ylo"
+    ],
+    chol_udrop_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgy_quench_yhi"
+    ],
+    chol_udrop_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_udrop_ul_quench_ylo"],
+    chol_udrop_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_udrop_ul_quench_yhi"],
+    chol_udrop_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_utau_quench_ylo"
+    ],
+    chol_udrop_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_utau_quench_yhi"
+    ],
+    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqt_quench_ylo"
+    ],
+    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqt_quench_yhi"
+    ],
+    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqs_quench_ylo"
+    ],
+    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqs_quench_yhi"
+    ],
+    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgm_quench_ylo"
+    ],
+    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgm_quench_yhi"
+    ],
+    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgy_quench_ylo"
+    ],
+    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgy_quench_yhi"
+    ],
+    chol_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_ul_quench_ylo"],
+    chol_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_ul_quench_yhi"],
+    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_utau_quench_ylo"
+    ],
+    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_utau_quench_yhi"
+    ],
+    chol_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqt_quench_ylo"],
+    chol_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqt_quench_yhi"],
+    chol_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqs_quench_ylo"],
+    chol_urej_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqs_quench_yhi"],
+    chol_urej_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_udrop_quench_ylo"
+    ],
+    chol_urej_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_udrop_quench_yhi"
     ],
 ):
 
@@ -987,78 +1033,78 @@ def get_smah_means_and_covs_quench(
 
     covs_quench = _get_covs_quench(
         logmp_arr,
-        cov_ulgm_ulgm_quench_ylo,
-        cov_ulgm_ulgm_quench_yhi,
-        cov_ulgy_ulgy_quench_ylo,
-        cov_ulgy_ulgy_quench_yhi,
-        cov_ul_ul_quench_ylo,
-        cov_ul_ul_quench_yhi,
-        cov_utau_utau_quench_ylo,
-        cov_utau_utau_quench_yhi,
-        cov_uqt_uqt_quench_ylo,
-        cov_uqt_uqt_quench_yhi,
-        cov_uqs_uqs_quench_ylo,
-        cov_uqs_uqs_quench_yhi,
-        cov_udrop_udrop_quench_ylo,
-        cov_udrop_udrop_quench_yhi,
-        cov_urej_urej_quench_ylo,
-        cov_urej_urej_quench_yhi,
-        cov_ulgy_ulgm_quench_ylo,
-        cov_ulgy_ulgm_quench_yhi,
-        cov_ul_ulgm_quench_ylo,
-        cov_ul_ulgm_quench_yhi,
-        cov_ul_ulgy_quench_ylo,
-        cov_ul_ulgy_quench_yhi,
-        cov_utau_ulgm_quench_ylo,
-        cov_utau_ulgm_quench_yhi,
-        cov_utau_ulgy_quench_ylo,
-        cov_utau_ulgy_quench_yhi,
-        cov_utau_ul_quench_ylo,
-        cov_utau_ul_quench_yhi,
-        cov_uqt_ulgm_quench_ylo,
-        cov_uqt_ulgm_quench_yhi,
-        cov_uqt_ulgy_quench_ylo,
-        cov_uqt_ulgy_quench_yhi,
-        cov_uqt_ul_quench_ylo,
-        cov_uqt_ul_quench_yhi,
-        cov_uqt_utau_quench_ylo,
-        cov_uqt_utau_quench_yhi,
-        cov_uqs_ulgm_quench_ylo,
-        cov_uqs_ulgm_quench_yhi,
-        cov_uqs_ulgy_quench_ylo,
-        cov_uqs_ulgy_quench_yhi,
-        cov_uqs_ul_quench_ylo,
-        cov_uqs_ul_quench_yhi,
-        cov_uqs_utau_quench_ylo,
-        cov_uqs_utau_quench_yhi,
-        cov_uqs_uqt_quench_ylo,
-        cov_uqs_uqt_quench_yhi,
-        cov_udrop_ulgm_quench_ylo,
-        cov_udrop_ulgm_quench_yhi,
-        cov_udrop_ulgy_quench_ylo,
-        cov_udrop_ulgy_quench_yhi,
-        cov_udrop_ul_quench_ylo,
-        cov_udrop_ul_quench_yhi,
-        cov_udrop_utau_quench_ylo,
-        cov_udrop_utau_quench_yhi,
-        cov_udrop_uqt_quench_ylo,
-        cov_udrop_uqt_quench_yhi,
-        cov_udrop_uqs_quench_ylo,
-        cov_udrop_uqs_quench_yhi,
-        cov_urej_ulgm_quench_ylo,
-        cov_urej_ulgm_quench_yhi,
-        cov_urej_ulgy_quench_ylo,
-        cov_urej_ulgy_quench_yhi,
-        cov_urej_ul_quench_ylo,
-        cov_urej_ul_quench_yhi,
-        cov_urej_utau_quench_ylo,
-        cov_urej_utau_quench_yhi,
-        cov_urej_uqt_quench_ylo,
-        cov_urej_uqt_quench_yhi,
-        cov_urej_uqs_quench_ylo,
-        cov_urej_uqs_quench_yhi,
-        cov_urej_udrop_quench_ylo,
-        cov_urej_udrop_quench_yhi,
+        chol_ulgm_ulgm_quench_ylo,
+        chol_ulgm_ulgm_quench_yhi,
+        chol_ulgy_ulgy_quench_ylo,
+        chol_ulgy_ulgy_quench_yhi,
+        chol_ul_ul_quench_ylo,
+        chol_ul_ul_quench_yhi,
+        chol_utau_utau_quench_ylo,
+        chol_utau_utau_quench_yhi,
+        chol_uqt_uqt_quench_ylo,
+        chol_uqt_uqt_quench_yhi,
+        chol_uqs_uqs_quench_ylo,
+        chol_uqs_uqs_quench_yhi,
+        chol_udrop_udrop_quench_ylo,
+        chol_udrop_udrop_quench_yhi,
+        chol_urej_urej_quench_ylo,
+        chol_urej_urej_quench_yhi,
+        chol_ulgy_ulgm_quench_ylo,
+        chol_ulgy_ulgm_quench_yhi,
+        chol_ul_ulgm_quench_ylo,
+        chol_ul_ulgm_quench_yhi,
+        chol_ul_ulgy_quench_ylo,
+        chol_ul_ulgy_quench_yhi,
+        chol_utau_ulgm_quench_ylo,
+        chol_utau_ulgm_quench_yhi,
+        chol_utau_ulgy_quench_ylo,
+        chol_utau_ulgy_quench_yhi,
+        chol_utau_ul_quench_ylo,
+        chol_utau_ul_quench_yhi,
+        chol_uqt_ulgm_quench_ylo,
+        chol_uqt_ulgm_quench_yhi,
+        chol_uqt_ulgy_quench_ylo,
+        chol_uqt_ulgy_quench_yhi,
+        chol_uqt_ul_quench_ylo,
+        chol_uqt_ul_quench_yhi,
+        chol_uqt_utau_quench_ylo,
+        chol_uqt_utau_quench_yhi,
+        chol_uqs_ulgm_quench_ylo,
+        chol_uqs_ulgm_quench_yhi,
+        chol_uqs_ulgy_quench_ylo,
+        chol_uqs_ulgy_quench_yhi,
+        chol_uqs_ul_quench_ylo,
+        chol_uqs_ul_quench_yhi,
+        chol_uqs_utau_quench_ylo,
+        chol_uqs_utau_quench_yhi,
+        chol_uqs_uqt_quench_ylo,
+        chol_uqs_uqt_quench_yhi,
+        chol_udrop_ulgm_quench_ylo,
+        chol_udrop_ulgm_quench_yhi,
+        chol_udrop_ulgy_quench_ylo,
+        chol_udrop_ulgy_quench_yhi,
+        chol_udrop_ul_quench_ylo,
+        chol_udrop_ul_quench_yhi,
+        chol_udrop_utau_quench_ylo,
+        chol_udrop_utau_quench_yhi,
+        chol_udrop_uqt_quench_ylo,
+        chol_udrop_uqt_quench_yhi,
+        chol_udrop_uqs_quench_ylo,
+        chol_udrop_uqs_quench_yhi,
+        chol_urej_ulgm_quench_ylo,
+        chol_urej_ulgm_quench_yhi,
+        chol_urej_ulgy_quench_ylo,
+        chol_urej_ulgy_quench_yhi,
+        chol_urej_ul_quench_ylo,
+        chol_urej_ul_quench_yhi,
+        chol_urej_utau_quench_ylo,
+        chol_urej_utau_quench_yhi,
+        chol_urej_uqt_quench_ylo,
+        chol_urej_uqt_quench_yhi,
+        chol_urej_uqs_quench_ylo,
+        chol_urej_uqs_quench_yhi,
+        chol_urej_udrop_quench_ylo,
+        chol_urej_udrop_quench_yhi,
     )
     return frac_quench, means_quench, covs_quench
 
@@ -1097,382 +1143,478 @@ def _get_mean_smah_params_quench(
 @jjit
 def _get_covs_quench(
     lgmp_arr,
-    cov_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgm_ulgm_quench_ylo"],
-    cov_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgm_ulgm_quench_yhi"],
-    cov_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgy_quench_ylo"],
-    cov_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgy_quench_yhi"],
-    cov_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ul_quench_ylo"],
-    cov_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ul_quench_yhi"],
-    cov_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_utau_quench_ylo"],
-    cov_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_utau_quench_yhi"],
-    cov_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_uqt_quench_ylo"],
-    cov_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_uqt_quench_yhi"],
-    cov_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqs_quench_ylo"],
-    cov_uqs_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqs_quench_yhi"],
-    cov_udrop_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_udrop_quench_ylo"
+    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgm_ulgm_quench_ylo"
     ],
-    cov_udrop_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_udrop_quench_yhi"
+    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgm_ulgm_quench_yhi"
     ],
-    cov_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_urej_quench_ylo"],
-    cov_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_urej_quench_yhi"],
-    cov_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgm_quench_ylo"],
-    cov_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgm_quench_yhi"],
-    cov_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgm_quench_ylo"],
-    cov_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgm_quench_yhi"],
-    cov_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgy_quench_ylo"],
-    cov_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgy_quench_yhi"],
-    cov_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgm_quench_ylo"],
-    cov_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgm_quench_yhi"],
-    cov_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgy_quench_ylo"],
-    cov_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgy_quench_yhi"],
-    cov_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ul_quench_ylo"],
-    cov_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ul_quench_yhi"],
-    cov_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgm_quench_ylo"],
-    cov_uqt_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgm_quench_yhi"],
-    cov_uqt_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgy_quench_ylo"],
-    cov_uqt_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgy_quench_yhi"],
-    cov_uqt_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ul_quench_ylo"],
-    cov_uqt_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ul_quench_yhi"],
-    cov_uqt_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_utau_quench_ylo"],
-    cov_uqt_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_utau_quench_yhi"],
-    cov_uqs_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgm_quench_ylo"],
-    cov_uqs_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgm_quench_yhi"],
-    cov_uqs_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgy_quench_ylo"],
-    cov_uqs_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgy_quench_yhi"],
-    cov_uqs_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ul_quench_ylo"],
-    cov_uqs_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ul_quench_yhi"],
-    cov_uqs_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_utau_quench_ylo"],
-    cov_uqs_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_utau_quench_yhi"],
-    cov_uqs_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqt_quench_ylo"],
-    cov_uqs_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqt_quench_yhi"],
-    cov_udrop_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgm_quench_ylo"
+    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgy_quench_ylo"
     ],
-    cov_udrop_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgm_quench_yhi"
+    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgy_quench_yhi"
     ],
-    cov_udrop_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgy_quench_ylo"
+    chol_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ul_quench_ylo"],
+    chol_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ul_quench_yhi"],
+    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_utau_quench_ylo"
     ],
-    cov_udrop_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgy_quench_yhi"
+    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_utau_quench_yhi"
     ],
-    cov_udrop_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_ul_quench_ylo"],
-    cov_udrop_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_ul_quench_yhi"],
-    cov_udrop_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_utau_quench_ylo"
+    chol_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_uqt_quench_ylo"],
+    chol_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_uqt_quench_yhi"],
+    chol_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqs_quench_ylo"],
+    chol_uqs_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqs_quench_yhi"],
+    chol_udrop_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_udrop_quench_ylo"
     ],
-    cov_udrop_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_utau_quench_yhi"
+    chol_udrop_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_udrop_quench_yhi"
     ],
-    cov_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqt_quench_ylo"],
-    cov_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqt_quench_yhi"],
-    cov_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqs_quench_ylo"],
-    cov_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqs_quench_yhi"],
-    cov_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgm_quench_ylo"],
-    cov_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgm_quench_yhi"],
-    cov_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgy_quench_ylo"],
-    cov_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgy_quench_yhi"],
-    cov_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ul_quench_ylo"],
-    cov_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ul_quench_yhi"],
-    cov_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_utau_quench_ylo"],
-    cov_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_utau_quench_yhi"],
-    cov_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqt_quench_ylo"],
-    cov_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqt_quench_yhi"],
-    cov_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqs_quench_ylo"],
-    cov_urej_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqs_quench_yhi"],
-    cov_urej_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_urej_udrop_quench_ylo"
+    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_urej_quench_ylo"
     ],
-    cov_urej_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_urej_udrop_quench_yhi"
+    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_urej_quench_yhi"
+    ],
+    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgm_quench_ylo"
+    ],
+    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgm_quench_yhi"
+    ],
+    chol_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgm_quench_ylo"],
+    chol_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgm_quench_yhi"],
+    chol_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgy_quench_ylo"],
+    chol_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgy_quench_yhi"],
+    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgm_quench_ylo"
+    ],
+    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgm_quench_yhi"
+    ],
+    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgy_quench_ylo"
+    ],
+    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgy_quench_yhi"
+    ],
+    chol_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_utau_ul_quench_ylo"],
+    chol_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_utau_ul_quench_yhi"],
+    chol_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgm_quench_ylo"],
+    chol_uqt_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgm_quench_yhi"],
+    chol_uqt_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgy_quench_ylo"],
+    chol_uqt_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgy_quench_yhi"],
+    chol_uqt_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ul_quench_ylo"],
+    chol_uqt_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ul_quench_yhi"],
+    chol_uqt_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_utau_quench_ylo"],
+    chol_uqt_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_utau_quench_yhi"],
+    chol_uqs_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgm_quench_ylo"],
+    chol_uqs_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgm_quench_yhi"],
+    chol_uqs_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgy_quench_ylo"],
+    chol_uqs_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgy_quench_yhi"],
+    chol_uqs_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ul_quench_ylo"],
+    chol_uqs_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ul_quench_yhi"],
+    chol_uqs_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_utau_quench_ylo"],
+    chol_uqs_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_utau_quench_yhi"],
+    chol_uqs_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqt_quench_ylo"],
+    chol_uqs_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqt_quench_yhi"],
+    chol_udrop_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgm_quench_ylo"
+    ],
+    chol_udrop_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgm_quench_yhi"
+    ],
+    chol_udrop_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgy_quench_ylo"
+    ],
+    chol_udrop_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgy_quench_yhi"
+    ],
+    chol_udrop_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_udrop_ul_quench_ylo"],
+    chol_udrop_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_udrop_ul_quench_yhi"],
+    chol_udrop_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_utau_quench_ylo"
+    ],
+    chol_udrop_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_utau_quench_yhi"
+    ],
+    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqt_quench_ylo"
+    ],
+    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqt_quench_yhi"
+    ],
+    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqs_quench_ylo"
+    ],
+    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqs_quench_yhi"
+    ],
+    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgm_quench_ylo"
+    ],
+    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgm_quench_yhi"
+    ],
+    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgy_quench_ylo"
+    ],
+    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgy_quench_yhi"
+    ],
+    chol_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_ul_quench_ylo"],
+    chol_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_ul_quench_yhi"],
+    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_utau_quench_ylo"
+    ],
+    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_utau_quench_yhi"
+    ],
+    chol_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqt_quench_ylo"],
+    chol_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqt_quench_yhi"],
+    chol_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqs_quench_ylo"],
+    chol_urej_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqs_quench_yhi"],
+    chol_urej_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_udrop_quench_ylo"
+    ],
+    chol_urej_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_udrop_quench_yhi"
     ],
 ):
 
-    _res = _get_cov_params_quench(
+    _res = _get_chol_params_quench(
         lgmp_arr,
-        cov_ulgm_ulgm_quench_ylo,
-        cov_ulgm_ulgm_quench_yhi,
-        cov_ulgy_ulgy_quench_ylo,
-        cov_ulgy_ulgy_quench_yhi,
-        cov_ul_ul_quench_ylo,
-        cov_ul_ul_quench_yhi,
-        cov_utau_utau_quench_ylo,
-        cov_utau_utau_quench_yhi,
-        cov_uqt_uqt_quench_ylo,
-        cov_uqt_uqt_quench_yhi,
-        cov_uqs_uqs_quench_ylo,
-        cov_uqs_uqs_quench_yhi,
-        cov_udrop_udrop_quench_ylo,
-        cov_udrop_udrop_quench_yhi,
-        cov_urej_urej_quench_ylo,
-        cov_urej_urej_quench_yhi,
-        cov_ulgy_ulgm_quench_ylo,
-        cov_ulgy_ulgm_quench_yhi,
-        cov_ul_ulgm_quench_ylo,
-        cov_ul_ulgm_quench_yhi,
-        cov_ul_ulgy_quench_ylo,
-        cov_ul_ulgy_quench_yhi,
-        cov_utau_ulgm_quench_ylo,
-        cov_utau_ulgm_quench_yhi,
-        cov_utau_ulgy_quench_ylo,
-        cov_utau_ulgy_quench_yhi,
-        cov_utau_ul_quench_ylo,
-        cov_utau_ul_quench_yhi,
-        cov_uqt_ulgm_quench_ylo,
-        cov_uqt_ulgm_quench_yhi,
-        cov_uqt_ulgy_quench_ylo,
-        cov_uqt_ulgy_quench_yhi,
-        cov_uqt_ul_quench_ylo,
-        cov_uqt_ul_quench_yhi,
-        cov_uqt_utau_quench_ylo,
-        cov_uqt_utau_quench_yhi,
-        cov_uqs_ulgm_quench_ylo,
-        cov_uqs_ulgm_quench_yhi,
-        cov_uqs_ulgy_quench_ylo,
-        cov_uqs_ulgy_quench_yhi,
-        cov_uqs_ul_quench_ylo,
-        cov_uqs_ul_quench_yhi,
-        cov_uqs_utau_quench_ylo,
-        cov_uqs_utau_quench_yhi,
-        cov_uqs_uqt_quench_ylo,
-        cov_uqs_uqt_quench_yhi,
-        cov_udrop_ulgm_quench_ylo,
-        cov_udrop_ulgm_quench_yhi,
-        cov_udrop_ulgy_quench_ylo,
-        cov_udrop_ulgy_quench_yhi,
-        cov_udrop_ul_quench_ylo,
-        cov_udrop_ul_quench_yhi,
-        cov_udrop_utau_quench_ylo,
-        cov_udrop_utau_quench_yhi,
-        cov_udrop_uqt_quench_ylo,
-        cov_udrop_uqt_quench_yhi,
-        cov_udrop_uqs_quench_ylo,
-        cov_udrop_uqs_quench_yhi,
-        cov_urej_ulgm_quench_ylo,
-        cov_urej_ulgm_quench_yhi,
-        cov_urej_ulgy_quench_ylo,
-        cov_urej_ulgy_quench_yhi,
-        cov_urej_ul_quench_ylo,
-        cov_urej_ul_quench_yhi,
-        cov_urej_utau_quench_ylo,
-        cov_urej_utau_quench_yhi,
-        cov_urej_uqt_quench_ylo,
-        cov_urej_uqt_quench_yhi,
-        cov_urej_uqs_quench_ylo,
-        cov_urej_uqs_quench_yhi,
-        cov_urej_udrop_quench_ylo,
-        cov_urej_udrop_quench_yhi,
+        chol_ulgm_ulgm_quench_ylo,
+        chol_ulgm_ulgm_quench_yhi,
+        chol_ulgy_ulgy_quench_ylo,
+        chol_ulgy_ulgy_quench_yhi,
+        chol_ul_ul_quench_ylo,
+        chol_ul_ul_quench_yhi,
+        chol_utau_utau_quench_ylo,
+        chol_utau_utau_quench_yhi,
+        chol_uqt_uqt_quench_ylo,
+        chol_uqt_uqt_quench_yhi,
+        chol_uqs_uqs_quench_ylo,
+        chol_uqs_uqs_quench_yhi,
+        chol_udrop_udrop_quench_ylo,
+        chol_udrop_udrop_quench_yhi,
+        chol_urej_urej_quench_ylo,
+        chol_urej_urej_quench_yhi,
+        chol_ulgy_ulgm_quench_ylo,
+        chol_ulgy_ulgm_quench_yhi,
+        chol_ul_ulgm_quench_ylo,
+        chol_ul_ulgm_quench_yhi,
+        chol_ul_ulgy_quench_ylo,
+        chol_ul_ulgy_quench_yhi,
+        chol_utau_ulgm_quench_ylo,
+        chol_utau_ulgm_quench_yhi,
+        chol_utau_ulgy_quench_ylo,
+        chol_utau_ulgy_quench_yhi,
+        chol_utau_ul_quench_ylo,
+        chol_utau_ul_quench_yhi,
+        chol_uqt_ulgm_quench_ylo,
+        chol_uqt_ulgm_quench_yhi,
+        chol_uqt_ulgy_quench_ylo,
+        chol_uqt_ulgy_quench_yhi,
+        chol_uqt_ul_quench_ylo,
+        chol_uqt_ul_quench_yhi,
+        chol_uqt_utau_quench_ylo,
+        chol_uqt_utau_quench_yhi,
+        chol_uqs_ulgm_quench_ylo,
+        chol_uqs_ulgm_quench_yhi,
+        chol_uqs_ulgy_quench_ylo,
+        chol_uqs_ulgy_quench_yhi,
+        chol_uqs_ul_quench_ylo,
+        chol_uqs_ul_quench_yhi,
+        chol_uqs_utau_quench_ylo,
+        chol_uqs_utau_quench_yhi,
+        chol_uqs_uqt_quench_ylo,
+        chol_uqs_uqt_quench_yhi,
+        chol_udrop_ulgm_quench_ylo,
+        chol_udrop_ulgm_quench_yhi,
+        chol_udrop_ulgy_quench_ylo,
+        chol_udrop_ulgy_quench_yhi,
+        chol_udrop_ul_quench_ylo,
+        chol_udrop_ul_quench_yhi,
+        chol_udrop_utau_quench_ylo,
+        chol_udrop_utau_quench_yhi,
+        chol_udrop_uqt_quench_ylo,
+        chol_udrop_uqt_quench_yhi,
+        chol_udrop_uqs_quench_ylo,
+        chol_udrop_uqs_quench_yhi,
+        chol_urej_ulgm_quench_ylo,
+        chol_urej_ulgm_quench_yhi,
+        chol_urej_ulgy_quench_ylo,
+        chol_urej_ulgy_quench_yhi,
+        chol_urej_ul_quench_ylo,
+        chol_urej_ul_quench_yhi,
+        chol_urej_utau_quench_ylo,
+        chol_urej_utau_quench_yhi,
+        chol_urej_uqt_quench_ylo,
+        chol_urej_uqt_quench_yhi,
+        chol_urej_uqs_quench_ylo,
+        chol_urej_uqs_quench_yhi,
+        chol_urej_udrop_quench_ylo,
+        chol_urej_udrop_quench_yhi,
     )
     return _get_cov_vmap(*_res)
 
 
 @jjit
-def _get_cov_params_quench(
+def _get_chol_params_quench(
     lgm,
-    cov_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgm_ulgm_quench_ylo"],
-    cov_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgm_ulgm_quench_yhi"],
-    cov_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgy_quench_ylo"],
-    cov_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgy_quench_yhi"],
-    cov_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ul_quench_ylo"],
-    cov_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ul_quench_yhi"],
-    cov_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_utau_quench_ylo"],
-    cov_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_utau_quench_yhi"],
-    cov_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_uqt_quench_ylo"],
-    cov_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_uqt_quench_yhi"],
-    cov_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqs_quench_ylo"],
-    cov_uqs_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqs_quench_yhi"],
-    cov_udrop_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_udrop_quench_ylo"
+    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgm_ulgm_quench_ylo"
     ],
-    cov_udrop_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_udrop_quench_yhi"
+    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgm_ulgm_quench_yhi"
     ],
-    cov_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_urej_quench_ylo"],
-    cov_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_urej_quench_yhi"],
-    cov_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgm_quench_ylo"],
-    cov_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ulgy_ulgm_quench_yhi"],
-    cov_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgm_quench_ylo"],
-    cov_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgm_quench_yhi"],
-    cov_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgy_quench_ylo"],
-    cov_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_ul_ulgy_quench_yhi"],
-    cov_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgm_quench_ylo"],
-    cov_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgm_quench_yhi"],
-    cov_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgy_quench_ylo"],
-    cov_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ulgy_quench_yhi"],
-    cov_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ul_quench_ylo"],
-    cov_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_utau_ul_quench_yhi"],
-    cov_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgm_quench_ylo"],
-    cov_uqt_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgm_quench_yhi"],
-    cov_uqt_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgy_quench_ylo"],
-    cov_uqt_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ulgy_quench_yhi"],
-    cov_uqt_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ul_quench_ylo"],
-    cov_uqt_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_ul_quench_yhi"],
-    cov_uqt_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_utau_quench_ylo"],
-    cov_uqt_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqt_utau_quench_yhi"],
-    cov_uqs_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgm_quench_ylo"],
-    cov_uqs_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgm_quench_yhi"],
-    cov_uqs_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgy_quench_ylo"],
-    cov_uqs_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ulgy_quench_yhi"],
-    cov_uqs_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ul_quench_ylo"],
-    cov_uqs_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_ul_quench_yhi"],
-    cov_uqs_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_utau_quench_ylo"],
-    cov_uqs_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_utau_quench_yhi"],
-    cov_uqs_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqt_quench_ylo"],
-    cov_uqs_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_uqs_uqt_quench_yhi"],
-    cov_udrop_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgm_quench_ylo"
+    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgy_quench_ylo"
     ],
-    cov_udrop_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgm_quench_yhi"
+    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgy_quench_yhi"
     ],
-    cov_udrop_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgy_quench_ylo"
+    chol_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ul_quench_ylo"],
+    chol_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ul_quench_yhi"],
+    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_utau_quench_ylo"
     ],
-    cov_udrop_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_ulgy_quench_yhi"
+    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_utau_quench_yhi"
     ],
-    cov_udrop_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_ul_quench_ylo"],
-    cov_udrop_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_ul_quench_yhi"],
-    cov_udrop_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_utau_quench_ylo"
+    chol_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_uqt_quench_ylo"],
+    chol_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_uqt_quench_yhi"],
+    chol_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqs_quench_ylo"],
+    chol_uqs_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqs_quench_yhi"],
+    chol_udrop_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_udrop_quench_ylo"
     ],
-    cov_udrop_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_udrop_utau_quench_yhi"
+    chol_udrop_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_udrop_quench_yhi"
     ],
-    cov_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqt_quench_ylo"],
-    cov_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqt_quench_yhi"],
-    cov_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqs_quench_ylo"],
-    cov_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_udrop_uqs_quench_yhi"],
-    cov_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgm_quench_ylo"],
-    cov_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgm_quench_yhi"],
-    cov_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgy_quench_ylo"],
-    cov_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ulgy_quench_yhi"],
-    cov_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ul_quench_ylo"],
-    cov_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_ul_quench_yhi"],
-    cov_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_utau_quench_ylo"],
-    cov_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_utau_quench_yhi"],
-    cov_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqt_quench_ylo"],
-    cov_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqt_quench_yhi"],
-    cov_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqs_quench_ylo"],
-    cov_urej_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["cov_urej_uqs_quench_yhi"],
-    cov_urej_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_urej_udrop_quench_ylo"
+    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_urej_quench_ylo"
     ],
-    cov_urej_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
-        "cov_urej_udrop_quench_yhi"
+    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_urej_quench_yhi"
+    ],
+    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgm_quench_ylo"
+    ],
+    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_ulgy_ulgm_quench_yhi"
+    ],
+    chol_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgm_quench_ylo"],
+    chol_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgm_quench_yhi"],
+    chol_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgy_quench_ylo"],
+    chol_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_ul_ulgy_quench_yhi"],
+    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgm_quench_ylo"
+    ],
+    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgm_quench_yhi"
+    ],
+    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgy_quench_ylo"
+    ],
+    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_utau_ulgy_quench_yhi"
+    ],
+    chol_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_utau_ul_quench_ylo"],
+    chol_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_utau_ul_quench_yhi"],
+    chol_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgm_quench_ylo"],
+    chol_uqt_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgm_quench_yhi"],
+    chol_uqt_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgy_quench_ylo"],
+    chol_uqt_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ulgy_quench_yhi"],
+    chol_uqt_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ul_quench_ylo"],
+    chol_uqt_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_ul_quench_yhi"],
+    chol_uqt_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_utau_quench_ylo"],
+    chol_uqt_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqt_utau_quench_yhi"],
+    chol_uqs_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgm_quench_ylo"],
+    chol_uqs_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgm_quench_yhi"],
+    chol_uqs_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgy_quench_ylo"],
+    chol_uqs_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ulgy_quench_yhi"],
+    chol_uqs_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ul_quench_ylo"],
+    chol_uqs_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_ul_quench_yhi"],
+    chol_uqs_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_utau_quench_ylo"],
+    chol_uqs_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_utau_quench_yhi"],
+    chol_uqs_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqt_quench_ylo"],
+    chol_uqs_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_uqs_uqt_quench_yhi"],
+    chol_udrop_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgm_quench_ylo"
+    ],
+    chol_udrop_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgm_quench_yhi"
+    ],
+    chol_udrop_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgy_quench_ylo"
+    ],
+    chol_udrop_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_ulgy_quench_yhi"
+    ],
+    chol_udrop_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_udrop_ul_quench_ylo"],
+    chol_udrop_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_udrop_ul_quench_yhi"],
+    chol_udrop_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_utau_quench_ylo"
+    ],
+    chol_udrop_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_utau_quench_yhi"
+    ],
+    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqt_quench_ylo"
+    ],
+    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqt_quench_yhi"
+    ],
+    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqs_quench_ylo"
+    ],
+    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_udrop_uqs_quench_yhi"
+    ],
+    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgm_quench_ylo"
+    ],
+    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgm_quench_yhi"
+    ],
+    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgy_quench_ylo"
+    ],
+    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_ulgy_quench_yhi"
+    ],
+    chol_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_ul_quench_ylo"],
+    chol_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_ul_quench_yhi"],
+    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_utau_quench_ylo"
+    ],
+    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_utau_quench_yhi"
+    ],
+    chol_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqt_quench_ylo"],
+    chol_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqt_quench_yhi"],
+    chol_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqs_quench_ylo"],
+    chol_urej_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS["chol_urej_uqs_quench_yhi"],
+    chol_urej_udrop_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_udrop_quench_ylo"
+    ],
+    chol_urej_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PARAMS[
+        "chol_urej_udrop_quench_yhi"
     ],
 ):
-    ulgm_ulgm = cov_ulgm_ulgm_quench_vs_lgm0(
-        lgm, cov_ulgm_ulgm_quench_ylo, cov_ulgm_ulgm_quench_yhi
+    ulgm_ulgm = chol_ulgm_ulgm_quench_vs_lgm0(
+        lgm, chol_ulgm_ulgm_quench_ylo, chol_ulgm_ulgm_quench_yhi
     )
-    ulgy_ulgy = cov_ulgy_ulgy_quench_vs_lgm0(
-        lgm, cov_ulgy_ulgy_quench_ylo, cov_ulgy_ulgy_quench_yhi
+    ulgy_ulgy = chol_ulgy_ulgy_quench_vs_lgm0(
+        lgm, chol_ulgy_ulgy_quench_ylo, chol_ulgy_ulgy_quench_yhi
     )
-    ul_ul = cov_ul_ul_quench_vs_lgm0(lgm, cov_ul_ul_quench_ylo, cov_ul_ul_quench_yhi)
-    utau_utau = cov_utau_utau_quench_vs_lgm0(
-        lgm, cov_utau_utau_quench_ylo, cov_utau_utau_quench_yhi
+    ul_ul = chol_ul_ul_quench_vs_lgm0(lgm, chol_ul_ul_quench_ylo, chol_ul_ul_quench_yhi)
+    utau_utau = chol_utau_utau_quench_vs_lgm0(
+        lgm, chol_utau_utau_quench_ylo, chol_utau_utau_quench_yhi
     )
-    uqt_uqt = cov_uqt_uqt_quench_vs_lgm0(
-        lgm, cov_uqt_uqt_quench_ylo, cov_uqt_uqt_quench_yhi
+    uqt_uqt = chol_uqt_uqt_quench_vs_lgm0(
+        lgm, chol_uqt_uqt_quench_ylo, chol_uqt_uqt_quench_yhi
     )
-    uqs_uqs = cov_uqs_uqs_quench_vs_lgm0(
-        lgm, cov_uqs_uqs_quench_ylo, cov_uqs_uqs_quench_yhi
+    uqs_uqs = chol_uqs_uqs_quench_vs_lgm0(
+        lgm, chol_uqs_uqs_quench_ylo, chol_uqs_uqs_quench_yhi
     )
-    udrop_udrop = cov_udrop_udrop_quench_vs_lgm0(
-        lgm, cov_udrop_udrop_quench_ylo, cov_udrop_udrop_quench_yhi
+    udrop_udrop = chol_udrop_udrop_quench_vs_lgm0(
+        lgm, chol_udrop_udrop_quench_ylo, chol_udrop_udrop_quench_yhi
     )
-    urej_urej = cov_urej_urej_quench_vs_lgm0(
-        lgm, cov_urej_urej_quench_ylo, cov_urej_urej_quench_yhi
+    urej_urej = chol_urej_urej_quench_vs_lgm0(
+        lgm, chol_urej_urej_quench_ylo, chol_urej_urej_quench_yhi
     )
-    ulgy_ulgm = cov_ulgy_ulgm_quench_vs_lgm0(
-        lgm, cov_ulgy_ulgm_quench_ylo, cov_ulgy_ulgm_quench_yhi
+    ulgy_ulgm = chol_ulgy_ulgm_quench_vs_lgm0(
+        lgm, chol_ulgy_ulgm_quench_ylo, chol_ulgy_ulgm_quench_yhi
     )
-    ul_ulgm = cov_ul_ulgm_quench_vs_lgm0(
-        lgm, cov_ul_ulgm_quench_ylo, cov_ul_ulgm_quench_yhi
+    ul_ulgm = chol_ul_ulgm_quench_vs_lgm0(
+        lgm, chol_ul_ulgm_quench_ylo, chol_ul_ulgm_quench_yhi
     )
-    ul_ulgy = cov_ul_ulgy_quench_vs_lgm0(
-        lgm, cov_ul_ulgy_quench_ylo, cov_ul_ulgy_quench_yhi
+    ul_ulgy = chol_ul_ulgy_quench_vs_lgm0(
+        lgm, chol_ul_ulgy_quench_ylo, chol_ul_ulgy_quench_yhi
     )
-    utau_ulgm = cov_utau_ulgm_quench_vs_lgm0(
-        lgm, cov_utau_ulgm_quench_ylo, cov_utau_ulgm_quench_yhi
+    utau_ulgm = chol_utau_ulgm_quench_vs_lgm0(
+        lgm, chol_utau_ulgm_quench_ylo, chol_utau_ulgm_quench_yhi
     )
-    utau_ulgy = cov_utau_ulgy_quench_vs_lgm0(
-        lgm, cov_utau_ulgy_quench_ylo, cov_utau_ulgy_quench_yhi
+    utau_ulgy = chol_utau_ulgy_quench_vs_lgm0(
+        lgm, chol_utau_ulgy_quench_ylo, chol_utau_ulgy_quench_yhi
     )
-    utau_ul = cov_utau_ul_quench_vs_lgm0(
-        lgm, cov_utau_ul_quench_ylo, cov_utau_ul_quench_yhi
+    utau_ul = chol_utau_ul_quench_vs_lgm0(
+        lgm, chol_utau_ul_quench_ylo, chol_utau_ul_quench_yhi
     )
-    uqt_ulgm = cov_uqt_ulgm_quench_vs_lgm0(
-        lgm, cov_uqt_ulgm_quench_ylo, cov_uqt_ulgm_quench_yhi
+    uqt_ulgm = chol_uqt_ulgm_quench_vs_lgm0(
+        lgm, chol_uqt_ulgm_quench_ylo, chol_uqt_ulgm_quench_yhi
     )
-    uqt_ulgy = cov_uqt_ulgy_quench_vs_lgm0(
-        lgm, cov_uqt_ulgy_quench_ylo, cov_uqt_ulgy_quench_yhi
+    uqt_ulgy = chol_uqt_ulgy_quench_vs_lgm0(
+        lgm, chol_uqt_ulgy_quench_ylo, chol_uqt_ulgy_quench_yhi
     )
-    uqt_ul = cov_uqt_ul_quench_vs_lgm0(
-        lgm, cov_uqt_ul_quench_ylo, cov_uqt_ul_quench_yhi
+    uqt_ul = chol_uqt_ul_quench_vs_lgm0(
+        lgm, chol_uqt_ul_quench_ylo, chol_uqt_ul_quench_yhi
     )
-    uqt_utau = cov_uqt_utau_quench_vs_lgm0(
-        lgm, cov_uqt_utau_quench_ylo, cov_uqt_utau_quench_yhi
+    uqt_utau = chol_uqt_utau_quench_vs_lgm0(
+        lgm, chol_uqt_utau_quench_ylo, chol_uqt_utau_quench_yhi
     )
-    uqs_ulgm = cov_uqs_ulgm_quench_vs_lgm0(
-        lgm, cov_uqs_ulgm_quench_ylo, cov_uqs_ulgm_quench_yhi
+    uqs_ulgm = chol_uqs_ulgm_quench_vs_lgm0(
+        lgm, chol_uqs_ulgm_quench_ylo, chol_uqs_ulgm_quench_yhi
     )
-    uqs_ulgy = cov_uqs_ulgy_quench_vs_lgm0(
-        lgm, cov_uqs_ulgy_quench_ylo, cov_uqs_ulgy_quench_yhi
+    uqs_ulgy = chol_uqs_ulgy_quench_vs_lgm0(
+        lgm, chol_uqs_ulgy_quench_ylo, chol_uqs_ulgy_quench_yhi
     )
-    uqs_ul = cov_uqs_ul_quench_vs_lgm0(
-        lgm, cov_uqs_ul_quench_ylo, cov_uqs_ul_quench_yhi
+    uqs_ul = chol_uqs_ul_quench_vs_lgm0(
+        lgm, chol_uqs_ul_quench_ylo, chol_uqs_ul_quench_yhi
     )
-    uqs_utau = cov_uqs_utau_quench_vs_lgm0(
-        lgm, cov_uqs_utau_quench_ylo, cov_uqs_utau_quench_yhi
+    uqs_utau = chol_uqs_utau_quench_vs_lgm0(
+        lgm, chol_uqs_utau_quench_ylo, chol_uqs_utau_quench_yhi
     )
-    uqs_uqt = cov_uqs_uqt_quench_vs_lgm0(
-        lgm, cov_uqs_uqt_quench_ylo, cov_uqs_uqt_quench_yhi
+    uqs_uqt = chol_uqs_uqt_quench_vs_lgm0(
+        lgm, chol_uqs_uqt_quench_ylo, chol_uqs_uqt_quench_yhi
     )
-    udrop_ulgm = cov_udrop_ulgm_quench_vs_lgm0(
-        lgm, cov_udrop_ulgm_quench_ylo, cov_udrop_ulgm_quench_yhi
+    udrop_ulgm = chol_udrop_ulgm_quench_vs_lgm0(
+        lgm, chol_udrop_ulgm_quench_ylo, chol_udrop_ulgm_quench_yhi
     )
-    udrop_ulgy = cov_udrop_ulgy_quench_vs_lgm0(
-        lgm, cov_udrop_ulgy_quench_ylo, cov_udrop_ulgy_quench_yhi
+    udrop_ulgy = chol_udrop_ulgy_quench_vs_lgm0(
+        lgm, chol_udrop_ulgy_quench_ylo, chol_udrop_ulgy_quench_yhi
     )
-    udrop_ul = cov_udrop_ul_quench_vs_lgm0(
-        lgm, cov_udrop_ul_quench_ylo, cov_udrop_ul_quench_yhi
+    udrop_ul = chol_udrop_ul_quench_vs_lgm0(
+        lgm, chol_udrop_ul_quench_ylo, chol_udrop_ul_quench_yhi
     )
-    udrop_utau = cov_udrop_utau_quench_vs_lgm0(
-        lgm, cov_udrop_utau_quench_ylo, cov_udrop_utau_quench_yhi
+    udrop_utau = chol_udrop_utau_quench_vs_lgm0(
+        lgm, chol_udrop_utau_quench_ylo, chol_udrop_utau_quench_yhi
     )
-    udrop_uqt = cov_udrop_uqt_quench_vs_lgm0(
-        lgm, cov_udrop_uqt_quench_ylo, cov_udrop_uqt_quench_yhi
+    udrop_uqt = chol_udrop_uqt_quench_vs_lgm0(
+        lgm, chol_udrop_uqt_quench_ylo, chol_udrop_uqt_quench_yhi
     )
-    udrop_uqs = cov_udrop_uqs_quench_vs_lgm0(
-        lgm, cov_udrop_uqs_quench_ylo, cov_udrop_uqs_quench_yhi
+    udrop_uqs = chol_udrop_uqs_quench_vs_lgm0(
+        lgm, chol_udrop_uqs_quench_ylo, chol_udrop_uqs_quench_yhi
     )
-    urej_ulgm = cov_urej_ulgm_quench_vs_lgm0(
-        lgm, cov_urej_ulgm_quench_ylo, cov_urej_ulgm_quench_yhi
+    urej_ulgm = chol_urej_ulgm_quench_vs_lgm0(
+        lgm, chol_urej_ulgm_quench_ylo, chol_urej_ulgm_quench_yhi
     )
-    urej_ulgy = cov_urej_ulgy_quench_vs_lgm0(
-        lgm, cov_urej_ulgy_quench_ylo, cov_urej_ulgy_quench_yhi
+    urej_ulgy = chol_urej_ulgy_quench_vs_lgm0(
+        lgm, chol_urej_ulgy_quench_ylo, chol_urej_ulgy_quench_yhi
     )
-    urej_ul = cov_urej_ul_quench_vs_lgm0(
-        lgm, cov_urej_ul_quench_ylo, cov_urej_ul_quench_yhi
+    urej_ul = chol_urej_ul_quench_vs_lgm0(
+        lgm, chol_urej_ul_quench_ylo, chol_urej_ul_quench_yhi
     )
-    urej_utau = cov_urej_utau_quench_vs_lgm0(
-        lgm, cov_urej_utau_quench_ylo, cov_urej_utau_quench_yhi
+    urej_utau = chol_urej_utau_quench_vs_lgm0(
+        lgm, chol_urej_utau_quench_ylo, chol_urej_utau_quench_yhi
     )
-    urej_uqt = cov_urej_uqt_quench_vs_lgm0(
-        lgm, cov_urej_uqt_quench_ylo, cov_urej_uqt_quench_yhi
+    urej_uqt = chol_urej_uqt_quench_vs_lgm0(
+        lgm, chol_urej_uqt_quench_ylo, chol_urej_uqt_quench_yhi
     )
-    urej_uqs = cov_urej_uqs_quench_vs_lgm0(
-        lgm, cov_urej_uqs_quench_ylo, cov_urej_uqs_quench_yhi
+    urej_uqs = chol_urej_uqs_quench_vs_lgm0(
+        lgm, chol_urej_uqs_quench_ylo, chol_urej_uqs_quench_yhi
     )
-    urej_udrop = cov_urej_udrop_quench_vs_lgm0(
-        lgm, cov_urej_udrop_quench_ylo, cov_urej_udrop_quench_yhi
+    urej_udrop = chol_urej_udrop_quench_vs_lgm0(
+        lgm, chol_urej_udrop_quench_ylo, chol_urej_udrop_quench_yhi
     )
 
-    cov_params = (
+    chol_params = (
         ulgm_ulgm,
         ulgy_ulgy,
         ul_ul,
@@ -1511,4 +1653,4 @@ def _get_cov_params_quench(
         urej_udrop,
     )
 
-    return cov_params
+    return chol_params
