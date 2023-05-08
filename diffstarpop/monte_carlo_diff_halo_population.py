@@ -43,9 +43,10 @@ from .star_wrappers import (
     sm_sfr_history_diffstar_scan_XsfhXmah_vmap,
     sm_sfr_history_diffstar_scan_MS_XsfhXmah_vmap,
 )
+from .utils import _tw_cuml_lax_kern
 
 # from .pdf_model_assembly_bias_shifts import _get_shift_to_PDF_mean, _get_slopes
-
+_tw_cuml_lax_kern_vmap = jjit(vmap(_tw_cuml_lax_kern, in_axes=(0, None, None)))
 sfh_scan_tobs_kern = get_ms_sfh_from_mah_kern(tobs_loop="scan")
 
 
@@ -1151,7 +1152,11 @@ def sumstats_sfh_MIX_p50(
     )
 
     ssfr = sfr / mstar
-    weights_quench_bin = jnp.where(ssfr > 1e-11, 1.0, 0.0)
+    # weights_quench_bin = jnp.where(ssfr > 1e-11, 1.0, 0.0)
+    nhist, nt = ssfr.shape
+    ssfr = jnp.where(ssfr > 0.0, jnp.log10(ssfr), -50.0)
+    weights_quench_bin = _tw_cuml_lax_kern_vmap(ssfr.reshape(nhist * nt), -11.0, 0.2)
+    weights_quench_bin = weights_quench_bin.reshape(nhist, nt)
 
     return compute_sumstats_MIX_p50(mstar, sfr, p50_sampled, weights_quench_bin, weight)
 

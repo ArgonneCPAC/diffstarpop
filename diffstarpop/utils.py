@@ -1,6 +1,7 @@
 from jax import jit as jjit
 from jax import numpy as jnp
 from jax import vmap
+from jax import lax
 import numpy as np
 from diffstar.utils import jax_np_interp
 from halotools.utils import sliding_conditional_percentile
@@ -83,3 +84,31 @@ def minimizer(loss_func, loss_func_deriv, p_init, loss_data):
     success = 1
 
     return p_best, loss_best, success
+
+
+@jjit
+def _tw_cuml_lax_kern(x, m, h):
+    """Triweight kernel version of an err function.
+    This kernel accepts and returns scalars for all arguments
+    """
+    z = (x - m) / h
+    val = (
+        -5 * z ** 7 / 69984
+        + 7 * z ** 5 / 2592
+        - 35 * z ** 3 / 864
+        + 35 * z / 96
+        + 1 / 2
+    )
+    val = lax.cond(z < -3, lambda s: 0.0, lambda s: val, z)
+    val = lax.cond(z > 3, lambda s: 1.0, lambda s: val, z)
+    return val
+
+
+@jjit
+def _tw_bin_weight_lax_kern(x, sig, lo, hi):
+    """Triweight kernel integrated across the boundaries of a single bin.
+    This kernel accepts and returns scalars for all arguments
+    """
+    a = _tw_cuml_lax_kern(x, lo, sig)
+    b = _tw_cuml_lax_kern(x, hi, sig)
+    return a - b
