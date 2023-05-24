@@ -1285,10 +1285,9 @@ def sumstats_sfh_with_hists(
         R_model_params_MS,
     )
 
-    ssfr = sfr / mstar
     # weights_quench_bin = jnp.where(ssfr > 1e-11, 1.0, 0.0)
+    ssfr = jnp.where(mstar > 0.0, jnp.log10(sfr / mstar), -50.0)
     nhist, nt = ssfr.shape
-    ssfr = jnp.where(ssfr > 0.0, jnp.log10(ssfr), -50.0)
     weights_quench_bin = _tw_cuml_lax_kern_vmap(ssfr.reshape(nhist * nt), -11.0, 0.2)
     weights_quench_bin = weights_quench_bin.reshape(nhist, nt)
 
