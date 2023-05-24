@@ -26,6 +26,7 @@ from diffstar.utils import jax_np_interp, _jax_get_dt_array
 
 from diffmah.individual_halo_assembly import _calc_halo_history
 
+
 from .pdf_quenched import (
     get_smah_means_and_covs_quench,
     DEFAULT_SFH_PDF_QUENCH_PARAMS,
@@ -44,6 +45,10 @@ from .star_wrappers import (
     sm_sfr_history_diffstar_scan_MS_XsfhXmah_vmap,
 )
 from .utils import _tw_cuml_lax_kern
+
+from diffsky.diffndhist import tw_ndhist_weighted
+from diffsky.experimental.dspspop.photpop import get_obs_photometry_singlez
+
 
 # from .pdf_model_assembly_bias_shifts import _get_shift_to_PDF_mean, _get_slopes
 _tw_cuml_lax_kern_vmap = jjit(vmap(_tw_cuml_lax_kern, in_axes=(0, None, None)))
@@ -998,9 +1003,6 @@ def compute_sumstats_MIX_p50(
     weights_early = jnp.clip(weights_early, eps, None)
     weights_late = jnp.clip(weights_late, eps, None)
 
-    mstar_histories = jnp.where(mstar_histories > 0.0, jnp.log10(mstar_histories), 0.0)
-    sfr_histories = jnp.where(sfr_histories > 0.0, jnp.log10(sfr_histories), 0.0)
-
     mean_sm = jnp.average(mstar_histories, weights=w_frac_quench, axis=0)
     mean_sfr_MS = jnp.average(sfr_histories, weights=weights_MS, axis=0)
     mean_sfr_Q = jnp.average(sfr_histories, weights=weights_Q, axis=0)
@@ -1158,6 +1160,9 @@ def sumstats_sfh_MIX_p50(
     weights_quench_bin = _tw_cuml_lax_kern_vmap(ssfr.reshape(nhist * nt), -11.0, 0.2)
     weights_quench_bin = weights_quench_bin.reshape(nhist, nt)
 
+    mstar = jnp.where(mstar > 0.0, jnp.log10(mstar), 0.0)
+    sfr = jnp.where(sfr > 0.0, jnp.log10(sfr), 0.0)
+
     return compute_sumstats_MIX_p50(mstar, sfr, p50_sampled, weights_quench_bin, weight)
 
 
@@ -1165,3 +1170,226 @@ _A = (None, 0, 0, 0, *[None] * 9)
 sumstats_sfh_MIX_p50_vmap = jjit(
     vmap(sumstats_sfh_MIX_p50, in_axes=_A), static_argnames=["n_histories"]
 )
+
+
+@jjit
+def calc_hist_mstar_ssfr_kern(
+    mstar_snap, ssfr_snap, ndsig, weight, ndbins_lo, ndbins_hi
+):
+    eps = 1e-10
+
+    nddata = jnp.array([mstar_snap, ssfr_snap]).T
+    counts = tw_ndhist_weighted(nddata, ndsig, weight, ndbins_lo, ndbins_hi)
+    counts = jnp.clip(counts, eps, None)
+    counts = counts / jnp.sum(counts)
+    return counts
+
+
+calc_hist_mstar_ssfr = jjit(
+    vmap(calc_hist_mstar_ssfr_kern, in_axes=(0, 0, *[None] * 4))
+)
+
+
+@partial(jjit, static_argnames=["n_histories"])
+def sumstats_sfh_with_hists(
+    t_table,
+    logmh,
+    mah_params,
+    p50,
+    n_histories,
+    ran_key,
+    index_select,
+    index_high,
+    fstar_tdelay,
+    ndsig,
+    bins_LO,
+    bins_HI,
+    t_sel_hists,
+    pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+    pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    R_model_params_Q=DEFAULT_R_QUENCH_PARAMS,
+    R_model_params_MS=DEFAULT_R_MAINSEQ_PARAMS,
+):
+    """
+    Compute differentiable summary statistics from monte-carlo histories for
+    a mixed population of quenched and main sequence galaxies.
+
+    There is correlation with p50.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_t, )
+        Cosmic time array in Gyr.
+    logmh : float
+        Base-10 log of present-day halo mass of the halo population
+    mah_params : ndarray of shape (n_mah_haloes x n_mah_params)
+        Array with the diffmah parameters that will be marginalized over. Could
+        be either individual fits of n_mah_haloes haloes, or be n_mah_haloes
+        samples from a population model. They are chosen at random n_halos times.
+    p50 : mah_params : ndarray of shape (n_mah_haloes, )
+        Formation time percentile of each halo conditioned on halo mass.
+    n_histories : int
+        Number of SFH histories to generate by DiffstarPop.
+    ran_key : ndarray of shape 2
+        JAX random key.
+    index_select: ndarray of shape (n_times_fstar, )
+        Snapshot indices used in fstar computation
+    index_high: ndarray of shape (n_times_fstar, )
+        Indices of np.searchsorted(t, t - fstar_tdelay)[index_select]
+    fstar_tdelay: float
+        Time interval in Gyr for fstar definition.
+        fstar = (mstar(t) - mstar(t-fstar_tdelay)) / fstar_tdelay[Gyr]
+    pdf_model_params_Q : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+    pdf_model_params_MS : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+    R_model_params_Q: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
+        diffstar and diffmah parameters for the quenched population.
+    R_model_params_MS: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
+        diffstar and diffmah parameters for the main sequence population.
+
+    Returns
+    -------
+    mean_sm : ndarray of shape (n_t, )
+        Average log10 Stellar Mass.
+    variance_sm : ndarray of shape (n_t, )
+        Variance of log10 Stellar Mass.
+    mean_fstar_MS : ndarray of shape (n_t_fstar, )
+        Average fstar (average SFH within some timescale) for main sequence galaxies.
+    mean_fstar_Q : ndarray of shape (n_t_fstar, )
+        Average fstar (average SFH within some timescale) for quenched galaxies.
+    variance_fstar_MS : ndarray of shape (n_t_fstar, )
+        Variance of fstar (average SFH within some timescale) for MS galaxies.
+    variance_fstar_Q : ndarray of shape (n_t_fstar, )
+        Variance of fstar (average SFH within some timescale) for Q galaxies.
+    quench_frac : ndarray of shape (n_t_fstar, )
+        Fraction of quenched galaxies.
+    """
+    mstar, sfr, fstar, p50_sampled, weight = draw_sfh_MIX(
+        t_table,
+        logmh,
+        mah_params,
+        p50,
+        n_histories,
+        ran_key,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        pdf_parameters_Q,
+        pdf_parameters_MS,
+        R_model_params_Q,
+        R_model_params_MS,
+    )
+
+    ssfr = sfr / mstar
+    # weights_quench_bin = jnp.where(ssfr > 1e-11, 1.0, 0.0)
+    nhist, nt = ssfr.shape
+    ssfr = jnp.where(ssfr > 0.0, jnp.log10(ssfr), -50.0)
+    weights_quench_bin = _tw_cuml_lax_kern_vmap(ssfr.reshape(nhist * nt), -11.0, 0.2)
+    weights_quench_bin = weights_quench_bin.reshape(nhist, nt)
+
+    mstar = jnp.where(mstar > 0.0, jnp.log10(mstar), 0.0)
+    sfr = jnp.where(sfr > 0.0, jnp.log10(sfr), 0.0)
+
+    _res = compute_sumstats_MIX_p50(mstar, sfr, p50_sampled, weights_quench_bin, weight)
+    (
+        mean_sm,
+        variance_sm,
+        mean_sfr_MS,
+        mean_sfr_Q,
+        variance_sfr_MS,
+        variance_sfr_Q,
+        quench_frac,
+        mean_sm_early,
+        mean_sm_late,
+        variance_sm_early,
+        variance_sm_late,
+        quench_frac_early,
+        quench_frac_late,
+    ) = _res
+
+    counts = calc_hist_mstar_ssfr(
+        mstar.T[t_sel_hists], ssfr.T[t_sel_hists], ndsig, weight, bins_LO, bins_HI
+    )
+    out = (
+        mean_sm,
+        variance_sm,
+        mean_sfr_MS,
+        mean_sfr_Q,
+        variance_sfr_MS,
+        variance_sfr_Q,
+        quench_frac,
+        mean_sm_early,
+        mean_sm_late,
+        variance_sm_early,
+        variance_sm_late,
+        quench_frac_early,
+        quench_frac_late,
+        counts,
+    )
+    return out
+
+
+_A = (None, 0, 0, 0, *[None] * 13)
+sumstats_sfh_with_hists_vmap = jjit(
+    vmap(sumstats_sfh_with_hists, in_axes=_A), static_argnames=["n_histories"]
+)
+
+
+@jjit
+def get_colors_kern(
+    gal_t_table, gal_sfr_table, z_obs, ssp_obs_photflux_table, dsps_data, ran_key
+):
+    (
+        filter_waves,
+        filter_trans,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+        cosmo_params,
+    ) = dsps_data
+
+    res = get_obs_photometry_singlez(
+        ran_key,
+        filter_waves,
+        filter_trans,
+        ssp_obs_photflux_table,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        gal_t_table,
+        gal_sfr_table,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+        cosmo_params,
+        z_obs,
+    )
+
+    (
+        weights,
+        lgmet_weights,
+        smooth_age_weights,
+        bursty_age_weights,
+        frac_trans,
+        gal_obsflux_nodust,
+        gal_obsflux,
+    ) = res
+
+    # Magnitudes
+    galpop_obs_mags = -2.5 * jnp.log10(gal_obsflux)
+
+    return galpop_obs_mags
+
+
+_A = (None, None, 0, 0, None, None)
+get_colors = jjit(vmap(get_colors_kern, in_axes=_A))
