@@ -36,7 +36,7 @@ DEFAULT_UNBOUND_Q_PARAMS_MAIN_SEQ[0] = 1.9
 
 sfh_scan_tobs_kern = get_ms_sfh_from_mah_kern(tobs_loop="scan")
 
-TAU_DEP_MIN = 0.01
+# TAU_DEP_MIN = 0.01
 
 
 @jjit
@@ -51,9 +51,10 @@ def sm_sfr_history_diffstar_scan(
     index_high,
     fstar_tdelay,
 ):
-    tau_dep = sfr_ms_params[3]
-    tau_dep = jnp.clip(tau_dep, TAU_DEP_MIN, jnp.inf)
-    sfr_params = [*sfr_ms_params[0:3], UH, tau_dep]
+    # tau_dep = sfr_ms_params[3]
+    # tau_dep = jnp.clip(tau_dep, TAU_DEP_MIN, jnp.inf)
+    # sfr_params = [*sfr_ms_params[0:3], UH, tau_dep]
+    sfr_params = [*sfr_ms_params[0:3], UH, sfr_ms_params[3]]
     ms_sfr = sfh_scan_tobs_kern(tarr, mah_params, sfr_params)
     qfrac = quenching_function(lgt, *q_params)
     sfr = qfrac * ms_sfr
@@ -66,9 +67,10 @@ def sm_sfr_history_diffstar_scan(
 def sm_sfr_history_diffstar_scan_MS(
     tarr, lgt, dt, mah_params, sfr_ms_params, index_select, index_high, fstar_tdelay,
 ):
-    tau_dep = sfr_ms_params[3]
-    tau_dep = jnp.clip(tau_dep, TAU_DEP_MIN, jnp.inf)
-    sfr_params = [*sfr_ms_params[0:3], UH, tau_dep]
+    # tau_dep = sfr_ms_params[3]
+    # tau_dep = jnp.clip(tau_dep, TAU_DEP_MIN, jnp.inf)
+    # sfr_params = [*sfr_ms_params[0:3], UH, tau_dep]
+    sfr_params = [*sfr_ms_params[0:3], UH, sfr_ms_params[3]]
     sfr = sfh_scan_tobs_kern(tarr, mah_params, sfr_params)
     mstar = _integrate_sfr(sfr, dt)
     fstar = compute_fstar(10 ** lgt, mstar, index_select, index_high, fstar_tdelay)
