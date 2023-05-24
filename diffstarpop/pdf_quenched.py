@@ -3,6 +3,7 @@ from collections import OrderedDict
 from jax import jit as jjit
 from jax import numpy as jnp
 from jax import vmap
+from .utils import _sigmoid
 
 TODAY = 13.8
 LGT0 = jnp.log10(TODAY)
@@ -103,18 +104,6 @@ DEFAULT_SFH_PDF_QUENCH_PARAMS = OrderedDict(
     chol_urej_udrop_quench_ylo=-1.445,
     chol_urej_udrop_quench_yhi=-2.245,
 )
-
-
-@jjit
-def _sigmoid(x, logtc, k, ymin, ymax):
-    height_diff = ymax - ymin
-    return ymin + height_diff / (1.0 + jnp.exp(-k * (x - logtc)))
-
-
-@jjit
-def _inverse_sigmoid(y, x0=0, k=1, ymin=-1, ymax=1):
-    lnarg = (ymax - ymin) / (y - ymin) - 1
-    return x0 - jnp.log(lnarg) / k
 
 
 @jjit

@@ -9,9 +9,30 @@ from scipy.optimize import minimize
 
 
 @jjit
-def _sigmoid(x, logtc, k, ymin, ymax):
+def _sigmoid(x, x0, k, ymin, ymax):
+    """Sigmoid function implemented w/ `jax.numpy.exp`
+
+    Parameters
+    ----------
+    x : float or array-like
+        Points at which to evaluate the function.
+    x0 : float or array-like
+        Location of transition.
+    k : float or array-like
+        Inverse of the width of the transition.
+    ymin : float or array-like
+        The value as x goes to -infty.
+    ymax : float or array-like
+        The value as x goes to +infty.
+
+    Returns
+    -------
+    sigmoid : scalar or array-like, same shape as input
+
+    """
     height_diff = ymax - ymin
-    return ymin + height_diff / (1.0 + jnp.exp(-k * (x - logtc)))
+    # return ymin + height_diff / (1 + jnp.exp(-k * (x - x0)))
+    return ymin + height_diff * lax.logistic(k * (x - x0))
 
 
 @jjit
