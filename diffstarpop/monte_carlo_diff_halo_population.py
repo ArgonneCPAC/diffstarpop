@@ -4,6 +4,7 @@ from jax import vmap
 from jax import jit as jjit
 from jax import numpy as jnp
 from jax import random as jran
+from jax import lax
 from collections import OrderedDict
 from functools import partial
 
@@ -1392,3 +1393,73 @@ def get_colors_kern(
 
 _A = (None, None, 0, 0, None, None)
 get_colors = jjit(vmap(get_colors_kern, in_axes=_A))
+
+
+@partial(jjit, static_argnames=["n_histories"])
+def sumstats_sfh_with_hists_scan(
+    t_table,
+    logmh_bins,
+    mah_params_bins,
+    p50_bins,
+    n_histories,
+    ran_key,
+    index_select,
+    index_high,
+    fstar_tdelay,
+    ndsig,
+    bins_LO,
+    bins_HI,
+    t_sel_hists,
+    pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+    pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    R_model_params_Q=DEFAULT_R_QUENCH_PARAMS,
+    R_model_params_MS=DEFAULT_R_MAINSEQ_PARAMS,
+):
+    nt = len(t_table)
+    ngrid = len(bins_LO)
+    nt_counts = len(t_sel_hists)
+    init = (
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt)),
+        jnp.zeros((nt_counts, ngrid)),
+    )
+
+    @jjit
+    def _testfun_scan(carry, data):
+        logmh, mah_params, p50 = data
+        _res = sumstats_sfh_with_hists(
+            t_table,
+            logmh,
+            mah_params,
+            p50,
+            n_histories,
+            ran_key,
+            index_select,
+            index_high,
+            fstar_tdelay,
+            ndsig,
+            bins_LO,
+            bins_HI,
+            t_sel_hists,
+            pdf_parameters_Q,
+            pdf_parameters_MS,
+            R_model_params_Q,
+            R_model_params_MS,
+        )
+        return _res, _res
+
+    data = (logmh_bins, mah_params_bins, p50_bins)
+    result = lax.scan(_testfun_scan, init, data)
+
+    return result[1]

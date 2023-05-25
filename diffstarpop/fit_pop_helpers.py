@@ -29,6 +29,7 @@ from .monte_carlo_diff_halo_population import (
     sumstats_sfh_MIX_p50_vmap,
     sumstats_sfh_with_hists,
     sumstats_sfh_with_hists_vmap,
+    sumstats_sfh_with_hists_scan,
 )
 from functools import partial
 
@@ -507,6 +508,7 @@ def loss_hists_scan(params, loss_data, n_histories, ran_key):
         ndsig,
         bins_LO,
         bins_HI,
+        t_sel_hists,
         target_data,
         # target_data_weights,
     ) = loss_data
@@ -549,6 +551,7 @@ def loss_hists_scan(params, loss_data, n_histories, ran_key):
         ndsig,
         bins_LO,
         bins_HI,
+        t_sel_hists,
         pdf_q_params,
         pdf_ms_params,
         r_q_params,
@@ -590,8 +593,8 @@ def loss_hists_scan(params, loss_data, n_histories, ran_key):
     loss += mse(quench_frac_early, quench_frac_early_target)
     loss += mse(quench_frac_late, quench_frac_late_target)
     """
-    # loss += 100 * mse(counts, counts_target)
-    loss += (1.0 / 20.0) * mse_arch(counts, counts_target)
+    loss += 1e4 * mse(counts, counts_target)
+    # loss += (1.0 / 20.0) * mse_arch(counts, counts_target)
 
     return loss
 
@@ -614,70 +617,3 @@ def loss_hists_scan_deriv_np(params, data, n_histories, ran_key):
     return np.array(loss_hists_scan_deriv(params, data, n_histories, ran_key)).astype(
         float
     )
-
-
-@partial(jjit, static_argnames=["n_histories"])
-def sumstats_sfh_with_hists_scan(
-    t_table,
-    logmh_bins,
-    mah_params_bins,
-    p50_bins,
-    n_histories,
-    ran_key,
-    index_select,
-    index_high,
-    fstar_tdelay,
-    ndsig,
-    bins_LO,
-    bins_HI,
-    pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
-    pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
-    R_model_params_Q=DEFAULT_R_QUENCH_PARAMS,
-    R_model_params_MS=DEFAULT_R_MAINSEQ_PARAMS,
-):
-    nt = len(t_table)
-    ngrid = len(bins_LO)
-    init = (
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt)),
-        jnp.zeros((nt, ngrid)),
-    )
-
-    @jjit
-    def _testfun_scan(carry, data):
-        logmh, mah_params, p50 = data
-        _res = sumstats_sfh_with_hists(
-            t_table,
-            logmh,
-            mah_params,
-            p50,
-            n_histories,
-            ran_key,
-            index_select,
-            index_high,
-            fstar_tdelay,
-            ndsig,
-            bins_LO,
-            bins_HI,
-            pdf_parameters_Q,
-            pdf_parameters_MS,
-            R_model_params_Q,
-            R_model_params_MS,
-        )
-        return _res, _res
-
-    data = (logmh_bins, mah_params_bins, p50_bins)
-    result = lax.scan(_testfun_scan, init, data)
-
-    return result[1]
