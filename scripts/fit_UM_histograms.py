@@ -46,19 +46,19 @@ print(z_table)
 lgt = np.log10(t_table)
 
 # Define some mass bins for predictions
-logm0_binmids = np.linspace(11.0, 14.0, 7)
+logm0_binmids = np.linspace(11.0, 14.5, 8)
 logm0_bin_widths = np.ones_like(logm0_binmids) * 0.1
 
 # Define some useful quantities and masks for later
 fstar_tdelay = 1.0
 index_select, index_high = fstar_tools(t_table, fstar_tdelay=fstar_tdelay)
 
-path = "/Users/alarcon/Documents/diffmah_data/SMDPL/"
+path = "/lcrc/project/halotools/alarcon/data/"
 
-mah_params_arr = np.load(path + "mah_params_arr_576_small.npy")
-u_fit_params_arr = np.load(path + "u_fit_params_arr_576_small.npy")
-fit_params_arr = np.load(path + "fit_params_arr_576_small.npy")
-p50_arr = np.load(path + "p50_arr_576_small.npy")
+mah_params_arr = np.load(path + "mah_params_arr_SMDPL_576_small.npy")
+u_fit_params_arr = np.load(path + "u_fit_params_arr_SMDPL_576_small.npy")
+fit_params_arr = np.load(path + "fit_params_arr_SMDPL_576_small.npy")
+p50_arr = np.load(path + "p50_arr_SMDPL_576_small.npy")
 
 logmpeak = mah_params_arr[:, 1]
 
