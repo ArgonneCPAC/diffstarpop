@@ -273,7 +273,7 @@ halo_data_MC = np.concatenate(halo_data_MC, axis=0)[:, np.array([1, 2, 4, 5])]
 p50 = np.concatenate(p50, axis=0)
 
 
-path_json = "/Users/alarcon/Documents/source/diffstarpop/diffstarpop/bestfit_diffstarpop_params_UM_hists_v4.json"
+path_json = "../diffstarpop/bestfit_diffstarpop_params_UM_hists_v4.json"
 outputs = load_params(path_json)
 
 n_histories = int(1e3)
