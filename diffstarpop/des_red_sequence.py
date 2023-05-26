@@ -42,6 +42,8 @@ def load_des_y3_data(fn, z_lo=0.105, z_hi=0.8):
     mz_0 = arr["pivotmag"][istart:iend]
 
     covmat = arr["covmat"][istart:iend, :, :]
+    # Ignore off-diagonal entries which Eli says are arbitrary
+    covmat = covmat * np.eye(3)
 
     return RedSequenceData(redshift, gr_0, ri_0, iz_0, gr_1, ri_1, iz_1, mz_0, covmat)
 
