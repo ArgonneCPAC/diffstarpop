@@ -48,7 +48,6 @@ from .star_wrappers import (
 from .utils import _tw_cuml_lax_kern
 
 from diffsky.diffndhist import tw_ndhist_weighted
-from diffsky.experimental.dspspop.photpop import get_obs_photometry_singlez
 
 
 # from .pdf_model_assembly_bias_shifts import _get_shift_to_PDF_mean, _get_slopes
@@ -1338,61 +1337,6 @@ _A = (None, 0, 0, 0, *[None] * 13)
 sumstats_sfh_with_hists_vmap = jjit(
     vmap(sumstats_sfh_with_hists, in_axes=_A), static_argnames=["n_histories"]
 )
-
-
-@jjit
-def get_colors_kern(
-    gal_t_table, gal_sfr_table, z_obs, ssp_obs_photflux_table, dsps_data, ran_key
-):
-    (
-        filter_waves,
-        filter_trans,
-        ssp_lgmet,
-        ssp_lg_age_gyr,
-        lgfburst_u_params,
-        burstshape_u_params,
-        lgav_dust_u_params,
-        delta_dust_u_params,
-        boris_dust_u_params,
-        cosmo_params,
-    ) = dsps_data
-
-    res = get_obs_photometry_singlez(
-        ran_key,
-        filter_waves,
-        filter_trans,
-        ssp_obs_photflux_table,
-        ssp_lgmet,
-        ssp_lg_age_gyr,
-        gal_t_table,
-        gal_sfr_table,
-        lgfburst_u_params,
-        burstshape_u_params,
-        lgav_dust_u_params,
-        delta_dust_u_params,
-        boris_dust_u_params,
-        cosmo_params,
-        z_obs,
-    )
-
-    (
-        weights,
-        lgmet_weights,
-        smooth_age_weights,
-        bursty_age_weights,
-        frac_trans,
-        gal_obsflux_nodust,
-        gal_obsflux,
-    ) = res
-
-    # Magnitudes
-    galpop_obs_mags = -2.5 * jnp.log10(gal_obsflux)
-
-    return galpop_obs_mags
-
-
-_A = (None, None, 0, 0, None, None)
-get_colors = jjit(vmap(get_colors_kern, in_axes=_A))
 
 
 @partial(jjit, static_argnames=["n_histories"])
