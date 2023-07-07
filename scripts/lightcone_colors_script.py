@@ -4,7 +4,8 @@ from jax import jit as jjit
 from jax import vmap
 from jax import grad
 from jax import random as jran
-
+import time
+from functools import partial
 
 
 from diffmah.individual_halo_assembly import _calc_halo_history
@@ -207,7 +208,12 @@ ndsig_colmag = np.ones((2*n_histories, 2))
 ndsig_colmag[:,0] *= delta_bins_magn
 ndsig_colmag[:,1] *= delta_bins_color
 
+print(f"nt = {len(t_table)}")
+print(f"n_histories = {n_histories}")
+print(f"nm0 = {len(pm0)}")
+print(f"nz = {len(z_arr)}")
 
+t0 = time.time()
 _res = sumstats_lightcone_colors(
     t_table,
     logm0_binmids,
@@ -239,3 +245,166 @@ _res = sumstats_lightcone_colors(
     DEFAULT_delta_dust_u_params,
     DEFAULT_boris_dust_u_params,
 )
+t1 = time.time()
+print(f"Counts calculation: {t1-t0} seconds")
+
+_target = jnp.array(_res)
+target = np.zeros_like(_target)
+target[:, :-1] = _target[:, 1:]
+target[:, -1] = _target[:, 0]
+target = jnp.array(target)
+
+@partial(jjit, static_argnames=["n_histories"])
+def loss(
+    t_table,
+    logmh_arr,
+    mah_params_arr,
+    p50_arr,
+    pm0,
+    n_histories,
+    ran_key,
+    index_select,
+    index_high,
+    fstar_tdelay,
+    ndsig_colcol,
+    ndsig_colmag,
+    bins_LO_colcol,
+    bins_HI_colcol,
+    bins_LO_colmag,
+    bins_HI_colmag,
+    z_arr, 
+    dVdz,
+    dsps_data,
+    ssp_obs_photflux_table_arr,
+    pdf_parameters_Q,
+    pdf_parameters_MS,
+    R_model_params_Q,
+    R_model_params_MS,
+    lgfburst_u_params,
+    burstshape_u_params,
+    lgav_dust_u_params,
+    delta_dust_u_params,
+    boris_dust_u_params,
+    target,
+):
+    prediction = sumstats_lightcone_colors(
+        t_table,
+        logmh_arr,
+        mah_params_arr,
+        p50_arr,
+        pm0,
+        n_histories,
+        ran_key,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        ndsig_colcol,
+        ndsig_colmag,
+        bins_LO_colcol,
+        bins_HI_colcol,
+        bins_LO_colmag,
+        bins_HI_colmag,
+        z_arr, 
+        dVdz,
+        dsps_data,
+        ssp_obs_photflux_table_arr,
+        pdf_parameters_Q,
+        pdf_parameters_MS,
+        R_model_params_Q,
+        R_model_params_MS,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+    )
+    prediction = jnp.array(prediction)
+    return jnp.sum((prediction - target)**2)
+    
+
+loss_deriv = jjit(grad(loss, argnames=(
+    "pdf_parameters_Q",
+    "pdf_parameters_MS",
+    "R_model_params_Q",
+    "R_model_params_MS",
+    "lgfburst_u_params",
+    "burstshape_u_params",
+    "lgav_dust_u_params",
+    "delta_dust_u_params",
+    "boris_dust_u_params",
+)), static_argnames=["n_histories"])
+
+
+t0 = time.time()
+loss_value = loss(
+    t_table,
+    logm0_binmids,
+    halo_data_MC.reshape(len(logm0_binmids),Nhalos,4),
+    p50.reshape(len(logm0_binmids),Nhalos),
+    pm0,
+    n_histories,
+    ran_key,
+    index_select,
+    index_high,
+    fstar_tdelay,
+    ndsig_colcol,
+    ndsig_colmag,
+    bins_LO_colcol,
+    bins_HI_colcol,
+    bins_LO_colmag,
+    bins_HI_colmag,
+    z_arr,
+    dVdz,
+    dsps_data,
+    ssp_obs_photflux_table_arr,
+    outputs[0][0:N_PDF_Q],
+    outputs[0][N_PDF_Q:N_PDF_Q+N_PDF_MS],
+    outputs[0][N_PDF_Q+N_PDF_MS:N_PDF_Q+N_PDF_MS+N_R_Q],
+    outputs[0][N_PDF_Q+N_PDF_MS+N_R_Q:N_PDF_Q+N_PDF_MS+N_R_Q+N_R_MS],
+    DEFAULT_lgfburst_u_params,
+    DEFAULT_burstshape_u_params,
+    DEFAULT_lgav_dust_u_params,
+    DEFAULT_delta_dust_u_params,
+    DEFAULT_boris_dust_u_params,
+    target,
+)
+t1 = time.time()
+print(f"Loss calculation: {t1-t0} seconds")
+print(f"Loss value: {loss_value}")
+
+t0 = time.time()
+loss_deriv_value = loss_deriv(
+    t_table,
+    logm0_binmids,
+    halo_data_MC.reshape(len(logm0_binmids),Nhalos,4),
+    p50.reshape(len(logm0_binmids),Nhalos),
+    pm0,
+    n_histories,
+    ran_key,
+    index_select,
+    index_high,
+    fstar_tdelay,
+    ndsig_colcol,
+    ndsig_colmag,
+    bins_LO_colcol,
+    bins_HI_colcol,
+    bins_LO_colmag,
+    bins_HI_colmag,
+    z_arr,
+    dVdz,
+    dsps_data,
+    ssp_obs_photflux_table_arr,
+    outputs[0][0:N_PDF_Q],
+    outputs[0][N_PDF_Q:N_PDF_Q+N_PDF_MS],
+    outputs[0][N_PDF_Q+N_PDF_MS:N_PDF_Q+N_PDF_MS+N_R_Q],
+    outputs[0][N_PDF_Q+N_PDF_MS+N_R_Q:N_PDF_Q+N_PDF_MS+N_R_Q+N_R_MS],
+    DEFAULT_lgfburst_u_params,
+    DEFAULT_burstshape_u_params,
+    DEFAULT_lgav_dust_u_params,
+    DEFAULT_delta_dust_u_params,
+    DEFAULT_boris_dust_u_params,
+    target,
+)
+t1 = time.time()
+print(f"Loss grad calculation: {t1-t0} seconds")
+print(f"Loss grads: {loss_deriv_value}")
