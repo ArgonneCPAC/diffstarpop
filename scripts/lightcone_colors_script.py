@@ -322,17 +322,7 @@ def loss(
     return jnp.sum((prediction - target)**2)
     
 
-loss_deriv = jjit(grad(loss, argnames=(
-    "pdf_parameters_Q",
-    "pdf_parameters_MS",
-    "R_model_params_Q",
-    "R_model_params_MS",
-    "lgfburst_u_params",
-    "burstshape_u_params",
-    "lgav_dust_u_params",
-    "delta_dust_u_params",
-    "boris_dust_u_params",
-)), static_argnames=["n_histories"])
+loss_deriv = jjit(grad(loss, argnums=tuple(np.arange(20,29,1))), static_argnames=["n_histories"])
 
 
 t0 = time.time()
