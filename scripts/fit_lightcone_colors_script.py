@@ -186,12 +186,12 @@ target_data = np.load(
 path_json = "/home/aalarcongonzalez/source/diffstarpop/diffstarpop/bestfit_diffstarpop_params_UM_hists_v4.json"
 
 outputs = load_params(path_json)
-init_pdf_q_params = (outputs[0][0:N_PDF_Q],)
-init_pdf_ms_params = (outputs[0][N_PDF_Q : N_PDF_Q + N_PDF_MS],)
-init_r_q_params = (outputs[0][N_PDF_Q + N_PDF_MS : N_PDF_Q + N_PDF_MS + N_R_Q],)
-init_r_ms_params = (
-    outputs[0][N_PDF_Q + N_PDF_MS + N_R_Q : N_PDF_Q + N_PDF_MS + N_R_Q + N_R_MS],
-)
+init_pdf_q_params = outputs[0][0:N_PDF_Q]
+init_pdf_ms_params = outputs[0][N_PDF_Q : N_PDF_Q + N_PDF_MS]
+init_r_q_params = outputs[0][N_PDF_Q + N_PDF_MS : N_PDF_Q + N_PDF_MS + N_R_Q]
+init_r_ms_params = outputs[0][
+    N_PDF_Q + N_PDF_MS + N_R_Q : N_PDF_Q + N_PDF_MS + N_R_Q + N_R_MS
+]
 
 init_params = jnp.concatenate(
     (
