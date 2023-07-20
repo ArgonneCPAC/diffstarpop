@@ -768,7 +768,7 @@ def sumstats_lightcone_colors_1d(
         mah_params_arr,
         p50_arr,
         n_histories,
-        ran_key,
+        sfh_keys,
         index_select,
         index_high,
         fstar_tdelay,
