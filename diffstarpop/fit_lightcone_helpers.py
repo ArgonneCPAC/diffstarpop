@@ -114,7 +114,7 @@ def loss(params, loss_data, n_histories, ran_key):
         boris_dust_params,
     )
 
-    loss = mse(counts_pred, counts_target)
+    loss = mse(counts_pred, counts_target) * 1e6
 
     return loss
 
