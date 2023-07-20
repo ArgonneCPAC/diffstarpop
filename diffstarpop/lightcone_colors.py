@@ -17,6 +17,9 @@ from .pdf_model_assembly_bias_shifts import (
     DEFAULT_R_QUENCH_PARAMS,
     DEFAULT_R_MAINSEQ_PARAMS,
 )
+from .utils import _tw_cuml_lax_kern
+
+_tw_cuml_lax_kern_vmap = jjit(vmap(_tw_cuml_lax_kern, in_axes=(0, None, None)))
 
 DEFAULT_lgfburst_u_params = np.array(
     [
@@ -99,22 +102,53 @@ DEFAULT_boris_dust_u_params = np.array(
     ]
 )
 
+
 @jjit
 def calc_hist_kern(arrA, arrB, ndsig, weight, ndbins_lo, ndbins_hi):
-    eps = 1e-10
+    eps = 1e-50
 
     nddata = jnp.array([arrA, arrB]).T
     counts = tw_ndhist_weighted(nddata, ndsig, weight, ndbins_lo, ndbins_hi)
     counts = jnp.clip(counts, eps, None)
-    counts = counts / jnp.sum(counts)
+    # counts = counts / jnp.sum(counts)
     return counts
 
 
-calc_hist = jjit(vmap(calc_hist_kern, in_axes=(0, 0, None, *[None] * 3)))
+calc_hist = jjit(
+    vmap(calc_hist_kern, in_axes=(0, 0, None, *[None] * 3)),
+)
 
 
 @jjit
-def calculate_counts_mag_colors_bin(
+def calc_hist_kern_1d(nddata, ndsig, weight, ndbins_lo, ndbins_hi):
+    eps = 1e-50
+    nd = len(nddata)
+    nb = len(ndbins_lo)
+
+    counts = tw_ndhist_weighted(
+        nddata.reshape((nd, 1)),
+        ndsig.reshape((nd, 1)),
+        weight,
+        ndbins_lo.reshape((nb, 1)),
+        ndbins_hi.reshape((nb, 1)),
+    )
+    counts = jnp.clip(counts, eps, None)
+    return counts
+
+
+# vmap (m0,) -> (z, m0)
+calc_hist_1d = jjit(
+    vmap(calc_hist_kern_1d, in_axes=(0, None, 0, None, None)),
+)
+
+# vmap (z, m0) -> (colors, z, m0)
+calc_hist_1d_vmap = jjit(
+    vmap(calc_hist_1d, in_axes=(0, *[None] * 4)),
+)
+
+
+@partial(jjit, static_argnames=["n_histories"])
+def calculate_counts_mag_colors_bin_2d(
     gal_mags,
     weight,
     ndsig_colmag,
@@ -123,8 +157,8 @@ def calculate_counts_mag_colors_bin(
     bins_HI_colcol,
     bins_LO_colmag,
     bins_HI_colmag,
+    n_histories,
 ):
-
     imag = gal_mags[:, :, 3]  # i-band
     gal_col = -jnp.diff(gal_mags, axis=2)  # u-g, g-r, r-i, i-z
 
@@ -133,42 +167,84 @@ def calculate_counts_mag_colors_bin(
     # weights_magcut = weights_magcut.reshape(nzarr, nhist)
     # weights_magcut = 1.0 - weights_magcut # so it's 1 for brigther (smaller) magnitudes.
 
-    counts_i_ug = calc_hist(
-        imag, gal_col[:, :, 0], ndsig_colmag, weight, bins_LO_colmag, bins_HI_colmag
-    )
-    counts_i_gr = calc_hist(
-        imag, gal_col[:, :, 1], ndsig_colmag, weight, bins_LO_colmag, bins_HI_colmag
-    )
-    counts_i_ri = calc_hist(
-        imag, gal_col[:, :, 2], ndsig_colmag, weight, bins_LO_colmag, bins_HI_colmag
-    )
-    counts_i_iz = calc_hist(
-        imag, gal_col[:, :, 3], ndsig_colmag, weight, bins_LO_colmag, bins_HI_colmag
+    counts_i_ug = (
+        calc_hist(
+            imag,
+            gal_col[:, :, 0],
+            ndsig_colmag,
+            weight,
+            bins_LO_colmag,
+            bins_HI_colmag,
+        )
+        / n_histories
     )
 
-    counts_ug_gr = calc_hist(
-        gal_col[:, :, 0],
-        gal_col[:, :, 1],
-        ndsig_colcol,
-        weight,
-        bins_LO_colcol,
-        bins_HI_colcol,
+    counts_i_gr = (
+        calc_hist(
+            imag,
+            gal_col[:, :, 1],
+            ndsig_colmag,
+            weight,
+            bins_LO_colmag,
+            bins_HI_colmag,
+        )
+        / n_histories
     )
-    counts_gr_ri = calc_hist(
-        gal_col[:, :, 1],
-        gal_col[:, :, 2],
-        ndsig_colcol,
-        weight,
-        bins_LO_colcol,
-        bins_HI_colcol,
+    counts_i_ri = (
+        calc_hist(
+            imag,
+            gal_col[:, :, 2],
+            ndsig_colmag,
+            weight,
+            bins_LO_colmag,
+            bins_HI_colmag,
+        )
+        / n_histories
     )
-    counts_ri_iz = calc_hist(
-        gal_col[:, :, 2],
-        gal_col[:, :, 3],
-        ndsig_colcol,
-        weight,
-        bins_LO_colcol,
-        bins_HI_colcol,
+    counts_i_iz = (
+        calc_hist(
+            imag,
+            gal_col[:, :, 3],
+            ndsig_colmag,
+            weight,
+            bins_LO_colmag,
+            bins_HI_colmag,
+        )
+        / n_histories
+    )
+
+    counts_ug_gr = (
+        calc_hist(
+            gal_col[:, :, 0],
+            gal_col[:, :, 1],
+            ndsig_colcol,
+            weight,
+            bins_LO_colcol,
+            bins_HI_colcol,
+        )
+        / n_histories
+    )
+    counts_gr_ri = (
+        calc_hist(
+            gal_col[:, :, 1],
+            gal_col[:, :, 2],
+            ndsig_colcol,
+            weight,
+            bins_LO_colcol,
+            bins_HI_colcol,
+        )
+        / n_histories
+    )
+    counts_ri_iz = (
+        calc_hist(
+            gal_col[:, :, 2],
+            gal_col[:, :, 3],
+            ndsig_colcol,
+            weight,
+            bins_LO_colcol,
+            bins_HI_colcol,
+        )
+        / n_histories
     )
 
     out = (
@@ -185,13 +261,73 @@ def calculate_counts_mag_colors_bin(
 
 
 @jjit
+def return_weights_magcut(mag, mag_cut_bright, mag_cut_faint):
+    nzarr, nhist = mag.shape
+    weights_magcut_bright = _tw_cuml_lax_kern_vmap(
+        mag.reshape(nzarr * nhist), mag_cut_bright, 0.2
+    )
+    weights_magcut_faint = 1.0 - _tw_cuml_lax_kern_vmap(
+        mag.reshape(nzarr * nhist), mag_cut_faint, 0.2
+    )
+    weights_magcut = weights_magcut_bright * weights_magcut_faint
+    weights_magcut = weights_magcut.reshape(nzarr, nhist)
+    return weights_magcut
+
+
+@partial(jjit, static_argnames=["n_histories"])
+def calculate_counts_mag_colors_bin_1d(
+    gal_mags,
+    weight,
+    ndsig_mag,
+    ndsig_color,
+    bins_LO_mag,
+    bins_HI_mag,
+    bins_LO_color,
+    bins_HI_color,
+    n_histories,
+):
+    imag = gal_mags[:, :, 3]  # i-band
+    gal_col = -jnp.diff(gal_mags, axis=2)  # u-g, g-r, r-i, i-z
+
+    gal_col = jnp.einsum("zbc->czb", gal_col)
+
+    weights_magcut = return_weights_magcut(imag, 18.0, 23.0)
+
+    weight_final = jnp.einsum("zh,h->zh", weights_magcut, weight)
+
+    counts_i = (
+        calc_hist_1d(
+            imag,
+            ndsig_mag,
+            weight_final,
+            bins_LO_mag,
+            bins_HI_mag,
+        )
+        / n_histories
+    )
+
+    counts_colors = (
+        calc_hist_1d_vmap(
+            gal_col,
+            ndsig_color,
+            weight_final,
+            bins_LO_color,
+            bins_HI_color,
+        )
+        / n_histories
+    )
+
+    return counts_i, counts_colors
+
+
+@jjit
 def get_colors_kern(
-    gal_t_table, 
-    gal_sfr_table, 
-    z_obs, 
-    ssp_obs_photflux_table, 
+    gal_t_table,
+    gal_sfr_table,
+    z_obs,
+    ssp_obs_photflux_table,
     ran_key,
-    dsps_data, 
+    dsps_data,
     lgfburst_u_params,
     burstshape_u_params,
     lgav_dust_u_params,
@@ -240,29 +376,23 @@ def get_colors_kern(
     return galpop_obs_mags
 
 
-_A = (None, None, 0, 0, 0, *[None]*6)
+_A = (None, None, 0, 0, 0, *[None] * 6)
 get_colors = jjit(vmap(get_colors_kern, in_axes=_A))
 
 
 @partial(jjit, static_argnames=["n_histories"])
-def sumstats_lightcone_colors_single_m0(
+def calculate_mags_single_m0(
     t_table,
     logmh,
     mah_params,
     p50,
     n_histories,
-    ran_key,
+    sfh_key,
+    ssp_keys,
     index_select,
     index_high,
     fstar_tdelay,
-    ndsig_colcol,
-    ndsig_colmag,
-    bins_LO_colcol,
-    bins_HI_colcol,
-    bins_LO_colmag,
-    bins_HI_colmag,
-    z_arr, 
-    dVdz,
+    z_arr,
     dsps_data,
     ssp_obs_photflux_table_arr,
     pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
@@ -275,11 +405,6 @@ def sumstats_lightcone_colors_single_m0(
     delta_dust_u_params=DEFAULT_delta_dust_u_params,
     boris_dust_u_params=DEFAULT_boris_dust_u_params,
 ):
-
-    sfh_key, subkey = jran.split(ran_key, 2)
-    ssp_keys = jran.split(subkey, len(z_arr))
-    
-    
     mstar, sfr, fstar, p50_sampled, weight = draw_sfh_MIX(
         t_table,
         logmh,
@@ -295,14 +420,14 @@ def sumstats_lightcone_colors_single_m0(
         R_model_params_Q,
         R_model_params_MS,
     )
-        
+
     gal_mags = get_colors(
-        t_table, 
-        sfr, 
-        z_arr, 
-        ssp_obs_photflux_table_arr, 
+        t_table,
+        sfr,
+        z_arr,
+        ssp_obs_photflux_table_arr,
         ssp_keys,
-        dsps_data, 
+        dsps_data,
         lgfburst_u_params,
         burstshape_u_params,
         lgav_dust_u_params,
@@ -310,7 +435,72 @@ def sumstats_lightcone_colors_single_m0(
         boris_dust_u_params,
     )
 
-    _res = calculate_counts_mag_colors_bin(
+    return (
+        gal_mags,
+        weight,
+    )
+
+
+@partial(jjit, static_argnames=["n_histories"])
+def sumstats_lightcone_colors_2d_single_m0(
+    t_table,
+    logmh,
+    mah_params,
+    p50,
+    n_histories,
+    ran_key,
+    index_select,
+    index_high,
+    fstar_tdelay,
+    ndsig_colcol,
+    ndsig_colmag,
+    bins_LO_colcol,
+    bins_HI_colcol,
+    bins_LO_colmag,
+    bins_HI_colmag,
+    z_arr,
+    dVdz,
+    dsps_data,
+    ssp_obs_photflux_table_arr,
+    pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+    pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    R_model_params_Q=DEFAULT_R_QUENCH_PARAMS,
+    R_model_params_MS=DEFAULT_R_MAINSEQ_PARAMS,
+    lgfburst_u_params=DEFAULT_lgfburst_u_params,
+    burstshape_u_params=DEFAULT_burstshape_u_params,
+    lgav_dust_u_params=DEFAULT_lgav_dust_u_params,
+    delta_dust_u_params=DEFAULT_delta_dust_u_params,
+    boris_dust_u_params=DEFAULT_boris_dust_u_params,
+):
+    sfh_key, subkey = jran.split(ran_key, 2)
+    ssp_keys = jran.split(subkey, len(z_arr))
+
+    gal_mags, weight = calculate_mags_single_m0(
+        t_table,
+        logmh,
+        mah_params,
+        p50,
+        n_histories,
+        sfh_key,
+        ssp_keys,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        z_arr,
+        dsps_data,
+        ssp_obs_photflux_table_arr,
+        pdf_parameters_Q,
+        pdf_parameters_MS,
+        R_model_params_Q,
+        R_model_params_MS,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+    )
+
+    _res = calculate_counts_mag_colors_bin_2d(
         gal_mags,
         weight,
         ndsig_colmag,
@@ -319,6 +509,7 @@ def sumstats_lightcone_colors_single_m0(
         bins_HI_colcol,
         bins_LO_colmag,
         bins_HI_colmag,
+        n_histories,
     )
 
     (
@@ -351,12 +542,100 @@ def sumstats_lightcone_colors_single_m0(
     return counts
 
 
-_A = (None, 0, 0, 0, None, 0, *[None]*22)
-sumstats_lightcone_colors_single_m0_vmap = jjit(vmap(sumstats_lightcone_colors_single_m0, in_axes=_A), static_argnames=["n_histories"])
+_A = (None, 0, 0, 0, None, 0, *[None] * 22)
+sumstats_lightcone_colors_2d_single_m0_vmap = jjit(
+    vmap(sumstats_lightcone_colors_2d_single_m0, in_axes=_A),
+    static_argnames=["n_histories"],
+)
 
 
 @partial(jjit, static_argnames=["n_histories"])
-def sumstats_lightcone_colors(
+def sumstats_lightcone_colors_1d_single_m0(
+    t_table,
+    logmh,
+    mah_params,
+    p50,
+    n_histories,
+    ran_key,
+    index_select,
+    index_high,
+    fstar_tdelay,
+    ndsig_mag,
+    ndsig_color,
+    bins_LO_mag,
+    bins_HI_mag,
+    bins_LO_color,
+    bins_HI_color,
+    z_arr,
+    dVdz,
+    dsps_data,
+    ssp_obs_photflux_table_arr,
+    pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+    pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    R_model_params_Q=DEFAULT_R_QUENCH_PARAMS,
+    R_model_params_MS=DEFAULT_R_MAINSEQ_PARAMS,
+    lgfburst_u_params=DEFAULT_lgfburst_u_params,
+    burstshape_u_params=DEFAULT_burstshape_u_params,
+    lgav_dust_u_params=DEFAULT_lgav_dust_u_params,
+    delta_dust_u_params=DEFAULT_delta_dust_u_params,
+    boris_dust_u_params=DEFAULT_boris_dust_u_params,
+):
+    sfh_key, subkey = jran.split(ran_key, 2)
+    ssp_keys = jran.split(subkey, len(z_arr))
+
+    gal_mags, weight = calculate_mags_single_m0(
+        t_table,
+        logmh,
+        mah_params,
+        p50,
+        n_histories,
+        sfh_key,
+        ssp_keys,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        z_arr,
+        dsps_data,
+        ssp_obs_photflux_table_arr,
+        pdf_parameters_Q,
+        pdf_parameters_MS,
+        R_model_params_Q,
+        R_model_params_MS,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+    )
+
+    counts_i, counts_colors = calculate_counts_mag_colors_bin_1d(
+        gal_mags,
+        weight,
+        ndsig_mag,
+        ndsig_color,
+        bins_LO_mag,
+        bins_HI_mag,
+        bins_LO_color,
+        bins_HI_color,
+        n_histories,
+    )
+
+    counts = jnp.concatenate((counts_i[None, :, :], counts_colors))
+
+    counts = jnp.einsum("czb,z->cb", counts, dVdz)
+
+    return counts
+
+
+_A = (None, 0, 0, 0, None, 0, *[None] * 22)
+sumstats_lightcone_colors_1d_single_m0_vmap = jjit(
+    vmap(sumstats_lightcone_colors_1d_single_m0, in_axes=_A),
+    static_argnames=["n_histories"],
+)
+
+
+@partial(jjit, static_argnames=["n_histories"])
+def sumstats_lightcone_colors_2d(
     t_table,
     logmh_arr,
     mah_params_arr,
@@ -373,7 +652,7 @@ def sumstats_lightcone_colors(
     bins_HI_colcol,
     bins_LO_colmag,
     bins_HI_colmag,
-    z_arr, 
+    z_arr,
     dVdz,
     dsps_data,
     ssp_obs_photflux_table_arr,
@@ -387,10 +666,9 @@ def sumstats_lightcone_colors(
     delta_dust_u_params=DEFAULT_delta_dust_u_params,
     boris_dust_u_params=DEFAULT_boris_dust_u_params,
 ):
-
     sfh_keys = jran.split(ran_key, len(pm0))
-    
-    _res = sumstats_lightcone_colors_single_m0_vmap(
+
+    _res = sumstats_lightcone_colors_2d_single_m0_vmap(
         t_table,
         logmh_arr,
         mah_params_arr,
@@ -406,7 +684,7 @@ def sumstats_lightcone_colors(
         bins_HI_colcol,
         bins_LO_colmag,
         bins_HI_colmag,
-        z_arr, 
+        z_arr,
         dVdz,
         dsps_data,
         ssp_obs_photflux_table_arr,
@@ -447,4 +725,74 @@ def sumstats_lightcone_colors(
         counts_gr_ri,
         counts_ri_iz,
     )
+    return counts
+
+
+@partial(jjit, static_argnames=["n_histories"])
+def sumstats_lightcone_colors_1d(
+    t_table,
+    logmh_arr,
+    mah_params_arr,
+    p50_arr,
+    pm0,
+    n_histories,
+    ran_key,
+    index_select,
+    index_high,
+    fstar_tdelay,
+    ndsig_mag,
+    ndsig_color,
+    bins_LO_mag,
+    bins_HI_mag,
+    bins_LO_color,
+    bins_HI_color,
+    z_arr,
+    dVdz,
+    dsps_data,
+    ssp_obs_photflux_table_arr,
+    pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+    pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    R_model_params_Q=DEFAULT_R_QUENCH_PARAMS,
+    R_model_params_MS=DEFAULT_R_MAINSEQ_PARAMS,
+    lgfburst_u_params=DEFAULT_lgfburst_u_params,
+    burstshape_u_params=DEFAULT_burstshape_u_params,
+    lgav_dust_u_params=DEFAULT_lgav_dust_u_params,
+    delta_dust_u_params=DEFAULT_delta_dust_u_params,
+    boris_dust_u_params=DEFAULT_boris_dust_u_params,
+):
+    sfh_keys = jran.split(ran_key, len(pm0))
+
+    counts = sumstats_lightcone_colors_1d_single_m0_vmap(
+        t_table,
+        logmh_arr,
+        mah_params_arr,
+        p50_arr,
+        n_histories,
+        ran_key,
+        index_select,
+        index_high,
+        fstar_tdelay,
+        ndsig_mag,
+        ndsig_color,
+        bins_LO_mag,
+        bins_HI_mag,
+        bins_LO_color,
+        bins_HI_color,
+        z_arr,
+        dVdz,
+        dsps_data,
+        ssp_obs_photflux_table_arr,
+        pdf_parameters_Q,
+        pdf_parameters_MS,
+        R_model_params_Q,
+        R_model_params_MS,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+    )
+
+    counts = jnp.einsum("mcb,m->cb", counts, pm0)
+
     return counts
