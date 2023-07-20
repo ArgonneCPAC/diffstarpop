@@ -37,6 +37,7 @@ from diffstarpop.lightcone_colors import (
     DEFAULT_lgav_dust_u_params,
     DEFAULT_delta_dust_u_params,
     DEFAULT_boris_dust_u_params,
+    sumstats_lightcone_colors_1d,
 )
 
 # DSPS_data_path = "/Users/alarcon/Documents/DSPS_data/"
@@ -216,14 +217,12 @@ n_histories = int(1e3)
 ndsig_color = np.ones(2 * n_histories) * delta_bin_color
 ndsig_mag = np.ones(2 * n_histories) * delta_bin_mag
 
-
 loss_data = (
     t_table,
     logm0_binmids,
-    mah_params_arr,
-    p50_arr,
+    halo_data_MC.reshape(len(logm0_binmids), Nhalos, 4),
+    p50.reshape(len(logm0_binmids), Nhalos),
     pm0,
-    n_histories,
     index_select,
     index_high,
     fstar_tdelay,

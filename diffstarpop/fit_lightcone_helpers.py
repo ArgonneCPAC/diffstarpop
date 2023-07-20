@@ -44,7 +44,6 @@ def loss(params, loss_data, n_histories, ran_key):
         mah_params_arr,
         p50_arr,
         pm0,
-        n_histories,
         index_select,
         index_high,
         fstar_tdelay,
