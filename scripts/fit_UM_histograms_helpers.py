@@ -15,8 +15,8 @@ import time
 def jax_adam_wrapper(
     params_init,
     loss_data,
-    loss,
-    loss_grad,
+    loss_fun,
+    loss_fun_grad,
     n_step,
     n_histories,
     ran_key,
@@ -41,8 +41,8 @@ def jax_adam_wrapper(
 
         p = np.array(get_params(opt_state))
 
-        loss = loss(p, loss_data, n_histories, ran_key)
-        grads = loss_grad(p, loss_data, n_histories, ran_key)
+        loss = loss_fun(p, loss_data, n_histories, ran_key)
+        grads = loss_fun_grad(p, loss_data, n_histories, ran_key)
 
         no_nan_params = np.all(np.isfinite(p))
         no_nan_loss = np.isfinite(loss)
