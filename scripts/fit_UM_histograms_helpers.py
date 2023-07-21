@@ -1,7 +1,5 @@
 import numpy as np
 from jax import numpy as jnp
-from jax import random as jran
-from jax.example_libraries import optimizers as jax_opt
 
 from diffstar.stars import fstar_tools
 from diffstarpop.monte_carlo_diff_halo_population import (
@@ -10,69 +8,6 @@ from diffstarpop.monte_carlo_diff_halo_population import (
     calc_hist_mstar_ssfr,
 )
 import time
-
-
-def jax_adam_wrapper(
-    params_init,
-    loss_data,
-    loss,
-    loss_grad,
-    n_step,
-    n_histories,
-    ran_key,
-    jax_optimizer=None,
-    step_size=0.01,
-):
-
-    loss_arr = np.zeros(n_step).astype("f4") + np.inf
-    if jax_optimizer is None:
-        opt_init, opt_update, get_params = jax_opt.adam(step_size)
-        opt_state = opt_init(params_init)
-    else:
-        opt_state, opt_update, get_params = jax_optimizer
-
-    n_params = len(params_init)
-    params_arr = np.zeros((n_step, n_params)).astype("f4")
-
-    no_nan_grads_arr = np.zeros(n_step)
-    for istep in range(n_step):
-        t0 = time.time()
-        ran_key, subkey = jran.split(ran_key, 2)
-
-        p = np.array(get_params(opt_state))
-
-        loss = loss(p, loss_data, n_histories, ran_key)
-        grads = loss_grad(p, loss_data, n_histories, ran_key)
-
-        no_nan_params = np.all(np.isfinite(p))
-        no_nan_loss = np.isfinite(loss)
-        no_nan_grads = np.all(np.isfinite(grads))
-        if ~no_nan_params | ~no_nan_loss | ~no_nan_grads:
-            # break
-            if istep > 0:
-                indx_best = np.nanargmin(loss_arr[:istep])
-                best_fit_params = params_arr[indx_best]
-                best_fit_loss = loss_arr[indx_best]
-            else:
-                best_fit_params = np.copy(p)
-                best_fit_loss = 999.99
-        else:
-            params_arr[istep, :] = p
-            loss_arr[istep] = loss
-            opt_state = opt_update(istep, grads, opt_state)
-
-        no_nan_grads_arr[istep] = ~no_nan_grads
-        t1 = time.time()
-        print(istep, loss, t1 - t0, no_nan_grads)
-        # if ~no_nan_grads:
-        #    break
-
-    indx_best = np.nanargmin(loss_arr)
-    best_fit_params = params_arr[indx_best]
-    best_fit_loss = loss_arr[indx_best]
-
-    jax_optimizer = (opt_state, opt_update, get_params)
-    return best_fit_params, best_fit_loss, loss_arr, params_arr, jax_optimizer
 
 
 def calculate_SMDPL_sumstats(
@@ -98,7 +33,6 @@ def calculate_SMDPL_sumstats(
 
     stats = []
     for i in range(len(logm0_binmids)):
-
         print(
             "Calculating m0=[%.2f, %.2f]"
             % (
@@ -122,7 +56,11 @@ def calculate_SMDPL_sumstats(
             fstar_tdelay,
         )
 
-        (mstar_histories, sfr_histories, fstar_histories,) = _res
+        (
+            mstar_histories,
+            sfr_histories,
+            fstar_histories,
+        ) = _res
 
         ssfr = sfr_histories / mstar_histories
         weights_quench_bin = jnp.where(ssfr > 1e-11, 1.0, 0.0)
@@ -167,7 +105,6 @@ def calculate_sumstats_bin(
     bins_HI,
     t_sel_hists,
 ):
-
     weights_Q = 1.0 - weights_MS
 
     # Clip weights. When all weights in a time
@@ -195,19 +132,30 @@ def calculate_sumstats_bin(
     mean_sm_early = jnp.average(mstar_histories, weights=weights_early, axis=0)
     mean_sm_late = jnp.average(mstar_histories, weights=weights_late, axis=0)
 
-    variance_sm = jnp.average((mstar_histories - mean_sm[None, :]) ** 2, axis=0,)
+    variance_sm = jnp.average(
+        (mstar_histories - mean_sm[None, :]) ** 2,
+        axis=0,
+    )
 
     variance_sfr_MS = jnp.average(
-        (sfr_histories - mean_sfr_MS[None, :]) ** 2, weights=weights_MS, axis=0,
+        (sfr_histories - mean_sfr_MS[None, :]) ** 2,
+        weights=weights_MS,
+        axis=0,
     )
     variance_sfr_Q = jnp.average(
-        (sfr_histories - mean_sfr_Q[None, :]) ** 2, weights=weights_Q, axis=0,
+        (sfr_histories - mean_sfr_Q[None, :]) ** 2,
+        weights=weights_Q,
+        axis=0,
     )
     variance_sm_early = jnp.average(
-        (mstar_histories - mean_sm[None, :]) ** 2, weights=weights_early, axis=0,
+        (mstar_histories - mean_sm[None, :]) ** 2,
+        weights=weights_early,
+        axis=0,
     )
     variance_sm_late = jnp.average(
-        (mstar_histories - mean_sm[None, :]) ** 2, weights=weights_late, axis=0,
+        (mstar_histories - mean_sm[None, :]) ** 2,
+        weights=weights_late,
+        axis=0,
     )
 
     NHALO_MS = jnp.sum(weights_MS, axis=0)
