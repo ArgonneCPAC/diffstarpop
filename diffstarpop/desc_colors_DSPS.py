@@ -1,0 +1,769 @@
+import numpy as np
+from jax import vmap
+from jax import jit as jjit
+from jax import numpy as jnp
+from jax import random as jran
+from functools import partial
+
+from diffsky.experimental.dspspop.photpop import get_obs_photometry_singlez
+from diffsky.diffndhist import tw_ndhist_weighted, _tw_ndhist_weighted_kern
+
+from .monte_carlo_diff_halo_population import draw_sfh_MIX
+from .pdf_quenched import (
+    DEFAULT_SFH_PDF_QUENCH_PARAMS,
+)
+from .pdf_mainseq import DEFAULT_SFH_PDF_MAINSEQ_PARAMS
+from .pdf_model_assembly_bias_shifts import (
+    DEFAULT_R_QUENCH_PARAMS,
+    DEFAULT_R_MAINSEQ_PARAMS,
+)
+from .utils import _tw_cuml_lax_kern
+
+from .lightcone_colors import (
+    DEFAULT_lgfburst_u_params,
+    DEFAULT_burstshape_u_params,
+    DEFAULT_lgav_dust_u_params,
+    DEFAULT_delta_dust_u_params,
+    DEFAULT_boris_dust_u_params,
+)
+
+from dsps.photometry.photpop import precompute_ssp_obsmags_on_z_table
+from diffsky.experimental.photometry_interpolation import interpolate_ssp_photmag_table
+
+
+_tw_cuml_lax_kern_vmap = jjit(vmap(_tw_cuml_lax_kern, in_axes=(0, None, None)))
+
+
+N_BURST_F = len(DEFAULT_lgfburst_u_params)
+N_BURST_SHAPE = len(DEFAULT_burstshape_u_params)
+N_DUST_LGAV = len(DEFAULT_lgav_dust_u_params)
+N_DUST_DELTA = len(DEFAULT_delta_dust_u_params)
+N_DUST_BORIS = len(DEFAULT_boris_dust_u_params)
+
+
+@jjit
+def mse(pred, targ):
+    return jnp.mean((pred - targ) ** 2)
+
+
+@jjit
+def get_colors_single_redshift(
+    z_obs,
+    dsps_data,
+):
+    (
+        ssp_waves,
+        ssp_spectra,
+        filter_waves,
+        filter_trans,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        cosmo_params,
+    ) = dsps_data
+
+    args = [
+        ssp_waves,
+        ssp_spectra,
+        filter_waves,
+        filter_trans,
+        jnp.atleast_1d(z_obs),
+        *cosmo_params,
+    ]
+    ssp_obs_photmags = precompute_ssp_obsmags_on_z_table(*args)[0]
+    ssp_obs_photflux_table = 10 ** (-0.4 * ssp_obs_photmags)
+    return ssp_obs_photflux_table
+
+
+_get_colors_single_redshift_vmap_kern = jjit(
+    vmap(get_colors_single_redshift, in_axes=(0, None))
+)
+
+
+@jjit
+def get_colors_array(z_arr, dsps_data):
+    ssp_obs_photflux_table = _get_colors_single_redshift_vmap_kern(z_arr, dsps_data)
+    ssp_obs_photflux_table = jnp.einsum("zmab->mabz", ssp_obs_photflux_table)
+    return ssp_obs_photflux_table
+
+
+interpolate_ssp_photmag_table_vmap = jjit(
+    vmap(interpolate_ssp_photmag_table, in_axes=(None, None, 0))
+)
+
+
+@jjit
+def interpolate_ssp_obs_photflux_table_single_gal(z_gal, z_table, ssp_photmag_table):
+    nmet, nage, nbands, nz = ssp_photmag_table.shape
+    ssp_photmag_table_reshape = ssp_photmag_table.reshape((nmet * nage * nbands, nz))
+    interp_table = interpolate_ssp_photmag_table_vmap(
+        jnp.atleast_1d(z_gal), z_table, ssp_photmag_table_reshape
+    )
+    interp_table = interp_table[:, 0]
+    interp_table = interp_table.reshape(nmet, nage, nbands)
+    return interp_table
+
+
+interpolate_ssp_obs_photflux_table = jjit(
+    vmap(interpolate_ssp_obs_photflux_table_single_gal, in_axes=(0, None, None))
+)
+
+
+@jjit
+def get_colors_single_object(
+    gal_t_table,
+    gal_sfr_table,
+    gal_z_obs,
+    gal_ssp_obs_photflux_table,
+    ran_key,
+    dsps_data,
+    lgfburst_u_params,
+    burstshape_u_params,
+    lgav_dust_u_params,
+    delta_dust_u_params,
+    boris_dust_u_params,
+):
+    (
+        filter_waves,
+        filter_trans,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        cosmo_params,
+    ) = dsps_data
+
+    gal_sfr_table = jnp.atleast_2d(gal_sfr_table)
+
+    res = get_obs_photometry_singlez(
+        ran_key,
+        filter_waves,
+        filter_trans,
+        gal_ssp_obs_photflux_table,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        gal_t_table,
+        gal_sfr_table,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+        cosmo_params,
+        gal_z_obs,
+    )
+
+    (
+        weights,
+        lgmet_weights,
+        smooth_age_weights,
+        bursty_age_weights,
+        frac_trans,
+        gal_obsflux_nodust,
+        gal_obsflux,
+    ) = res
+
+    gal_obsflux = gal_obsflux[0]
+
+    gal_obs_mags = -2.5 * jnp.log10(gal_obsflux)
+
+    return gal_obs_mags
+
+
+_A = (None, 0, 0, 0, 0, *[None] * 6)
+get_colors_pop = jjit(vmap(get_colors_single_object, in_axes=_A))
+
+
+@jjit
+def calc_hist_1d(nddata, ndsig, weight, ndbins_lo, ndbins_hi):
+    eps = 1e-50
+    nd = len(nddata)
+    nb = len(ndbins_lo)
+
+    counts = tw_ndhist_weighted(
+        nddata.reshape((nd, 1)),
+        ndsig.reshape((nd, 1)),
+        weight,
+        ndbins_lo.reshape((nb, 1)),
+        ndbins_hi.reshape((nb, 1)),
+    )
+    counts = jnp.clip(counts, eps, None)
+    return counts
+
+
+# vmap (bins,) -> (colors, bins)
+calc_hist_1d_vmap = jjit(
+    vmap(calc_hist_1d, in_axes=(0, *[None] * 4)),
+)
+
+
+@jjit
+def return_weights_magbin(mag, mag_cut_bright, mag_cut_faint):
+    weights_magcut_bright = _tw_cuml_lax_kern_vmap(mag, mag_cut_bright, 0.2)
+    weights_magcut_faint = 1.0 - _tw_cuml_lax_kern_vmap(mag, mag_cut_faint, 0.2)
+    weights_magcut = weights_magcut_bright * weights_magcut_faint
+    return weights_magcut
+
+
+@jjit
+def calculate_dNdz_DEEP2(mag_r, mag_i, z_obs, bins_dNdz):
+    """
+    Function to calculate DEEP2 dNdz for CFHT r and CFHT i magnitude bins
+    from Table 4 in Coil et. al. (2004).
+
+    The following bins are implemented:
+        - 18 < i < 20
+        - 18 < i < 21
+        - 18 < i < 22
+        - 18 < i < 23
+        - 18 < r < 20
+        - 18 < r < 21
+        - 18 < r < 22
+        - 18 < r < 23
+    """
+    weights_imag_18_20 = return_weights_magbin(mag_i, 18.0, 20.0)
+    weights_imag_18_21 = return_weights_magbin(mag_i, 18.0, 21.0)
+    weights_imag_18_22 = return_weights_magbin(mag_i, 18.0, 22.0)
+    weights_imag_18_23 = return_weights_magbin(mag_i, 18.0, 23.0)
+
+    dNdz_imag_18_20 = jnp.histogram(
+        z_obs, bins_dNdz, weights=weights_imag_18_20, density=1
+    )
+    dNdz_imag_18_21 = jnp.histogram(
+        z_obs, bins_dNdz, weights=weights_imag_18_21, density=1
+    )
+    dNdz_imag_18_22 = jnp.histogram(
+        z_obs, bins_dNdz, weights=weights_imag_18_22, density=1
+    )
+    dNdz_imag_18_23 = jnp.histogram(
+        z_obs, bins_dNdz, weights=weights_imag_18_23, density=1
+    )
+
+    weights_rmag_18_20 = return_weights_magbin(mag_r, 18.0, 20.0)
+    weights_rmag_18_21 = return_weights_magbin(mag_r, 18.0, 21.0)
+    weights_rmag_18_22 = return_weights_magbin(mag_r, 18.0, 22.0)
+    weights_rmag_18_23 = return_weights_magbin(mag_r, 18.0, 23.0)
+
+    dNdz_rmag_18_20 = jnp.histogram(
+        z_obs, bins_dNdz, weights=weights_rmag_18_20, density=1
+    )
+    dNdz_rmag_18_21 = jnp.histogram(
+        z_obs, bins_dNdz, weights=weights_rmag_18_21, density=1
+    )
+    dNdz_rmag_18_22 = jnp.histogram(
+        z_obs, bins_dNdz, weights=weights_rmag_18_22, density=1
+    )
+    dNdz_rmag_18_23 = jnp.histogram(
+        z_obs, bins_dNdz, weights=weights_rmag_18_23, density=1
+    )
+
+    output = (
+        dNdz_rmag_18_20,
+        dNdz_rmag_18_21,
+        dNdz_rmag_18_22,
+        dNdz_rmag_18_23,
+        dNdz_imag_18_20,
+        dNdz_imag_18_21,
+        dNdz_imag_18_22,
+        dNdz_imag_18_23,
+    )
+    return output
+
+
+@jjit
+def calculate_1d_COSMOS_colors_counts_singlez_bin(
+    gal_mags,
+    ndsig_mag,
+    ndsig_color,
+    bins_LO_mag,
+    bins_HI_mag,
+    bins_LO_color,
+    bins_HI_color,
+):
+    ng = len(gal_mags)
+    imag = gal_mags[:, 3]  # i-band
+    gal_col = -jnp.diff(gal_mags, axis=1).T  # u-g, g-r, r-i, i-z, z-Y, Y-J, J-H, H-K
+
+    weights_magcut = return_weights_magbin(imag, 18.0, 23.0)
+
+    # weight_final = jnp.einsum("zh,h->zh", weights_magcut, weight)
+
+    counts_i = (
+        calc_hist_1d(
+            imag,
+            ndsig_mag,
+            weights_magcut,
+            bins_LO_mag,
+            bins_HI_mag,
+        )
+        / ng
+    )
+
+    counts_colors = (
+        calc_hist_1d_vmap(
+            gal_col,
+            ndsig_color,
+            weights_magcut,
+            bins_LO_color,
+            bins_HI_color,
+        )
+        / ng
+    )
+
+    return counts_i, counts_colors
+
+
+@jjit
+def calculate_1d_COSMOS_colors_counts(
+    gal_mags,
+    z_obs,
+    ndsig_mag,
+    ndsig_color,
+    bins_LO_mag,
+    bins_HI_mag,
+    bins_LO_color,
+    bins_HI_color,
+):
+    """
+    Function to calculate COSMOS i-mag and color distributions conditioned on redshift bins.
+
+    Function assumes u,g,r,i,z,Y,J,H,K magnitudes are supplied.
+
+    The following bins are implemented:
+        * 0.1 < redshift < 0.3
+        * 0.3 < redshift < 0.5
+        * 0.5 < redshift < 0.7
+        * 0.7 < redshift < 0.9
+        * 0.9 < redshift < 1.1
+        * 1.1 < redshift < 1.3
+        * 1.3 < redshift < 1.5
+    """
+    args = (
+        ndsig_mag,
+        ndsig_color,
+        bins_LO_mag,
+        bins_HI_mag,
+        bins_LO_color,
+        bins_HI_color,
+    )
+
+    mask = (z_obs > 0.1) & (z_obs < 0.3)
+    gal_mags_masked = gal_mags[mask]
+    (
+        counts_i_z01_03,
+        counts_colors_z01_03,
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+
+    mask = (z_obs > 0.3) & (z_obs < 0.5)
+    gal_mags_masked = gal_mags[mask]
+    (
+        counts_i_z03_05,
+        counts_colors_z03_05,
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+
+    mask = (z_obs > 0.5) & (z_obs < 0.7)
+    gal_mags_masked = gal_mags[mask]
+    (
+        counts_i_z05_07,
+        counts_colors_z05_07,
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+
+    mask = (z_obs > 0.7) & (z_obs < 0.9)
+    gal_mags_masked = gal_mags[mask]
+    (
+        counts_i_z07_09,
+        counts_colors_z07_09,
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+
+    mask = (z_obs > 0.9) & (z_obs < 1.1)
+    gal_mags_masked = gal_mags[mask]
+    (
+        counts_i_z09_11,
+        counts_colors_z09_11,
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+
+    mask = (z_obs > 1.1) & (z_obs < 1.3)
+    gal_mags_masked = gal_mags[mask]
+    (
+        counts_i_z11_13,
+        counts_colors_z11_13,
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+
+    mask = (z_obs > 1.3) & (z_obs < 1.5)
+    gal_mags_masked = gal_mags[mask]
+    (
+        counts_i_z13_15,
+        counts_colors_z13_15,
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+
+    output = (
+        counts_i_z01_03,
+        counts_i_z03_05,
+        counts_i_z05_07,
+        counts_i_z07_09,
+        counts_i_z09_11,
+        counts_i_z11_13,
+        counts_i_z13_15,
+        counts_colors_z01_03,
+        counts_colors_z03_05,
+        counts_colors_z05_07,
+        counts_colors_z07_09,
+        counts_colors_z09_11,
+        counts_colors_z11_13,
+        counts_colors_z13_15,
+    )
+    return output
+
+
+@jjit
+def calculate_1d_SDSS_colors_counts(
+    gal_mags,
+    z_obs,
+    ndsig_color,
+    bins_LO_color,
+    bins_HI_color,
+):
+    """
+    Function to calculate COSMOS color distributions for m_r < 17.7 and 0.05 < redshift < 0.1.
+
+    Function assumes u,g,r,i,z magnitudes are supplied.
+
+    """
+    mask = (z_obs > 0.05) & (z_obs < 0.1)
+
+    gal_mags_masked = gal_mags[mask]
+
+    ng = len(gal_mags_masked)
+    rmag = gal_mags_masked[:, 2]  # r-band
+    gal_col = -jnp.diff(gal_mags_masked, axis=1).T  # u-g, g-r, r-i, i-z
+
+    # r < 17.7
+    weights_magcut = weights_magcut_faint = 1.0 - _tw_cuml_lax_kern_vmap(
+        rmag, 17.7, 0.2
+    )
+
+    counts_colors = (
+        calc_hist_1d_vmap(
+            gal_col,
+            ndsig_color,
+            weights_magcut,
+            bins_LO_color,
+            bins_HI_color,
+        )
+        / ng
+    )
+
+    return counts_colors
+
+
+@jjit
+def cumulative_imag_kern(mag, mag_cut_faint):
+    weights_magcut_faint = 1.0 - _tw_cuml_lax_kern_vmap(mag, mag_cut_faint, 0.2)
+    return jnp.sum(weights_magcut_faint)
+
+
+cumulative_imag = jjit(vmap(cumulative_imag_kern, in_axes=(None, 0)))
+
+
+@jjit
+def calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm):
+    """
+    Function to calculate HSC cumulative i-band number density (gal/sq.deg).
+    """
+    counts_imag = cumulative_imag(mag_i, mag_i_bins)
+
+    return counts_imag / area_norm
+
+
+@jjit
+def loss_DEEP2(params, loss_data, ran_key):
+    (
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        dsps_data,
+        bins_dNdz,
+        target_data,
+    ) = loss_data
+
+    (
+        dNdz_rmag_18_20_target,
+        dNdz_rmag_18_21_target,
+        dNdz_rmag_18_22_target,
+        dNdz_rmag_18_23_target,
+        dNdz_imag_18_20_target,
+        dNdz_imag_18_21_target,
+        dNdz_imag_18_22_target,
+        dNdz_imag_18_23_target,
+    ) = target_data
+
+    ran_key_arr = jran.split(ran_key, len(gal_z_arr))
+
+    _npar = 0
+    lgfburst_u_params = params[_npar : _npar + N_BURST_F]
+    _npar += N_BURST_F
+    burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
+    _npar += N_BURST_SHAPE
+    lgav_dust_u_params = params[_npar : _npar + N_DUST_LGAV]
+    _npar += N_DUST_LGAV
+    delta_dust_u_params = params[_npar : _npar + N_DUST_DELTA]
+    _npar += N_DUST_DELTA
+    boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
+    _npar += N_DUST_BORIS
+
+    mag_r_CFHT, mag_i_CFHT = get_colors_pop(
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        ran_key_arr,
+        dsps_data,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+    )
+
+    pred_data = calculate_dNdz_DEEP2(mag_r_CFHT, mag_i_CFHT, gal_z_arr, bins_dNdz)
+
+    (
+        dNdz_rmag_18_20,
+        dNdz_rmag_18_21,
+        dNdz_rmag_18_22,
+        dNdz_rmag_18_23,
+        dNdz_imag_18_20,
+        dNdz_imag_18_21,
+        dNdz_imag_18_22,
+        dNdz_imag_18_23,
+    ) = pred_data
+
+    loss = mse(dNdz_rmag_18_20, dNdz_rmag_18_20_target)
+    loss += mse(dNdz_rmag_18_21, dNdz_rmag_18_21_target)
+    loss += mse(dNdz_rmag_18_22, dNdz_rmag_18_22_target)
+    loss += mse(dNdz_rmag_18_23, dNdz_rmag_18_23_target)
+    loss += mse(dNdz_imag_18_20, dNdz_imag_18_20_target)
+    loss += mse(dNdz_imag_18_21, dNdz_imag_18_21_target)
+    loss += mse(dNdz_imag_18_22, dNdz_imag_18_22_target)
+    loss += mse(dNdz_imag_18_23, dNdz_imag_18_23_target)
+
+    return loss
+
+
+@jjit
+def loss_COSMOS(params, loss_data, ran_key):
+    (
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        dsps_data,
+        ndsig_mag,
+        ndsig_color,
+        bins_LO_mag,
+        bins_HI_mag,
+        bins_LO_color,
+        bins_HI_color,
+        mag_i_bins,
+        area_norm,
+        target_data_COSMOS,
+        target_data_HSC,
+    ) = loss_data
+
+    (
+        counts_i_z01_03_target,
+        counts_i_z03_05_target,
+        counts_i_z05_07_target,
+        counts_i_z07_09_target,
+        counts_i_z09_11_target,
+        counts_i_z11_13_target,
+        counts_i_z13_15_target,
+        counts_colors_z01_03_target,
+        counts_colors_z03_05_target,
+        counts_colors_z05_07_target,
+        counts_colors_z07_09_target,
+        counts_colors_z09_11_target,
+        counts_colors_z11_13_target,
+        counts_colors_z13_15_target,
+    ) = target_data_COSMOS
+
+    ran_key_arr = jran.split(ran_key, len(gal_z_arr))
+
+    _npar = 0
+    lgfburst_u_params = params[_npar : _npar + N_BURST_F]
+    _npar += N_BURST_F
+    burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
+    _npar += N_BURST_SHAPE
+    lgav_dust_u_params = params[_npar : _npar + N_DUST_LGAV]
+    _npar += N_DUST_LGAV
+    delta_dust_u_params = params[_npar : _npar + N_DUST_DELTA]
+    _npar += N_DUST_DELTA
+    boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
+    _npar += N_DUST_BORIS
+
+    gal_mags = get_colors_pop(
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        ran_key_arr,
+        dsps_data,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+    )
+
+    pred_data = calculate_1d_COSMOS_colors_counts(
+        gal_mags,
+        gal_z_arr,
+        ndsig_mag,
+        ndsig_color,
+        bins_LO_mag,
+        bins_HI_mag,
+        bins_LO_color,
+        bins_HI_color,
+    )
+
+    (
+        counts_i_z01_03,
+        counts_i_z03_05,
+        counts_i_z05_07,
+        counts_i_z07_09,
+        counts_i_z09_11,
+        counts_i_z11_13,
+        counts_i_z13_15,
+        counts_colors_z01_03,
+        counts_colors_z03_05,
+        counts_colors_z05_07,
+        counts_colors_z07_09,
+        counts_colors_z09_11,
+        counts_colors_z11_13,
+        counts_colors_z13_15,
+    ) = pred_data
+
+    loss = mse(counts_i_z01_03, counts_i_z01_03_target)
+    loss += mse(counts_i_z03_05, counts_i_z03_05_target)
+    loss += mse(counts_i_z05_07, counts_i_z05_07_target)
+    loss += mse(counts_i_z07_09, counts_i_z07_09_target)
+    loss += mse(counts_i_z09_11, counts_i_z09_11_target)
+    loss += mse(counts_i_z11_13, counts_i_z11_13_target)
+    loss += mse(counts_i_z13_15, counts_i_z13_15_target)
+
+    loss += mse(counts_colors_z01_03, counts_colors_z01_03_target)
+    loss += mse(counts_colors_z03_05, counts_colors_z03_05_target)
+    loss += mse(counts_colors_z05_07, counts_colors_z05_07_target)
+    loss += mse(counts_colors_z07_09, counts_colors_z07_09_target)
+    loss += mse(counts_colors_z09_11, counts_colors_z09_11_target)
+    loss += mse(counts_colors_z11_13, counts_colors_z11_13_target)
+    loss += mse(counts_colors_z13_15, counts_colors_z13_15_target)
+
+    mag_i = gal_mags[:, 3]
+    mag_i_cdf = calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm)
+
+    loss += mse(mag_i_cdf, target_data_HSC)
+
+    return loss
+
+
+@jjit
+def loss_SDSS(params, loss_data, ran_key):
+    (
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        dsps_data,
+        ndsig_color,
+        bins_LO_color,
+        bins_HI_color,
+        target_data,
+    ) = loss_data
+
+    ran_key_arr = jran.split(ran_key, len(gal_z_arr))
+
+    _npar = 0
+    lgfburst_u_params = params[_npar : _npar + N_BURST_F]
+    _npar += N_BURST_F
+    burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
+    _npar += N_BURST_SHAPE
+    lgav_dust_u_params = params[_npar : _npar + N_DUST_LGAV]
+    _npar += N_DUST_LGAV
+    delta_dust_u_params = params[_npar : _npar + N_DUST_DELTA]
+    _npar += N_DUST_DELTA
+    boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
+    _npar += N_DUST_BORIS
+
+    gal_mags = get_colors_pop(
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        ran_key_arr,
+        dsps_data,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+    )
+
+    pred_data = calculate_1d_SDSS_colors_counts(
+        gal_mags,
+        gal_z_arr,
+        ndsig_color,
+        bins_LO_color,
+        bins_HI_color,
+    )
+
+    loss = mse(pred_data, target_data)
+
+    return loss
+
+
+@jjit
+def loss_HSC(params, loss_data, ran_key):
+    (
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        dsps_data,
+        mag_i_bins,
+        area_norm,
+        target_data_HSC,
+    ) = loss_data
+
+    ran_key_arr = jran.split(ran_key, len(gal_z_arr))
+
+    _npar = 0
+    lgfburst_u_params = params[_npar : _npar + N_BURST_F]
+    _npar += N_BURST_F
+    burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
+    _npar += N_BURST_SHAPE
+    lgav_dust_u_params = params[_npar : _npar + N_DUST_LGAV]
+    _npar += N_DUST_LGAV
+    delta_dust_u_params = params[_npar : _npar + N_DUST_DELTA]
+    _npar += N_DUST_DELTA
+    boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
+    _npar += N_DUST_BORIS
+
+    gal_mags = get_colors_pop(
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        ran_key_arr,
+        dsps_data,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+    )
+
+    mag_i = gal_mags[:, 3]
+    mag_i_cdf = calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm)
+
+    loss = mse(mag_i_cdf, target_data_HSC)
+
+    return loss
