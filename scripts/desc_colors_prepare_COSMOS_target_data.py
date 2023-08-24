@@ -1,3 +1,5 @@
+import os
+import h5py
 import numpy as np
 from jax import numpy as jnp
 from astropy.io import fits
@@ -198,3 +200,11 @@ diff_i_counts = np.array(diff_i_counts)
 diff_color_counts = np.array(diff_color_counts)
 
 outpath = "/lcrc/project/halotools/alarcon/data/DESC_mocks_data/"
+out_name = "COSMOS_target_data_20bins.h5"
+with h5py.File(os.path.join(outpath, out_name), 'w') as f:
+    f["bins_mag"] = bins_mag 
+    f["bins_color"] = bins_color
+    f["true_i_counts"] = true_i_counts
+    f["true_color_counts"] = true_color_counts
+    f["diff_i_counts"] = diff_i_counts
+    f["diff_color_counts"] = diff_color_counts
