@@ -196,8 +196,8 @@ calc_hist_1d_vmap = jjit(
 
 @jjit
 def return_weights_magbin(mag, mag_cut_bright, mag_cut_faint):
-    weights_magcut_bright = _tw_cuml_lax_kern_vmap(mag, mag_cut_bright, 0.2)
-    weights_magcut_faint = 1.0 - _tw_cuml_lax_kern_vmap(mag, mag_cut_faint, 0.2)
+    weights_magcut_bright = _tw_cuml_lax_kern_vmap(mag, mag_cut_bright, 0.1)
+    weights_magcut_faint = 1.0 - _tw_cuml_lax_kern_vmap(mag, mag_cut_faint, 0.1)
     weights_magcut = weights_magcut_bright * weights_magcut_faint
     return weights_magcut
 
@@ -438,7 +438,7 @@ def calculate_1d_SDSS_colors_counts(
 
     # r < 17.7
     weights_magcut = weights_magcut_faint = 1.0 - _tw_cuml_lax_kern_vmap(
-        rmag, 17.7, 0.2
+        rmag, 17.7, 0.1
     )
 
     counts_colors = (
@@ -457,7 +457,7 @@ def calculate_1d_SDSS_colors_counts(
 
 @jjit
 def cumulative_imag_kern(mag, mag_cut_faint):
-    weights_magcut_faint = 1.0 - _tw_cuml_lax_kern_vmap(mag, mag_cut_faint, 0.2)
+    weights_magcut_faint = 1.0 - _tw_cuml_lax_kern_vmap(mag, mag_cut_faint, 0.1)
     return jnp.sum(weights_magcut_faint)
 
 
