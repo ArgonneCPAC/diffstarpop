@@ -277,11 +277,13 @@ def calculate_1d_COSMOS_colors_counts_singlez_bin(
     bins_LO_color,
     bins_HI_color,
 ):
-    ng = len(gal_mags)
+    # ng = len(gal_mags)
     imag = gal_mags[:, 3]  # i-band
     gal_col = -jnp.diff(gal_mags, axis=1).T  # u-g, g-r, r-i, i-z, z-Y, Y-J, J-H, H-K
 
     weights_magcut = return_weights_magbin(imag, 18.0, 23.0)
+
+    ng = jnp.sum(weights_magcut)
 
     # weight_final = jnp.einsum("zh,h->zh", weights_magcut, weight)
 
