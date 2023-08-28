@@ -74,7 +74,7 @@ def get_colors_single_redshift(
 
 
 _get_colors_single_redshift_vmap_kern = jjit(
-    vmap(get_colors_single_redshift, in_axes=(0, None))
+    vmap(get_colors_single_redshift, in_axes=(0, *[None]*5))
 )
 
 
@@ -120,6 +120,16 @@ interpolate_ssp_obs_photflux_table = jjit(
     vmap(interpolate_ssp_obs_photflux_table_single_gal, in_axes=(0, None, None))
 )
 
+def interpolate_ssp_obs_photflux_table_batch(z_gal, z_table, ssp_photmag_table):
+    nmet, nage, nbands, nz = ssp_photmag_table.shape
+    ng = len(z_gal)
+    indices = np.array_split(np.arange(ng), max(int(ng)/(int(1e4)), 1))
+    interp_table_out = np.zeros((ng, nmet, nage, nbands))
+    for inds in indices:
+        interp_table_out[inds] = interpolate_ssp_obs_photflux_table(
+            z_gal[inds], z_table, ssp_photmag_table
+        )
+    return interp_table_out
 
 @jjit
 def get_colors_single_object(
@@ -176,7 +186,7 @@ def get_colors_single_object(
     return gal_obs_mags
 
 
-_A = (None, 0, 0, 0, 0, *[None] * 6)
+_A = (None, 0, 0, 0, 0, *[None] * 10)
 get_colors_pop = jjit(vmap(get_colors_single_object, in_axes=_A))
 
 
@@ -832,12 +842,7 @@ def get_loss_data_COSMOS(
     gal_z_arr,
     area_norm_HSC,
 ):
-    ssp_data = load_ssp_templates(drn=DSPS_data_path)
-    ssp_lgmet = ssp_data[0]
-    ssp_lg_age_gyr = ssp_data[1]
-    ssp_waves = ssp_data[2]
-    ssp_spectra = ssp_data[3]
-
+    print("Loading COSMOS filters")
     filter_list_COSMOS = [
         "COSMOS_CFHT_ustar.h5",
         "COSMOS_HSC_g.h5",
@@ -868,7 +873,14 @@ def get_loss_data_COSMOS(
     # filter_waves_DEEP2, filter_trans_DEEP2 = get_filter_data(filter_list_DEEP2, DSPS_DEEP2_filter_path)
     # filter_waves_SDSS, filter_trans_SDSS = get_filter_data(filter_list_SDSS, DSPS_SDSS_filter_path)
 
-    z_table = np.linspace(0.01, 2.0, 100)
+    print("Calculating SSPs in COSMOS filters in z_table")
+    z_table = np.linspace(gal_z_arr.min() - 1e-3, gal_z_arr.max() + 1e-3, 100)
+
+    ssp_data = load_ssp_templates(drn=DSPS_data_path)
+    ssp_lgmet = ssp_data[0]
+    ssp_lg_age_gyr = ssp_data[1]
+    ssp_waves = ssp_data[2]
+    ssp_spectra = ssp_data[3]
 
     ssp_obs_photflux_table_COSMOS = get_colors_array(
         z_table,
@@ -878,12 +890,16 @@ def get_loss_data_COSMOS(
         filter_trans_COSMOS,
         DEFAULT_COSMOLOGY,
     )
-    gal_ssp_table_COSMOS = interpolate_ssp_obs_photflux_table(
+    # gal_ssp_table_COSMOS = interpolate_ssp_obs_photflux_table(
+    #     gal_z_arr, z_table, ssp_obs_photflux_table_COSMOS
+    # )
+    print("Interpolating SSPs to galaxy redshifts")
+    gal_ssp_table_COSMOS = interpolate_ssp_obs_photflux_table_batch(
         gal_z_arr, z_table, ssp_obs_photflux_table_COSMOS
     )
 
     fn = "COSMOS_target_data_20bins.h5"
-    with h5py.File(os.path.join(target_data_path, fn), "w") as f:
+    with h5py.File(os.path.join(target_data_path, fn), "r") as f:
         bins_mag_COSMOS = f["bins_mag"][...]
         bins_color_COSMOS = f["bins_color"][...]
         diff_i_counts = f["diff_i_counts"][...]
@@ -899,7 +915,7 @@ def get_loss_data_COSMOS(
     ndsig_color_COSMOS = np.ones_like(gal_z_arr) * np.diff(bins_color_COSMOS)[0]
 
     fn = "HSC_target_data_20_24_limits.h5"
-    with h5py.File(os.path.join(target_data_path, fn), "w") as f:
+    with h5py.File(os.path.join(target_data_path, fn), "r") as f:
         mag_i_bins_HSC = f["mag_i_bins"][...]
         target_data_HSC = f["hsc_cumcounts_imag_tri"][...]
 
@@ -924,6 +940,12 @@ def get_loss_data_COSMOS(
         target_data_COSMOS,
         target_data_HSC,
     )
+    
+    for x in loss_data_COSMOS[:-2]:
+        assert np.all(np.isfinite(x))
+    for x in target_data_COSMOS:
+        assert np.all(np.isfinite(x))
+    assert np.all(np.isfinite(target_data_HSC))
 
     return loss_data_COSMOS
 
