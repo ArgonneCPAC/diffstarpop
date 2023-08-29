@@ -1040,11 +1040,39 @@ def get_loss_data_COSMOS(
     bins_HI_color_COSMOS = bins_color_COSMOS[1:]
     ndsig_color_COSMOS = np.ones_like(gal_z_arr) * np.diff(bins_color_COSMOS)[0]
 
+    gal_sfr_arr_out = (
+        gal_sfr_arr[(gal_z_arr > 0.1) & (gal_z_arr < 0.3)],
+        gal_sfr_arr[(gal_z_arr > 0.3) & (gal_z_arr < 0.5)],
+        gal_sfr_arr[(gal_z_arr > 0.5) & (gal_z_arr < 0.7)],
+        gal_sfr_arr[(gal_z_arr > 0.7) & (gal_z_arr < 0.9)],
+        gal_sfr_arr[(gal_z_arr > 0.9) & (gal_z_arr < 1.1)],
+        gal_sfr_arr[(gal_z_arr > 1.1) & (gal_z_arr < 1.3)],
+        gal_sfr_arr[(gal_z_arr > 1.3) & (gal_z_arr < 1.5)],
+    )
+    gal_z_arr_out = (
+        gal_z_arr[(gal_z_arr > 0.1) & (gal_z_arr < 0.3)],
+        gal_z_arr[(gal_z_arr > 0.3) & (gal_z_arr < 0.5)],
+        gal_z_arr[(gal_z_arr > 0.5) & (gal_z_arr < 0.7)],
+        gal_z_arr[(gal_z_arr > 0.7) & (gal_z_arr < 0.9)],
+        gal_z_arr[(gal_z_arr > 0.9) & (gal_z_arr < 1.1)],
+        gal_z_arr[(gal_z_arr > 1.1) & (gal_z_arr < 1.3)],
+        gal_z_arr[(gal_z_arr > 1.3) & (gal_z_arr < 1.5)],
+    )
+    gal_ssp_table_COSMOS_out = (
+        gal_ssp_table_COSMOS[(gal_z_arr > 0.1) & (gal_z_arr < 0.3)],
+        gal_ssp_table_COSMOS[(gal_z_arr > 0.3) & (gal_z_arr < 0.5)],
+        gal_ssp_table_COSMOS[(gal_z_arr > 0.5) & (gal_z_arr < 0.7)],
+        gal_ssp_table_COSMOS[(gal_z_arr > 0.7) & (gal_z_arr < 0.9)],
+        gal_ssp_table_COSMOS[(gal_z_arr > 0.9) & (gal_z_arr < 1.1)],
+        gal_ssp_table_COSMOS[(gal_z_arr > 1.1) & (gal_z_arr < 1.3)],
+        gal_ssp_table_COSMOS[(gal_z_arr > 1.3) & (gal_z_arr < 1.5)],
+    )
+
     loss_data_COSMOS = (
         t_table,
-        gal_sfr_arr,
-        gal_z_arr,
-        gal_ssp_table_COSMOS,
+        gal_sfr_arr_out,
+        gal_z_arr_out,
+        gal_ssp_table_COSMOS_out,
         filter_waves_COSMOS,
         filter_trans_COSMOS,
         ssp_lgmet,
