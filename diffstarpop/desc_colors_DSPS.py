@@ -74,7 +74,7 @@ def get_colors_single_redshift(
 
 
 _get_colors_single_redshift_vmap_kern = jjit(
-    vmap(get_colors_single_redshift, in_axes=(0, *[None]*5))
+    vmap(get_colors_single_redshift, in_axes=(0, *[None] * 5))
 )
 
 
@@ -120,16 +120,18 @@ interpolate_ssp_obs_photflux_table = jjit(
     vmap(interpolate_ssp_obs_photflux_table_single_gal, in_axes=(0, None, None))
 )
 
+
 def interpolate_ssp_obs_photflux_table_batch(z_gal, z_table, ssp_photmag_table):
     nmet, nage, nbands, nz = ssp_photmag_table.shape
     ng = len(z_gal)
-    indices = np.array_split(np.arange(ng), max(int(ng)/(int(1e4)), 1))
+    indices = np.array_split(np.arange(ng), max(int(ng) / (int(1e4)), 1))
     interp_table_out = np.zeros((ng, nmet, nage, nbands))
     for inds in indices:
         interp_table_out[inds] = interpolate_ssp_obs_photflux_table(
             z_gal[inds], z_table, ssp_photmag_table
         )
     return interp_table_out
+
 
 @jjit
 def get_colors_single_object(
@@ -333,8 +335,13 @@ def calculate_1d_COSMOS_colors_counts_singlez_bin(
 
 @jjit
 def calculate_1d_COSMOS_colors_counts(
-    gal_mags,
-    z_obs,
+    gal_mags_z01_03,
+    gal_mags_z03_05,
+    gal_mags_z05_07,
+    gal_mags_z07_09,
+    gal_mags_z09_11,
+    gal_mags_z11_13,
+    gal_mags_z13_15,
     ndsig_mag,
     ndsig_color,
     bins_LO_mag,
@@ -365,54 +372,40 @@ def calculate_1d_COSMOS_colors_counts(
         bins_HI_color,
     )
 
-    mask = (z_obs > 0.1) & (z_obs < 0.3)
-    gal_mags_masked = gal_mags[mask]
     (
         counts_i_z01_03,
         counts_colors_z01_03,
-    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_z01_03, *args)
 
-    mask = (z_obs > 0.3) & (z_obs < 0.5)
-    gal_mags_masked = gal_mags[mask]
     (
         counts_i_z03_05,
         counts_colors_z03_05,
-    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_z03_05, *args)
 
-    mask = (z_obs > 0.5) & (z_obs < 0.7)
-    gal_mags_masked = gal_mags[mask]
     (
         counts_i_z05_07,
         counts_colors_z05_07,
-    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_z05_07, *args)
 
-    mask = (z_obs > 0.7) & (z_obs < 0.9)
-    gal_mags_masked = gal_mags[mask]
     (
         counts_i_z07_09,
         counts_colors_z07_09,
-    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_z07_09, *args)
 
-    mask = (z_obs > 0.9) & (z_obs < 1.1)
-    gal_mags_masked = gal_mags[mask]
     (
         counts_i_z09_11,
         counts_colors_z09_11,
-    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_z09_11, *args)
 
-    mask = (z_obs > 1.1) & (z_obs < 1.3)
-    gal_mags_masked = gal_mags[mask]
     (
         counts_i_z11_13,
         counts_colors_z11_13,
-    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_z11_13, *args)
 
-    mask = (z_obs > 1.3) & (z_obs < 1.5)
-    gal_mags_masked = gal_mags[mask]
     (
         counts_i_z13_15,
         counts_colors_z13_15,
-    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_masked, *args)
+    ) = calculate_1d_COSMOS_colors_counts_singlez_bin(gal_mags_z13_15, *args)
 
     output = (
         counts_i_z01_03,
@@ -595,10 +588,7 @@ def loss_COSMOS(params, loss_data, ran_key):
         bins_HI_mag,
         bins_LO_color,
         bins_HI_color,
-        mag_i_bins,
-        area_norm,
         target_data_COSMOS,
-        target_data_HSC,
     ) = loss_data
 
     (
@@ -618,7 +608,41 @@ def loss_COSMOS(params, loss_data, ran_key):
         counts_colors_z13_15_target,
     ) = target_data_COSMOS
 
-    ran_key_arr = jran.split(ran_key, len(gal_z_arr))
+    (
+        gal_sfr_arr_z01_03,
+        gal_sfr_arr_z03_05,
+        gal_sfr_arr_z05_07,
+        gal_sfr_arr_z07_09,
+        gal_sfr_arr_z09_11,
+        gal_sfr_arr_z11_13,
+        gal_sfr_arr_z13_15,
+    ) = gal_sfr_arr
+    (
+        gal_z_arr_z01_03,
+        gal_z_arr_z03_05,
+        gal_z_arr_z05_07,
+        gal_z_arr_z07_09,
+        gal_z_arr_z09_11,
+        gal_z_arr_z11_13,
+        gal_z_arr_z13_15,
+    ) = gal_z_arr
+    (
+        gal_ssp_obs_photflux_table_z01_03,
+        gal_ssp_obs_photflux_table_z03_05,
+        gal_ssp_obs_photflux_table_z05_07,
+        gal_ssp_obs_photflux_table_z07_09,
+        gal_ssp_obs_photflux_table_z09_11,
+        gal_ssp_obs_photflux_table_z11_13,
+        gal_ssp_obs_photflux_table_z13_15,
+    ) = gal_ssp_obs_photflux_table
+
+    ran_key_arr_z01_03 = jran.split(ran_key, len(gal_z_arr_z01_03))
+    ran_key_arr_z03_05 = jran.split(ran_key, len(gal_z_arr_z03_05))
+    ran_key_arr_z05_07 = jran.split(ran_key, len(gal_z_arr_z05_07))
+    ran_key_arr_z07_09 = jran.split(ran_key, len(gal_z_arr_z07_09))
+    ran_key_arr_z09_11 = jran.split(ran_key, len(gal_z_arr_z09_11))
+    ran_key_arr_z11_13 = jran.split(ran_key, len(gal_z_arr_z11_13))
+    ran_key_arr_z13_15 = jran.split(ran_key, len(gal_z_arr_z13_15))
 
     _npar = 0
     lgfburst_u_params = params[_npar : _npar + N_BURST_F]
@@ -632,26 +656,79 @@ def loss_COSMOS(params, loss_data, ran_key):
     boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
     _npar += N_DUST_BORIS
 
-    gal_mags = get_colors_pop(
-        t_table,
-        gal_sfr_arr,
-        gal_z_arr,
-        gal_ssp_obs_photflux_table,
-        ran_key_arr,
-        filter_waves,
-        filter_trans,
-        ssp_lgmet,
-        ssp_lg_age_gyr,
-        cosmo_params,
-        lgfburst_u_params,
-        burstshape_u_params,
-        lgav_dust_u_params,
-        delta_dust_u_params,
-        boris_dust_u_params,
+    def get_colors_pop_COSMOS(
+        gal_sfr_arr_COS, gal_z_arr_COS, gal_ssp_obs_photflux_table_COS, ran_key_arr_COS
+    ):
+        gal_mags = get_colors_pop(
+            t_table,
+            gal_sfr_arr_COS,
+            gal_z_arr_COS,
+            gal_ssp_obs_photflux_table_COS,
+            ran_key_arr_COS,
+            filter_waves,
+            filter_trans,
+            ssp_lgmet,
+            ssp_lg_age_gyr,
+            cosmo_params,
+            lgfburst_u_params,
+            burstshape_u_params,
+            lgav_dust_u_params,
+            delta_dust_u_params,
+            boris_dust_u_params,
+        )
+        return gal_mags
+
+    gal_mags_z01_03 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z01_03,
+        gal_z_arr_z01_03,
+        gal_ssp_obs_photflux_table_z01_03,
+        ran_key_arr_z01_03,
+    )
+    gal_mags_z03_05 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z03_05,
+        gal_z_arr_z03_05,
+        gal_ssp_obs_photflux_table_z03_05,
+        ran_key_arr_z03_05,
+    )
+    gal_mags_z05_07 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z05_07,
+        gal_z_arr_z05_07,
+        gal_ssp_obs_photflux_table_z05_07,
+        ran_key_arr_z05_07,
+    )
+    gal_mags_z07_09 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z07_09,
+        gal_z_arr_z07_09,
+        gal_ssp_obs_photflux_table_z07_09,
+        ran_key_arr_z07_09,
+    )
+    gal_mags_z09_11 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z09_11,
+        gal_z_arr_z09_11,
+        gal_ssp_obs_photflux_table_z09_11,
+        ran_key_arr_z09_11,
+    )
+    gal_mags_z11_13 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z11_13,
+        gal_z_arr_z11_13,
+        gal_ssp_obs_photflux_table_z11_13,
+        ran_key_arr_z11_13,
+    )
+    gal_mags_z13_15 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z13_15,
+        gal_z_arr_z13_15,
+        gal_ssp_obs_photflux_table_z13_15,
+        ran_key_arr_z13_15,
     )
 
     pred_data = calculate_1d_COSMOS_colors_counts(
-        gal_mags,
+        gal_mags_z01_03,
+        gal_mags_z03_05,
+        gal_mags_z05_07,
+        gal_mags_z07_09,
+        gal_mags_z09_11,
+        gal_mags_z11_13,
+        gal_mags_z13_15,
         gal_z_arr,
         ndsig_mag,
         ndsig_color,
@@ -694,10 +771,60 @@ def loss_COSMOS(params, loss_data, ran_key):
     loss += mse(counts_colors_z11_13, counts_colors_z11_13_target)
     loss += mse(counts_colors_z13_15, counts_colors_z13_15_target)
 
-    mag_i = gal_mags[:, 3]
+    return loss
+
+
+@jjit
+def loss_HSC(params, loss_data, ran_key):
+    (
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        filter_waves,
+        filter_trans,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        cosmo_params,
+        mag_i_bins,
+        area_norm,
+        target_data_HSC,
+    ) = loss_data
+
+    ran_key_arr = jran.split(ran_key, len(gal_z_arr))
+
+    _npar = 0
+    lgfburst_u_params = params[_npar : _npar + N_BURST_F]
+    _npar += N_BURST_F
+    burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
+    _npar += N_BURST_SHAPE
+    lgav_dust_u_params = params[_npar : _npar + N_DUST_LGAV]
+    _npar += N_DUST_LGAV
+    delta_dust_u_params = params[_npar : _npar + N_DUST_DELTA]
+    _npar += N_DUST_DELTA
+    boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
+    _npar += N_DUST_BORIS
+
+    mag_i = get_colors_pop(
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        ran_key_arr,
+        filter_waves,
+        filter_trans,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        cosmo_params,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+    )[:, 0]
     mag_i_cdf = calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm)
 
-    loss += mse(mag_i_cdf, target_data_HSC)
+    loss = mse(mag_i_cdf, target_data_HSC)
 
     return loss
 
@@ -840,7 +967,6 @@ def get_loss_data_COSMOS(
     t_table,
     gal_sfr_arr,
     gal_z_arr,
-    area_norm_HSC,
 ):
     print("Loading COSMOS filters")
     filter_list_COSMOS = [
@@ -914,11 +1040,6 @@ def get_loss_data_COSMOS(
     bins_HI_color_COSMOS = bins_color_COSMOS[1:]
     ndsig_color_COSMOS = np.ones_like(gal_z_arr) * np.diff(bins_color_COSMOS)[0]
 
-    fn = "HSC_target_data_20_24_limits.h5"
-    with h5py.File(os.path.join(target_data_path, fn), "r") as f:
-        mag_i_bins_HSC = f["mag_i_bins"][...]
-        target_data_HSC = f["hsc_cumcounts_imag_tri"][...]
-
     loss_data_COSMOS = (
         t_table,
         gal_sfr_arr,
@@ -935,19 +1056,89 @@ def get_loss_data_COSMOS(
         bins_HI_mag_COSMOS,
         bins_LO_color_COSMOS,
         bins_HI_color_COSMOS,
-        mag_i_bins_HSC,
-        area_norm_HSC,
         target_data_COSMOS,
-        target_data_HSC,
     )
-    
-    for x in loss_data_COSMOS[:-2]:
+
+    for x in loss_data_COSMOS[:-1]:
         assert np.all(np.isfinite(x))
     for x in target_data_COSMOS:
         assert np.all(np.isfinite(x))
-    assert np.all(np.isfinite(target_data_HSC))
 
     return loss_data_COSMOS
+
+
+def get_loss_data_HSC(
+    t_table,
+    gal_sfr_arr,
+    gal_z_arr,
+    area_norm_HSC,
+):
+    print("Loading HSC filters")
+    filter_list_HSC = [
+        "COSMOS_HSC_i.h5",
+    ]
+
+    def get_filter_data(filter_list, filter_path):
+        filter_data = [
+            load_transmission_curve(drn=filter_path, bn_pat=filt)
+            for filt in filter_list
+        ]
+        wave_filters = [x[0] for x in filter_data]
+        trans_filters = [x[1] for x in filter_data]
+        filter_waves, filter_trans = interpolate_filter_trans_curves(
+            wave_filters, trans_filters
+        )
+        return filter_waves, filter_trans
+
+    filter_waves_HSC, filter_trans_HSC = get_filter_data(
+        filter_list_HSC, DSPS_COSMOS_filter_path
+    )
+    print("Calculating SSPs in HSC filters in z_table")
+    z_table = np.linspace(gal_z_arr.min() - 1e-3, gal_z_arr.max() + 1e-3, 100)
+
+    ssp_data = load_ssp_templates(drn=DSPS_data_path)
+    ssp_lgmet = ssp_data[0]
+    ssp_lg_age_gyr = ssp_data[1]
+    ssp_waves = ssp_data[2]
+    ssp_spectra = ssp_data[3]
+
+    ssp_obs_photflux_table_HSC = get_colors_array(
+        z_table,
+        ssp_waves,
+        ssp_spectra,
+        filter_waves_HSC,
+        filter_trans_HSC,
+        DEFAULT_COSMOLOGY,
+    )
+    print("Interpolating SSPs to galaxy redshifts")
+    gal_ssp_table_HSC = interpolate_ssp_obs_photflux_table_batch(
+        gal_z_arr, z_table, ssp_obs_photflux_table_HSC
+    )
+
+    fn = "HSC_target_data_20_24_limits.h5"
+    with h5py.File(os.path.join(target_data_path, fn), "r") as f:
+        mag_i_bins_HSC = f["mag_i_bins"][...]
+        target_data_HSC = f["hsc_cumcounts_imag_tri"][...]
+
+    loss_data_HSC = (
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_table_HSC,
+        filter_waves_HSC,
+        filter_trans_HSC,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        DEFAULT_COSMOLOGY,
+        mag_i_bins_HSC,
+        area_norm_HSC,
+        target_data_HSC,
+    )
+
+    for x in loss_data_HSC:
+        assert np.all(np.isfinite(x))
+
+    return loss_data_HSC
 
 
 filter_list_DEEP2 = [
