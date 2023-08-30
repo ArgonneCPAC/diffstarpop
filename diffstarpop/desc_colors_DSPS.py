@@ -774,9 +774,10 @@ def loss_COSMOS(params, loss_data, ran_key):
 @jjit
 def arcsinh_log(val):
     """Equivalent to log10 for counts >> 1. For counts <1 it returns a value of ~0."""
-    k = 1.0 
-    val = (1/jnp.log(10)) * jnp.arcsinh(val / 2*k) - jnp.log10(k)
+    k = 1.0
+    val = (1 / jnp.log(10)) * jnp.arcsinh(val / 2 * k) - jnp.log10(k)
     return val
+
 
 @jjit
 def loss_HSC(params, loss_data, ran_key):
@@ -908,11 +909,14 @@ loss_SDSS_deriv = jjit(grad(loss_SDSS, argnums=(0)))
 def loss_COSMOS_deriv_np(params, data, n_histories):
     return np.array(loss_COSMOS_deriv(params, data, n_histories)).astype(float)
 
+
 def loss_HSC_deriv_np(params, data, n_histories):
     return np.array(loss_HSC_deriv(params, data, n_histories)).astype(float)
 
+
 def loss_DEEP2_deriv_np(params, data, n_histories):
     return np.array(loss_DEEP2_deriv(params, data, n_histories)).astype(float)
+
 
 def loss_SDSS_deriv_np(params, data, n_histories):
     return np.array(loss_SDSS_deriv(params, data, n_histories)).astype(float)
@@ -920,6 +924,8 @@ def loss_SDSS_deriv_np(params, data, n_histories):
 
 DSPS_data_path = "/lcrc/project/halotools/alarcon/data/DSPS_data/"
 DSPS_COSMOS_filter_path = DSPS_data_path + "filters/cosmos/"
+DSPS_DEEP2_filter_path = DSPS_data_path + "filters/DEEP2_filters/"
+DSPS_SDSS_filter_path = DSPS_data_path + "filters/SDSS_filters/"
 target_data_path = "/lcrc/project/halotools/alarcon/data/DESC_mocks_data/"
 
 
@@ -1151,15 +1157,175 @@ def get_loss_data_HSC(
     return loss_data_HSC
 
 
-filter_list_DEEP2 = [
-    "CFHT_r_megaprime_sagem.h5",
-    "CFHT_i_megaprime_sagem.h5",
-]
+def get_loss_data_DEEP2(
+    t_table,
+    gal_sfr_arr,
+    gal_z_arr,
+):
+    print("Loading DEEP2 filters")
+    filter_list_DEEP2 = [
+        "CFHT_r_megaprime_sagem.h5",
+        "CFHT_i_megaprime_sagem.h5",
+    ]
 
-filter_list_SDSS = [
-    "SDSS_u.h5",
-    "SDSS_g.h5",
-    "SDSS_r.h5",
-    "SDSS_i.h5",
-    "SDSS_z.h5",
-]
+    def get_filter_data(filter_list, filter_path):
+        filter_data = [
+            load_transmission_curve(drn=filter_path, bn_pat=filt)
+            for filt in filter_list
+        ]
+        wave_filters = [x[0] for x in filter_data]
+        trans_filters = [x[1] for x in filter_data]
+        filter_waves, filter_trans = interpolate_filter_trans_curves(
+            wave_filters, trans_filters
+        )
+        return filter_waves, filter_trans
+
+    filter_waves_DEEP2, filter_trans_DEEP2 = get_filter_data(
+        filter_list_DEEP2, DSPS_DEEP2_filter_path
+    )
+    print("Calculating SSPs in DEEP2 filters in z_table")
+    z_table = np.linspace(gal_z_arr.min() - 1e-3, gal_z_arr.max() + 1e-3, 100)
+
+    ssp_data = load_ssp_templates(drn=DSPS_data_path)
+    ssp_lgmet = ssp_data[0]
+    ssp_lg_age_gyr = ssp_data[1]
+    ssp_waves = ssp_data[2]
+    ssp_spectra = ssp_data[3]
+
+    ssp_obs_photflux_table_DEEP2 = get_colors_array(
+        z_table,
+        ssp_waves,
+        ssp_spectra,
+        filter_waves_DEEP2,
+        filter_trans_DEEP2,
+        DEFAULT_COSMOLOGY,
+    )
+    print("Interpolating SSPs to galaxy redshifts")
+    gal_ssp_table_DEEP2 = interpolate_ssp_obs_photflux_table_batch(
+        gal_z_arr, z_table, ssp_obs_photflux_table_DEEP2
+    )
+
+    fn = "DEEP2_target_data.h5"
+    with h5py.File(os.path.join(target_data_path, fn), "r") as f:
+        bin_edges_DEEP2 = f["bin_edges"][...]
+        target_dNdz_rmag = f["target_dNdz_rmag"][...]
+        target_dNdz_imag = f["target_dNdz_imag"][...]
+
+    target_data = np.concatenate((target_dNdz_rmag, target_dNdz_imag))
+
+    loss_data_DEEP2 = (
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_table_DEEP2,
+        filter_waves_DEEP2,
+        filter_trans_DEEP2,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        DEFAULT_COSMOLOGY,
+        bin_edges_DEEP2,
+        target_data,
+    )
+
+    for x in loss_data_DEEP2:
+        if isinstance(x, np.ndarray):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, jnp.ndarray):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, tuple):
+            for xx in x:
+                assert np.all(np.isfinite(xx))
+        elif isinstance(x, float):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, int):
+            assert np.all(np.isfinite(x))
+        else:
+            assert False
+
+    return loss_data_DEEP2
+
+
+def get_loss_data_SDSS(
+    t_table,
+    gal_sfr_arr,
+    gal_z_arr,
+):
+    print("Loading SDSS filters")
+    filter_list_SDSS = [
+        "SDSS_u.h5",
+        "SDSS_g.h5",
+        "SDSS_r.h5",
+        "SDSS_i.h5",
+        "SDSS_z.h5",
+    ]
+
+    def get_filter_data(filter_list, filter_path):
+        filter_data = [
+            load_transmission_curve(drn=filter_path, bn_pat=filt)
+            for filt in filter_list
+        ]
+        wave_filters = [x[0] for x in filter_data]
+        trans_filters = [x[1] for x in filter_data]
+        filter_waves, filter_trans = interpolate_filter_trans_curves(
+            wave_filters, trans_filters
+        )
+        return filter_waves, filter_trans
+
+    filter_waves_SDSS, filter_trans_SDSS = get_filter_data(
+        filter_list_SDSS, DSPS_SDSS_filter_path
+    )
+    print("Calculating SSPs in SDSS filters in z_table")
+    z_table = np.linspace(gal_z_arr.min() - 1e-3, gal_z_arr.max() + 1e-3, 100)
+
+    ssp_data = load_ssp_templates(drn=DSPS_data_path)
+    ssp_lgmet = ssp_data[0]
+    ssp_lg_age_gyr = ssp_data[1]
+    ssp_waves = ssp_data[2]
+    ssp_spectra = ssp_data[3]
+
+    ssp_obs_photflux_table_SDSS = get_colors_array(
+        z_table,
+        ssp_waves,
+        ssp_spectra,
+        filter_waves_SDSS,
+        filter_trans_SDSS,
+        DEFAULT_COSMOLOGY,
+    )
+    print("Interpolating SSPs to galaxy redshifts")
+    gal_ssp_table_SDSS = interpolate_ssp_obs_photflux_table_batch(
+        gal_z_arr, z_table, ssp_obs_photflux_table_SDSS
+    )
+
+    fn = ".h5"
+    with h5py.File(os.path.join(target_data_path, fn), "r") as f:
+        pass
+        # bin_edges_DEEP2 = f["bin_edges"][...]
+
+    loss_data_SDSS = (
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_table_SDSS,
+        filter_waves_SDSS,
+        filter_trans_SDSS,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        DEFAULT_COSMOLOGY,
+    )
+
+    for x in loss_data_SDSS:
+        if isinstance(x, np.ndarray):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, jnp.ndarray):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, tuple):
+            for xx in x:
+                assert np.all(np.isfinite(xx))
+        elif isinstance(x, float):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, int):
+            assert np.all(np.isfinite(x))
+        else:
+            assert False
+
+    return loss_data_SDSS
