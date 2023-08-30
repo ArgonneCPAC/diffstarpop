@@ -291,8 +291,8 @@ def calculate_dNdz_DEEP2(mag_r, mag_i, z_obs, bins_dNdz):
 @jjit
 def calculate_1d_COSMOS_colors_counts_singlez_bin(
     gal_mags,
-    ndsig_mag,
-    ndsig_color,
+    ndsig_mag_val,
+    ndsig_color_val,
     bins_LO_mag,
     bins_HI_mag,
     bins_LO_color,
@@ -305,6 +305,8 @@ def calculate_1d_COSMOS_colors_counts_singlez_bin(
     weights_magcut = return_weights_magbin(imag, 18.0, 23.0)
 
     ng = jnp.sum(weights_magcut)
+    ndsig_mag = jnp.ones(len(imag)) * ndsig_mag_val
+    ndsig_color = jnp.ones(len(imag)) * ndsig_color_val
 
     # weight_final = jnp.einsum("zh,h->zh", weights_magcut, weight)
 
@@ -729,7 +731,6 @@ def loss_COSMOS(params, loss_data, ran_key):
         gal_mags_z09_11,
         gal_mags_z11_13,
         gal_mags_z13_15,
-        gal_z_arr,
         ndsig_mag,
         ndsig_color,
         bins_LO_mag,
@@ -822,6 +823,8 @@ def loss_HSC(params, loss_data, ran_key):
         delta_dust_u_params,
         boris_dust_u_params,
     )[:, 0]
+
+    print("mag_i.shape", mag_i.shape)
     mag_i_cdf = calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm)
 
     loss = mse(mag_i_cdf, target_data_HSC)
@@ -942,6 +945,7 @@ def loss_HSC(params, loss_data, ran_key):
 
 
 loss_COSMOS_deriv = jjit(grad(loss_COSMOS, argnums=(0)))
+loss_HSC_deriv = jjit(grad(loss_HSC, argnums=(0)))
 loss_DEEP2_deriv = jjit(grad(loss_DEEP2, argnums=(0)))
 loss_SDSS_deriv = jjit(grad(loss_SDSS, argnums=(0)))
 
@@ -949,6 +953,8 @@ loss_SDSS_deriv = jjit(grad(loss_SDSS, argnums=(0)))
 def loss_COSMOS_deriv_np(params, data, n_histories):
     return np.array(loss_COSMOS_deriv(params, data, n_histories)).astype(float)
 
+def loss_HSC_deriv_np(params, data, n_histories):
+    return np.array(loss_HSC_deriv(params, data, n_histories)).astype(float)
 
 def loss_DEEP2_deriv_np(params, data, n_histories):
     return np.array(loss_DEEP2_deriv(params, data, n_histories)).astype(float)
@@ -1034,11 +1040,11 @@ def get_loss_data_COSMOS(
     target_data_COSMOS = (*diff_i_counts, *diff_color_counts)
     bins_LO_mag_COSMOS = bins_mag_COSMOS[:-1]
     bins_HI_mag_COSMOS = bins_mag_COSMOS[1:]
-    ndsig_mag_COSMOS = np.ones_like(gal_z_arr) * np.diff(bins_mag_COSMOS)[0]
+    ndsig_mag_COSMOS = np.diff(bins_mag_COSMOS)[0]
 
     bins_LO_color_COSMOS = bins_color_COSMOS[:-1]
     bins_HI_color_COSMOS = bins_color_COSMOS[1:]
-    ndsig_color_COSMOS = np.ones_like(gal_z_arr) * np.diff(bins_color_COSMOS)[0]
+    ndsig_color_COSMOS = np.diff(bins_color_COSMOS)[0]
 
     gal_sfr_arr_out = (
         gal_sfr_arr[(gal_z_arr > 0.1) & (gal_z_arr < 0.3)],
@@ -1087,10 +1093,20 @@ def get_loss_data_COSMOS(
         target_data_COSMOS,
     )
 
-    for x in loss_data_COSMOS[:-1]:
-        assert np.all(np.isfinite(x))
-    for x in target_data_COSMOS:
-        assert np.all(np.isfinite(x))
+    for x in loss_data_COSMOS:
+        if isinstance(x, np.ndarray):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, jnp.ndarray):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, tuple):
+            for xx in x:
+                assert np.all(np.isfinite(xx))
+        elif isinstance(x, float):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, int):
+            assert np.all(np.isfinite(x))
+        else:
+            assert False
 
     return loss_data_COSMOS
 
@@ -1164,7 +1180,19 @@ def get_loss_data_HSC(
     )
 
     for x in loss_data_HSC:
-        assert np.all(np.isfinite(x))
+        if isinstance(x, np.ndarray):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, jnp.ndarray):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, tuple):
+            for xx in x:
+                assert np.all(np.isfinite(xx))
+        elif isinstance(x, float):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, int):
+            assert np.all(np.isfinite(x))
+        else:
+            assert False
 
     return loss_data_HSC
 
