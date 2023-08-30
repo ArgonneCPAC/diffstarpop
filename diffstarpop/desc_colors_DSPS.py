@@ -772,6 +772,13 @@ def loss_COSMOS(params, loss_data, ran_key):
 
 
 @jjit
+def arcsinh_log(val):
+    """Equivalent to log10 for counts >> 1. For counts <1 it returns a value of ~0."""
+    k = 1.0 
+    val = (1/jnp.log(10)) * jnp.arcsinh(val / 2*k) - jnp.log10(k)
+    return val
+
+@jjit
 def loss_HSC(params, loss_data, ran_key):
     (
         t_table,
@@ -823,7 +830,9 @@ def loss_HSC(params, loss_data, ran_key):
     print("mag_i.shape", mag_i.shape)
     mag_i_cdf = calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm)
 
-    loss = mse(mag_i_cdf, target_data_HSC)
+    target_data_HSC = arcsinh_log(target_data_HSC)
+    pred_data_HSC = arcsinh_log(mag_i_cdf)
+    loss = mse(pred_data_HSC, target_data_HSC)
 
     return loss
 
@@ -890,55 +899,6 @@ def loss_SDSS(params, loss_data, ran_key):
     return loss
 
 
-@jjit
-def loss_HSC(params, loss_data, ran_key):
-    (
-        t_table,
-        gal_sfr_arr,
-        gal_z_arr,
-        gal_ssp_obs_photflux_table,
-        dsps_data,
-        mag_i_bins,
-        area_norm,
-        target_data_HSC,
-    ) = loss_data
-
-    ran_key_arr = jran.split(ran_key, len(gal_z_arr))
-
-    _npar = 0
-    lgfburst_u_params = params[_npar : _npar + N_BURST_F]
-    _npar += N_BURST_F
-    burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
-    _npar += N_BURST_SHAPE
-    lgav_dust_u_params = params[_npar : _npar + N_DUST_LGAV]
-    _npar += N_DUST_LGAV
-    delta_dust_u_params = params[_npar : _npar + N_DUST_DELTA]
-    _npar += N_DUST_DELTA
-    boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
-    _npar += N_DUST_BORIS
-
-    gal_mags = get_colors_pop(
-        t_table,
-        gal_sfr_arr,
-        gal_z_arr,
-        gal_ssp_obs_photflux_table,
-        ran_key_arr,
-        dsps_data,
-        lgfburst_u_params,
-        burstshape_u_params,
-        lgav_dust_u_params,
-        delta_dust_u_params,
-        boris_dust_u_params,
-    )
-
-    mag_i = gal_mags[:, 3]
-    mag_i_cdf = calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm)
-
-    loss = mse(mag_i_cdf, target_data_HSC)
-
-    return loss
-
-
 loss_COSMOS_deriv = jjit(grad(loss_COSMOS, argnums=(0)))
 loss_HSC_deriv = jjit(grad(loss_HSC, argnums=(0)))
 loss_DEEP2_deriv = jjit(grad(loss_DEEP2, argnums=(0)))
@@ -953,7 +913,6 @@ def loss_HSC_deriv_np(params, data, n_histories):
 
 def loss_DEEP2_deriv_np(params, data, n_histories):
     return np.array(loss_DEEP2_deriv(params, data, n_histories)).astype(float)
-
 
 def loss_SDSS_deriv_np(params, data, n_histories):
     return np.array(loss_SDSS_deriv(params, data, n_histories)).astype(float)
