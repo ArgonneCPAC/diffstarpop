@@ -22,6 +22,8 @@ from diffstarpop.desc_colors_DSPS import (
     loss_SDSS_deriv,
     get_loss_data_COSMOS,
     get_loss_data_HSC,
+    get_loss_data_DEEP2,
+    get_loss_data_SDSS,
 )
 
 from diffstarpop.lightcone_colors import (
@@ -77,20 +79,28 @@ init_params = np.concatenate((
 ))
 
 select = np.random.choice(len(redshift_obs), int(1e5), replace=False)
-"""
+undersampling_factor = len(select) / len(redshift_obs)
+
 print("Get loss_data COSMOS")
 loss_data_COSMOS = get_loss_data_COSMOS(
     SMDPL_t,
     gal_sfr_arr[select],
     redshift_obs[select],
 )
-"""
+
 print("Get loss_data HSC")
 loss_data_HSC = get_loss_data_HSC(
     SMDPL_t,
     gal_sfr_arr[select],
     redshift_obs[select],
-    area_norm_HSC,
+    area_norm_HSC * undersampling_factor,
+)
+
+print("Get loss_data DEEP2")
+loss_data_DEEP2 = get_loss_data_DEEP2(
+    SMDPL_t,
+    gal_sfr_arr[select],
+    redshift_obs[select],
 )
 
 init_params = np.concatenate((
@@ -102,14 +112,22 @@ init_params = np.concatenate((
 ))
 
 ran_key = jran.PRNGKey(np.random.randint(2**32))
-"""
+
 print("Get loss COSMOS")
 loss_cosmos_val = loss_COSMOS(init_params, loss_data_COSMOS, ran_key)
 loss_deriv_cosmos_val = loss_COSMOS_deriv(init_params, loss_data_COSMOS, ran_key)
-"""
+
 print("Get loss HSC")
 loss_hsc_val = loss_HSC(init_params, loss_data_HSC, ran_key)
 loss_deriv_hsc_val = loss_HSC_deriv(init_params, loss_data_HSC, ran_key)
+
+print("Get loss DEEP2")
+loss_deep2_val = loss_DEEP2(init_params, loss_data_DEEP2, ran_key)
+loss_deriv_deep2_val = loss_DEEP2_deriv(init_params, loss_data_DEEP2, ran_key)
+
+
+
+
 
 assert False
 N_BURST_F = len(DEFAULT_lgfburst_u_params)
