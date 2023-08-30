@@ -224,6 +224,12 @@ def return_weights_magbin(mag, mag_cut_bright, mag_cut_faint):
 
 
 @jjit
+def calculate_dNdz(z_arr, bins_dNdz, weights):
+    counts = jnp.histogram(z_arr, bins_dNdz, weights=weights)[0]
+    counts = counts / jnp.sum(counts)
+    return counts
+
+@jjit
 def calculate_dNdz_DEEP2(mag_r, mag_i, z_obs, bins_dNdz):
     """
     Function to calculate DEEP2 dNdz for CFHT r and CFHT i magnitude bins
@@ -244,36 +250,20 @@ def calculate_dNdz_DEEP2(mag_r, mag_i, z_obs, bins_dNdz):
     weights_imag_18_22 = return_weights_magbin(mag_i, 18.0, 22.0)
     weights_imag_18_23 = return_weights_magbin(mag_i, 18.0, 23.0)
 
-    dNdz_imag_18_20 = jnp.histogram(
-        z_obs, bins_dNdz, weights=weights_imag_18_20, density=1
-    )
-    dNdz_imag_18_21 = jnp.histogram(
-        z_obs, bins_dNdz, weights=weights_imag_18_21, density=1
-    )
-    dNdz_imag_18_22 = jnp.histogram(
-        z_obs, bins_dNdz, weights=weights_imag_18_22, density=1
-    )
-    dNdz_imag_18_23 = jnp.histogram(
-        z_obs, bins_dNdz, weights=weights_imag_18_23, density=1
-    )
+    dNdz_imag_18_20 = calculate_dNdz(z_obs, bins_dNdz, weights_imag_18_20)
+    dNdz_imag_18_21 = calculate_dNdz(z_obs, bins_dNdz, weights_imag_18_21)
+    dNdz_imag_18_22 = calculate_dNdz(z_obs, bins_dNdz, weights_imag_18_22)
+    dNdz_imag_18_23 = calculate_dNdz(z_obs, bins_dNdz, weights_imag_18_23)
 
     weights_rmag_18_20 = return_weights_magbin(mag_r, 18.0, 20.0)
     weights_rmag_18_21 = return_weights_magbin(mag_r, 18.0, 21.0)
     weights_rmag_18_22 = return_weights_magbin(mag_r, 18.0, 22.0)
     weights_rmag_18_23 = return_weights_magbin(mag_r, 18.0, 23.0)
 
-    dNdz_rmag_18_20 = jnp.histogram(
-        z_obs, bins_dNdz, weights=weights_rmag_18_20, density=1
-    )
-    dNdz_rmag_18_21 = jnp.histogram(
-        z_obs, bins_dNdz, weights=weights_rmag_18_21, density=1
-    )
-    dNdz_rmag_18_22 = jnp.histogram(
-        z_obs, bins_dNdz, weights=weights_rmag_18_22, density=1
-    )
-    dNdz_rmag_18_23 = jnp.histogram(
-        z_obs, bins_dNdz, weights=weights_rmag_18_23, density=1
-    )
+    dNdz_rmag_18_20 = calculate_dNdz(z_obs, bins_dNdz, weights_rmag_18_20)
+    dNdz_rmag_18_21 = calculate_dNdz(z_obs, bins_dNdz, weights_rmag_18_21)
+    dNdz_rmag_18_22 = calculate_dNdz(z_obs, bins_dNdz, weights_rmag_18_22)
+    dNdz_rmag_18_23 = calculate_dNdz(z_obs, bins_dNdz, weights_rmag_18_23)
 
     output = (
         dNdz_rmag_18_20,
@@ -541,7 +531,7 @@ def loss_DEEP2(params, loss_data, ran_key):
         lgav_dust_u_params,
         delta_dust_u_params,
         boris_dust_u_params,
-    )
+    ).T
 
     pred_data = calculate_dNdz_DEEP2(mag_r_CFHT, mag_i_CFHT, gal_z_arr, bins_dNdz)
 
