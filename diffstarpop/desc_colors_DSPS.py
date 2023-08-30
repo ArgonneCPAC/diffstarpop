@@ -431,7 +431,6 @@ def calculate_1d_COSMOS_colors_counts(
 @jjit
 def calculate_1d_SDSS_colors_counts(
     gal_mags,
-    z_obs,
     ndsig_color,
     bins_LO_color,
     bins_HI_color,
@@ -442,13 +441,10 @@ def calculate_1d_SDSS_colors_counts(
     Function assumes u,g,r,i,z magnitudes are supplied.
 
     """
-    mask = (z_obs > 0.05) & (z_obs < 0.1)
 
-    gal_mags_masked = gal_mags[mask]
-
-    ng = len(gal_mags_masked)
-    rmag = gal_mags_masked[:, 2]  # r-band
-    gal_col = -jnp.diff(gal_mags_masked, axis=1).T  # u-g, g-r, r-i, i-z
+    ng = len(gal_mags)
+    rmag = gal_mags[:, 2]  # r-band
+    gal_col = -jnp.diff(gal_mags, axis=1).T  # u-g, g-r, r-i, i-z
 
     # r < 17.7
     weights_magcut = weights_magcut_faint = 1.0 - _tw_cuml_lax_kern_vmap(
@@ -884,7 +880,6 @@ def loss_SDSS(params, loss_data, ran_key):
 
     pred_data = calculate_1d_SDSS_colors_counts(
         gal_mags,
-        gal_z_arr,
         ndsig_color,
         bins_LO_color,
         bins_HI_color,
