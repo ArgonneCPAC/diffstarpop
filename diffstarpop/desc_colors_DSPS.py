@@ -298,7 +298,6 @@ def calculate_1d_COSMOS_colors_counts_singlez_bin(
     ng = jnp.sum(weights_magcut)
     ndsig_mag = jnp.ones(len(imag)) * ndsig_mag_val
     ndsig_color = jnp.ones(len(imag)) * ndsig_color_val
-
     # weight_final = jnp.einsum("zh,h->zh", weights_magcut, weight)
 
     counts_i = (
@@ -842,6 +841,57 @@ def predict_HSC(params, loss_data, ran_key):
 
 
 @jjit
+def predict_HSC_magi(params, loss_data, ran_key):
+    (
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        filter_waves,
+        filter_trans,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        cosmo_params,
+        mag_i_bins,
+        area_norm,
+        target_data_HSC,
+    ) = loss_data
+
+    ran_key_arr = jran.split(ran_key, len(gal_z_arr))
+
+    _npar = 0
+    lgfburst_u_params = params[_npar : _npar + N_BURST_F]
+    _npar += N_BURST_F
+    burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
+    _npar += N_BURST_SHAPE
+    lgav_dust_u_params = params[_npar : _npar + N_DUST_LGAV]
+    _npar += N_DUST_LGAV
+    delta_dust_u_params = params[_npar : _npar + N_DUST_DELTA]
+    _npar += N_DUST_DELTA
+    boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
+    _npar += N_DUST_BORIS
+
+    mag_i = get_colors_pop(
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        ran_key_arr,
+        filter_waves,
+        filter_trans,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        cosmo_params,
+        lgfburst_u_params,
+        burstshape_u_params,
+        lgav_dust_u_params,
+        delta_dust_u_params,
+        boris_dust_u_params,
+    )[:, 0]
+
+    return mag_i
+
+@jjit
 def loss_HSC(params, loss_data, ran_key):
     mag_i_cdf = predict_HSC(params, loss_data, ran_key)
 
@@ -928,7 +978,7 @@ def loss_combined(params, loss_data, ran_key):
 
     loss_val_COSMOS = loss_COSMOS(params, loss_data_COSMOS, ran_key_COSMOS)
     loss_val_HSC = loss_HSC(params, loss_data_HSC, ran_key_HSC)
-    loss_val_DEEP2 = loss_COSMOS(params, loss_data_DEEP2, ran_key_DEEP2)
+    loss_val_DEEP2 = loss_DEEP2(params, loss_data_DEEP2, ran_key_DEEP2)
 
     loss = loss_val_COSMOS + loss_val_HSC + loss_val_DEEP2
     return loss
