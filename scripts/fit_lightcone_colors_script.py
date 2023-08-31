@@ -4,6 +4,7 @@ from jax import jit as jjit
 from jax import vmap
 from jax import grad
 from jax import random as jran
+from jax.example_libraries import optimizers as jax_opt
 import time
 from functools import partial
 
@@ -40,6 +41,9 @@ from diffstarpop.lightcone_colors import (
     sumstats_lightcone_colors_1d,
 )
 
+from fit_adam_helpers import jax_adam_wrapper
+
+
 # DSPS_data_path = "/Users/alarcon/Documents/DSPS_data/"
 # DSPS_filter_path = "/Users/alarcon/Documents/DSPS_data/filters/"
 DSPS_data_path = "/lcrc/project/halotools/alarcon/data/DSPS_data"
@@ -47,19 +51,21 @@ DSPS_filter_path = DSPS_data_path + "/filters/cosmos"
 
 
 # Define our cosmci time array to make some predictions
-t_table = np.linspace(0.1, TODAY, 10)
+t_table = np.linspace(0.1, TODAY, 20)
 # t_table = np.logspace(-1, np.log10(TODAY), 100)
 
 # t_table = np.linspace(1.0, TODAY, 20)
-z_table = np.array([z_at_value(Planck13.age, x * u.Gyr, zmin=-1) for x in t_table])
+# z_table = np.array([z_at_value(Planck13.age, x * u.Gyr, zmin=-1) for x in t_table])
 
 
 print(t_table)
-print(np.round(z_table, 2))
+# print(np.round(z_table, 2))
 lgt = np.log10(t_table)
 # Define some mass bins for predictions
-logm0_bins = np.arange(11.0 - 0.05, 15.05 + 0.05, 0.1)
-logm0_binmids = np.arange(11.0, 15.01, 0.3)
+binwidth = 0.2
+logm0_bins = np.arange(11.0 - binwidth/2.0, 15.2 + binwidth/2.0, binwidth)
+# logm0_binmids = np.arange(11.0, 15.0+binwidth, binwidth)
+logm0_binmids = 0.5 * (logm0_bins[1:] + logm0_bins[:-1])
 logm0_bin_widths = np.ones_like(logm0_binmids) * np.diff(logm0_binmids)[0] / 2.0
 
 
@@ -163,7 +169,7 @@ def precompute_DSPS_data(z_arr, filter_list):
     return ssp_obs_photflux_table_arr, dsps_data
 
 
-z_arr = np.arange(0.1, 2.01, 0.3)
+z_arr = np.arange(0.1, 2.51, 0.1)
 filter_list = [
     "COSMOS_CFHT_ustar.h5",
     "COSMOS_HSC_g.h5",
@@ -180,7 +186,8 @@ ssp_obs_photflux_table_arr, dsps_data = precompute_DSPS_data(z_arr, filter_list)
 
 
 target_data = np.load(
-    "/lcrc/project/halotools/alarcon/data/counts_target_1d_colors_i_18_23_230720.npy"
+    "/lcrc/project/halotools/alarcon/data/counts_target_1d_colors_i_18_23_fine_230720.npy"
+    # "/lcrc/project/halotools/alarcon/data/counts_target_1d_colors_i_18_23_coarse_230720.npy"
 )
 
 # path_json = "/Users/alarcon/Documents/source/diffstarpop/diffstarpop/bestfit_diffstarpop_params_UM_hists_v4.json"
@@ -207,6 +214,9 @@ init_params = jnp.concatenate(
         DEFAULT_boris_dust_u_params,
     )
 )
+
+init_params = np.load("/lcrc/project/halotools/alarcon/results/ligthcone_colors_bestfit_1d_colors_i_18_23_230720_test1.npz")['best_fit_params']
+
 
 dVdz = Planck18.differential_comoving_volume(z_arr).value
 dVdz = dVdz / dVdz.sum()
@@ -238,7 +248,7 @@ loss_data = (
     ssp_obs_photflux_table_arr,
     target_data,
 )
-
+"""
 t0 = time.time()
 loss_value = loss(init_params, loss_data, n_histories, ran_key)
 t1 = time.time()
@@ -250,3 +260,30 @@ loss_deriv_values = loss_deriv(init_params, loss_data, n_histories, ran_key)
 t1 = time.time()
 print(t1 - t0)
 print_loss_deriv(loss_deriv_values)
+"""
+
+output_filename = "/lcrc/project/halotools/alarcon/results/ligthcone_colors_bestfit_1d_colors_i_18_23_230720_test2.npz"
+
+
+n_step = int(2e3)
+step_size = 0.01
+
+opt_init, opt_update, get_params = jax_opt.adam(step_size)
+opt_state = opt_init(init_params)
+jax_optimizer = (opt_state, opt_update, get_params)
+
+print(f"Running with {n_histories} histories")
+_res0 = jax_adam_wrapper(
+    init_params,
+    loss_data,
+    loss,
+    loss_deriv,
+    n_step,
+    n_histories,
+    ran_key,
+    output_filename,
+    jax_optimizer,
+    
+)
+
+best_fit_params = _res0[0]
