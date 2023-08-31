@@ -564,6 +564,18 @@ def loss_DEEP2(params, loss_data, ran_key):
     loss += mse(dNdz_imag_18_22, dNdz_imag_18_22_target)
     loss += mse(dNdz_imag_18_23, dNdz_imag_18_23_target)
 
+    bins_dNdz = loss_data[-2]
+    binsc_dNdz = bins_dNdz[:-1] + 0.5 * jnp.diff(bins_dNdz)
+
+    mean_pred = jnp.einsum("bz,z->b", pred_data, binsc_dNdz) / jnp.einsum(
+        "bz->b", pred_data
+    )
+    mean_targ = jnp.einsum("bz,z->b", target_data, binsc_dNdz) / jnp.einsum(
+        "bz->b", target_data
+    )
+
+    loss += mse(mean_pred, mean_targ)
+
     return loss
 
 
@@ -724,7 +736,25 @@ def predict_COSMOS(params, loss_data, ran_key):
 def loss_COSMOS(params, loss_data, ran_key):
     pred_data = predict_COSMOS(params, loss_data, ran_key)
 
-    target_data_COSMOS = loss_data[-1]
+    (
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        filter_waves,
+        filter_trans,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        cosmo_params,
+        ndsig_mag,
+        ndsig_color,
+        bins_LO_mag,
+        bins_HI_mag,
+        bins_LO_color,
+        bins_HI_color,
+        target_data_COSMOS,
+    ) = loss_data
+
     (
         counts_i_z01_03_target,
         counts_i_z03_05_target,
@@ -774,6 +804,31 @@ def loss_COSMOS(params, loss_data, ran_key):
     loss += mse(counts_colors_z09_11, counts_colors_z09_11_target)
     loss += mse(counts_colors_z11_13, counts_colors_z11_13_target)
     loss += mse(counts_colors_z13_15, counts_colors_z13_15_target)
+
+    binsc_mag = jnp.mean(jnp.array([bins_LO_mag, bins_HI_mag]), axis=0)
+    binsc_color = jnp.mean(jnp.array([bins_LO_color, bins_HI_color]), axis=0)
+
+    pred_mag = pred_data[:7]
+    pred_colors = pred_data[7:]
+    targ_mag = target_data_COSMOS[:7]
+    targ_colors = target_data_COSMOS[7:]
+
+    mean_pred_mag = jnp.einsum("bz,z->b", pred_mag, binsc_mag) / jnp.einsum(
+        "bz->b", pred_mag
+    )
+    mean_targ_mag = jnp.einsum("bz,z->b", targ_mag, binsc_mag) / jnp.einsum(
+        "bz->b", targ_mag
+    )
+
+    mean_pred_colors = jnp.einsum("bcz,z->bc", pred_colors, binsc_color) / jnp.einsum(
+        "bcz->bc", pred_colors
+    )
+    mean_targ_colors = jnp.einsum("bcz,z->bc", targ_colors, binsc_color) / jnp.einsum(
+        "bcz->bc", targ_colors
+    )
+
+    loss += mse(mean_pred_mag, mean_targ_mag)
+    loss += mse(mean_pred_colors, mean_targ_colors)
 
     return loss
 
@@ -890,6 +945,7 @@ def predict_HSC_magi(params, loss_data, ran_key):
     )[:, 0]
 
     return mag_i
+
 
 @jjit
 def loss_HSC(params, loss_data, ran_key):
