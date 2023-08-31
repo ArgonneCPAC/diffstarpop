@@ -229,6 +229,7 @@ def calculate_dNdz(z_arr, bins_dNdz, weights):
     counts = counts / jnp.sum(counts)
     return counts
 
+
 @jjit
 def calculate_dNdz_DEEP2(mag_r, mag_i, z_obs, bins_dNdz):
     """
@@ -475,7 +476,7 @@ def calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm):
 
 
 @jjit
-def loss_DEEP2(params, loss_data, ran_key):
+def predict_DEEP2(params, loss_data, ran_key):
     (
         t_table,
         gal_sfr_arr,
@@ -489,17 +490,6 @@ def loss_DEEP2(params, loss_data, ran_key):
         bins_dNdz,
         target_data,
     ) = loss_data
-
-    (
-        dNdz_rmag_18_20_target,
-        dNdz_rmag_18_21_target,
-        dNdz_rmag_18_22_target,
-        dNdz_rmag_18_23_target,
-        dNdz_imag_18_20_target,
-        dNdz_imag_18_21_target,
-        dNdz_imag_18_22_target,
-        dNdz_imag_18_23_target,
-    ) = target_data
 
     ran_key_arr = jran.split(ran_key, len(gal_z_arr))
 
@@ -535,6 +525,26 @@ def loss_DEEP2(params, loss_data, ran_key):
 
     pred_data = calculate_dNdz_DEEP2(mag_r_CFHT, mag_i_CFHT, gal_z_arr, bins_dNdz)
 
+    return pred_data
+
+
+@jjit
+def loss_DEEP2(params, loss_data, ran_key):
+    pred_data = predict_DEEP2(params, loss_data, ran_key)
+
+    target_data = loss_data[-1]
+
+    (
+        dNdz_rmag_18_20_target,
+        dNdz_rmag_18_21_target,
+        dNdz_rmag_18_22_target,
+        dNdz_rmag_18_23_target,
+        dNdz_imag_18_20_target,
+        dNdz_imag_18_21_target,
+        dNdz_imag_18_22_target,
+        dNdz_imag_18_23_target,
+    ) = target_data
+
     (
         dNdz_rmag_18_20,
         dNdz_rmag_18_21,
@@ -559,7 +569,7 @@ def loss_DEEP2(params, loss_data, ran_key):
 
 
 @jjit
-def loss_COSMOS(params, loss_data, ran_key):
+def predict_COSMOS(params, loss_data, ran_key):
     (
         t_table,
         gal_sfr_arr,
@@ -578,23 +588,6 @@ def loss_COSMOS(params, loss_data, ran_key):
         bins_HI_color,
         target_data_COSMOS,
     ) = loss_data
-
-    (
-        counts_i_z01_03_target,
-        counts_i_z03_05_target,
-        counts_i_z05_07_target,
-        counts_i_z07_09_target,
-        counts_i_z09_11_target,
-        counts_i_z11_13_target,
-        counts_i_z13_15_target,
-        counts_colors_z01_03_target,
-        counts_colors_z03_05_target,
-        counts_colors_z05_07_target,
-        counts_colors_z07_09_target,
-        counts_colors_z09_11_target,
-        counts_colors_z11_13_target,
-        counts_colors_z13_15_target,
-    ) = target_data_COSMOS
 
     (
         gal_sfr_arr_z01_03,
@@ -725,6 +718,31 @@ def loss_COSMOS(params, loss_data, ran_key):
         bins_HI_color,
     )
 
+    return pred_data
+
+
+@jjit
+def loss_COSMOS(params, loss_data, ran_key):
+    pred_data = predict_COSMOS(params, loss_data, ran_key)
+
+    target_data_COSMOS = loss_data[-1]
+    (
+        counts_i_z01_03_target,
+        counts_i_z03_05_target,
+        counts_i_z05_07_target,
+        counts_i_z07_09_target,
+        counts_i_z09_11_target,
+        counts_i_z11_13_target,
+        counts_i_z13_15_target,
+        counts_colors_z01_03_target,
+        counts_colors_z03_05_target,
+        counts_colors_z05_07_target,
+        counts_colors_z07_09_target,
+        counts_colors_z09_11_target,
+        counts_colors_z11_13_target,
+        counts_colors_z13_15_target,
+    ) = target_data_COSMOS
+
     (
         counts_i_z01_03,
         counts_i_z03_05,
@@ -770,7 +788,7 @@ def arcsinh_log(val):
 
 
 @jjit
-def loss_HSC(params, loss_data, ran_key):
+def predict_HSC(params, loss_data, ran_key):
     (
         t_table,
         gal_sfr_arr,
@@ -818,8 +836,16 @@ def loss_HSC(params, loss_data, ran_key):
         boris_dust_u_params,
     )[:, 0]
 
-    print("mag_i.shape", mag_i.shape)
     mag_i_cdf = calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm)
+
+    return mag_i_cdf
+
+
+@jjit
+def loss_HSC(params, loss_data, ran_key):
+    mag_i_cdf = predict_HSC(params, loss_data, ran_key)
+
+    target_data_HSC = loss_data[-1]
 
     target_data_HSC = arcsinh_log(target_data_HSC)
     pred_data_HSC = arcsinh_log(mag_i_cdf)
@@ -890,10 +916,29 @@ def loss_SDSS(params, loss_data, ran_key):
     return loss
 
 
+@jjit
+def loss_combined(params, loss_data, ran_key):
+    (
+        loss_data_COSMOS,
+        loss_data_HSC,
+        loss_data_DEEP2,
+    ) = loss_data
+
+    ran_key_COSMOS, ran_key_HSC, ran_key_DEEP2 = jran.split(ran_key, 3)
+
+    loss_val_COSMOS = loss_COSMOS(params, loss_data_COSMOS, ran_key_COSMOS)
+    loss_val_HSC = loss_HSC(params, loss_data_HSC, ran_key_HSC)
+    loss_val_DEEP2 = loss_COSMOS(params, loss_data_DEEP2, ran_key_DEEP2)
+
+    loss = loss_val_COSMOS + loss_val_HSC + loss_val_DEEP2
+    return loss
+
+
 loss_COSMOS_deriv = jjit(grad(loss_COSMOS, argnums=(0)))
 loss_HSC_deriv = jjit(grad(loss_HSC, argnums=(0)))
 loss_DEEP2_deriv = jjit(grad(loss_DEEP2, argnums=(0)))
 loss_SDSS_deriv = jjit(grad(loss_SDSS, argnums=(0)))
+loss_combined_deriv = jjit(grad(loss_combined, argnums=(0)))
 
 
 def loss_COSMOS_deriv_np(params, data, n_histories):
@@ -910,6 +955,10 @@ def loss_DEEP2_deriv_np(params, data, n_histories):
 
 def loss_SDSS_deriv_np(params, data, n_histories):
     return np.array(loss_SDSS_deriv(params, data, n_histories)).astype(float)
+
+
+def loss_combined_deriv_np(params, data, n_histories):
+    return np.array(loss_combined_deriv(params, data, n_histories)).astype(float)
 
 
 DSPS_data_path = "/lcrc/project/halotools/alarcon/data/DSPS_data/"
