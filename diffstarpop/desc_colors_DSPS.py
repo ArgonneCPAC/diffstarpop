@@ -735,6 +735,153 @@ def predict_COSMOS(params, loss_data, ran_key):
 
 
 @jjit
+def predict_COSMOS_mags(params, loss_data, ran_key):
+    (
+        t_table,
+        gal_sfr_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        filter_waves,
+        filter_trans,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        cosmo_params,
+        ndsig_mag,
+        ndsig_color,
+        bins_LO_mag,
+        bins_HI_mag,
+        bins_LO_color,
+        bins_HI_color,
+        target_data_COSMOS,
+    ) = loss_data
+
+    (
+        gal_sfr_arr_z01_03,
+        gal_sfr_arr_z03_05,
+        gal_sfr_arr_z05_07,
+        gal_sfr_arr_z07_09,
+        gal_sfr_arr_z09_11,
+        gal_sfr_arr_z11_13,
+        gal_sfr_arr_z13_15,
+    ) = gal_sfr_arr
+    (
+        gal_z_arr_z01_03,
+        gal_z_arr_z03_05,
+        gal_z_arr_z05_07,
+        gal_z_arr_z07_09,
+        gal_z_arr_z09_11,
+        gal_z_arr_z11_13,
+        gal_z_arr_z13_15,
+    ) = gal_z_arr
+    (
+        gal_ssp_obs_photflux_table_z01_03,
+        gal_ssp_obs_photflux_table_z03_05,
+        gal_ssp_obs_photflux_table_z05_07,
+        gal_ssp_obs_photflux_table_z07_09,
+        gal_ssp_obs_photflux_table_z09_11,
+        gal_ssp_obs_photflux_table_z11_13,
+        gal_ssp_obs_photflux_table_z13_15,
+    ) = gal_ssp_obs_photflux_table
+
+    ran_key_arr_z01_03 = jran.split(ran_key, len(gal_z_arr_z01_03))
+    ran_key_arr_z03_05 = jran.split(ran_key, len(gal_z_arr_z03_05))
+    ran_key_arr_z05_07 = jran.split(ran_key, len(gal_z_arr_z05_07))
+    ran_key_arr_z07_09 = jran.split(ran_key, len(gal_z_arr_z07_09))
+    ran_key_arr_z09_11 = jran.split(ran_key, len(gal_z_arr_z09_11))
+    ran_key_arr_z11_13 = jran.split(ran_key, len(gal_z_arr_z11_13))
+    ran_key_arr_z13_15 = jran.split(ran_key, len(gal_z_arr_z13_15))
+
+    _npar = 0
+    lgfburst_u_params = params[_npar : _npar + N_BURST_F]
+    _npar += N_BURST_F
+    burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
+    _npar += N_BURST_SHAPE
+    lgav_dust_u_params = params[_npar : _npar + N_DUST_LGAV]
+    _npar += N_DUST_LGAV
+    delta_dust_u_params = params[_npar : _npar + N_DUST_DELTA]
+    _npar += N_DUST_DELTA
+    boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
+    _npar += N_DUST_BORIS
+
+    def get_colors_pop_COSMOS(
+        gal_sfr_arr_COS, gal_z_arr_COS, gal_ssp_obs_photflux_table_COS, ran_key_arr_COS
+    ):
+        gal_mags = get_colors_pop(
+            t_table,
+            gal_sfr_arr_COS,
+            gal_z_arr_COS,
+            gal_ssp_obs_photflux_table_COS,
+            ran_key_arr_COS,
+            filter_waves,
+            filter_trans,
+            ssp_lgmet,
+            ssp_lg_age_gyr,
+            cosmo_params,
+            lgfburst_u_params,
+            burstshape_u_params,
+            lgav_dust_u_params,
+            delta_dust_u_params,
+            boris_dust_u_params,
+        )
+        return gal_mags
+
+    gal_mags_z01_03 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z01_03,
+        gal_z_arr_z01_03,
+        gal_ssp_obs_photflux_table_z01_03,
+        ran_key_arr_z01_03,
+    )
+    gal_mags_z03_05 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z03_05,
+        gal_z_arr_z03_05,
+        gal_ssp_obs_photflux_table_z03_05,
+        ran_key_arr_z03_05,
+    )
+    gal_mags_z05_07 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z05_07,
+        gal_z_arr_z05_07,
+        gal_ssp_obs_photflux_table_z05_07,
+        ran_key_arr_z05_07,
+    )
+    gal_mags_z07_09 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z07_09,
+        gal_z_arr_z07_09,
+        gal_ssp_obs_photflux_table_z07_09,
+        ran_key_arr_z07_09,
+    )
+    gal_mags_z09_11 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z09_11,
+        gal_z_arr_z09_11,
+        gal_ssp_obs_photflux_table_z09_11,
+        ran_key_arr_z09_11,
+    )
+    gal_mags_z11_13 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z11_13,
+        gal_z_arr_z11_13,
+        gal_ssp_obs_photflux_table_z11_13,
+        ran_key_arr_z11_13,
+    )
+    gal_mags_z13_15 = get_colors_pop_COSMOS(
+        gal_sfr_arr_z13_15,
+        gal_z_arr_z13_15,
+        gal_ssp_obs_photflux_table_z13_15,
+        ran_key_arr_z13_15,
+    )
+
+    output = (
+        gal_mags_z01_03,
+        gal_mags_z03_05,
+        gal_mags_z05_07,
+        gal_mags_z07_09,
+        gal_mags_z09_11,
+        gal_mags_z11_13,
+        gal_mags_z13_15,
+    )
+
+    return output
+
+
+@jjit
 def loss_COSMOS(params, loss_data, ran_key):
     pred_data = predict_COSMOS(params, loss_data, ran_key)
 
@@ -1152,7 +1299,7 @@ def get_loss_data_COSMOS(
 
     bins_LO_color_COSMOS = bins_color_COSMOS[:-1]
     bins_HI_color_COSMOS = bins_color_COSMOS[1:]
-    ndsig_color_COSMOS = np.diff(bins_color_COSMOS)[0] # * 3.0
+    ndsig_color_COSMOS = np.diff(bins_color_COSMOS)[0]  # * 3.0
 
     gal_sfr_arr_out = (
         gal_sfr_arr[(gal_z_arr > 0.1) & (gal_z_arr < 0.3)],
