@@ -563,10 +563,12 @@ def loss_DEEP2(params, loss_data, ran_key):
     loss += mse(dNdz_imag_18_21, dNdz_imag_18_21_target)
     loss += mse(dNdz_imag_18_22, dNdz_imag_18_22_target)
     loss += mse(dNdz_imag_18_23, dNdz_imag_18_23_target)
-
+    """
     bins_dNdz = loss_data[-2]
     binsc_dNdz = bins_dNdz[:-1] + 0.5 * jnp.diff(bins_dNdz)
 
+    pred_data = jnp.array(pred_data)
+    target_data = jnp.array(target_data)
     mean_pred = jnp.einsum("bz,z->b", pred_data, binsc_dNdz) / jnp.einsum(
         "bz->b", pred_data
     )
@@ -575,7 +577,7 @@ def loss_DEEP2(params, loss_data, ran_key):
     )
 
     loss += mse(mean_pred, mean_targ)
-
+    """
     return loss
 
 
@@ -804,14 +806,14 @@ def loss_COSMOS(params, loss_data, ran_key):
     loss += mse(counts_colors_z09_11, counts_colors_z09_11_target)
     loss += mse(counts_colors_z11_13, counts_colors_z11_13_target)
     loss += mse(counts_colors_z13_15, counts_colors_z13_15_target)
-
+    """
     binsc_mag = jnp.mean(jnp.array([bins_LO_mag, bins_HI_mag]), axis=0)
     binsc_color = jnp.mean(jnp.array([bins_LO_color, bins_HI_color]), axis=0)
 
-    pred_mag = pred_data[:7]
-    pred_colors = pred_data[7:]
-    targ_mag = target_data_COSMOS[:7]
-    targ_colors = target_data_COSMOS[7:]
+    pred_mag = jnp.array(pred_data[:7])
+    pred_colors = jnp.array(pred_data[7:])
+    targ_mag = jnp.array(target_data_COSMOS[:7])
+    targ_colors = jnp.array(target_data_COSMOS[7:])
 
     mean_pred_mag = jnp.einsum("bz,z->b", pred_mag, binsc_mag) / jnp.einsum(
         "bz->b", pred_mag
@@ -829,7 +831,7 @@ def loss_COSMOS(params, loss_data, ran_key):
 
     loss += mse(mean_pred_mag, mean_targ_mag)
     loss += mse(mean_pred_colors, mean_targ_colors)
-
+    """
     return loss
 
 
@@ -1136,6 +1138,7 @@ def get_loss_data_COSMOS(
     )
 
     fn = "COSMOS_target_data_20bins.h5"
+    # fn = "COSMOS_target_data_20bins_nsigcolx3.h5"
     with h5py.File(os.path.join(target_data_path, fn), "r") as f:
         bins_mag_COSMOS = f["bins_mag"][...]
         bins_color_COSMOS = f["bins_color"][...]
@@ -1149,7 +1152,7 @@ def get_loss_data_COSMOS(
 
     bins_LO_color_COSMOS = bins_color_COSMOS[:-1]
     bins_HI_color_COSMOS = bins_color_COSMOS[1:]
-    ndsig_color_COSMOS = np.diff(bins_color_COSMOS)[0]
+    ndsig_color_COSMOS = np.diff(bins_color_COSMOS)[0] # * 3.0
 
     gal_sfr_arr_out = (
         gal_sfr_arr[(gal_z_arr > 0.1) & (gal_z_arr < 0.3)],
