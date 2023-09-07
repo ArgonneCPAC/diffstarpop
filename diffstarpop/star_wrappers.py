@@ -61,13 +61,20 @@ def sm_sfr_history_diffstar_scan(
     sfr = qfrac * ms_sfr
     sfr = jnp.clip(sfr, MIN_SFR, None)
     mstar = _integrate_sfr(sfr, dt)
-    fstar = compute_fstar(10 ** lgt, mstar, index_select, index_high, fstar_tdelay)
+    fstar = compute_fstar(10**lgt, mstar, index_select, index_high, fstar_tdelay)
     return mstar, sfr, fstar
 
 
 @jjit
 def sm_sfr_history_diffstar_scan_MS(
-    tarr, lgt, dt, mah_params, sfr_ms_params, index_select, index_high, fstar_tdelay,
+    tarr,
+    lgt,
+    dt,
+    mah_params,
+    sfr_ms_params,
+    index_select,
+    index_high,
+    fstar_tdelay,
 ):
     # tau_dep = sfr_ms_params[3]
     # tau_dep = jnp.clip(tau_dep, TAU_DEP_MIN, jnp.inf)
@@ -76,8 +83,35 @@ def sm_sfr_history_diffstar_scan_MS(
     sfr = sfh_scan_tobs_kern(tarr, mah_params, sfr_params)
     sfr = jnp.clip(sfr, MIN_SFR, None)
     mstar = _integrate_sfr(sfr, dt)
-    fstar = compute_fstar(10 ** lgt, mstar, index_select, index_high, fstar_tdelay)
+    fstar = compute_fstar(10**lgt, mstar, index_select, index_high, fstar_tdelay)
     return mstar, sfr, fstar
+
+
+@jjit
+def sfr_history_diffstar_scan(
+    tarr,
+    mah_params,
+    sfr_ms_params,
+    q_params,
+):
+    sfr_params = [*sfr_ms_params[0:3], UH, sfr_ms_params[3]]
+    ms_sfr = sfh_scan_tobs_kern(tarr, mah_params, sfr_params)
+    qfrac = quenching_function(jnp.log10(tarr), *q_params)
+    sfr = qfrac * ms_sfr
+    sfr = jnp.clip(sfr, MIN_SFR, None)
+    return sfr
+
+
+@jjit
+def sfr_history_diffstar_scan_MS(
+    tarr,
+    mah_params,
+    sfr_ms_params,
+):
+    sfr_params = [*sfr_ms_params[0:3], UH, sfr_ms_params[3]]
+    sfr = sfh_scan_tobs_kern(tarr, mah_params, sfr_params)
+    sfr = jnp.clip(sfr, MIN_SFR, None)
+    return sfr
 
 
 @jjit
@@ -108,12 +142,19 @@ def sm_sfr_history_diffstar_vmap(
 
 @jjit
 def sm_sfr_history_diffstar_vmap_MS(
-    lgt, dt, dmhdt, log_mah, sfr_ms_params, index_select, index_high, fstar_tdelay,
+    lgt,
+    dt,
+    dmhdt,
+    log_mah,
+    sfr_ms_params,
+    index_select,
+    index_high,
+    fstar_tdelay,
 ):
     sfr_params = [*sfr_ms_params[0:3], UH, sfr_ms_params[3]]
     sfr = _ms_sfr_history_from_mah(lgt, dt, dmhdt, log_mah, sfr_params)
     mstar = _integrate_sfr(sfr, dt)
-    fstar = compute_fstar(10 ** lgt, mstar, index_select, index_high, fstar_tdelay)
+    fstar = compute_fstar(10**lgt, mstar, index_select, index_high, fstar_tdelay)
     return mstar, sfr, fstar
 
 
@@ -435,7 +476,14 @@ def compute_histories_on_grids_MS_diffstar_vmap_Xsfh_scan_Xmah_scan(
     gen = zip(dmhdt_grids, log_mah_grids, ms_sfr_param_grids)
     histories_on_grids = [
         sm_sfr_history_diffstar_vmap_MS_Xsfh_scan_Xmah_scan(
-            lgt, dt, dmhdt, log_mah, sfr_u_ps, index_select, index_high, fstar_tdelay,
+            lgt,
+            dt,
+            dmhdt,
+            log_mah,
+            sfr_u_ps,
+            index_select,
+            index_high,
+            fstar_tdelay,
         )
         for (dmhdt, log_mah, sfr_u_ps) in gen
     ]
@@ -577,7 +625,14 @@ def compute_histories_on_grids_MS_diffstar_vmap_Xsfh_vmap_Xmah_vmap(
     gen = zip(dmhdt_grids, log_mah_grids, ms_sfr_param_grids)
     histories_on_grids = [
         sm_sfr_history_diffstar_vmap_MS_Xsfh_vmap_Xmah_vmap(
-            lgt, dt, dmhdt, log_mah, sfr_u_ps, index_select, index_high, fstar_tdelay,
+            lgt,
+            dt,
+            dmhdt,
+            log_mah,
+            sfr_u_ps,
+            index_select,
+            index_high,
+            fstar_tdelay,
         )
         for (dmhdt, log_mah, sfr_u_ps) in gen
     ]
@@ -899,7 +954,14 @@ def compute_histories_on_grids_MS_diffstar_scan_Xsfh_scan_Xmah_scan(
     gen = zip(mah_param_grids, ms_sfr_param_grids)
     histories_on_grids = [
         sm_sfr_history_diffstar_scan_MS_Xsfh_scan_Xmah_scan(
-            tarr, lgt, dt, mah_params, sfr_u_ps, index_select, index_high, fstar_tdelay,
+            tarr,
+            lgt,
+            dt,
+            mah_params,
+            sfr_u_ps,
+            index_select,
+            index_high,
+            fstar_tdelay,
         )
         for (mah_params, sfr_u_ps) in gen
     ]
@@ -965,7 +1027,14 @@ def compute_histories_on_grids_MS_diffstar_scan_Xsfh_vmap_Xmah_vmap(
     gen = zip(mah_param_grids, ms_sfr_param_grids)
     histories_on_grids = [
         sm_sfr_history_diffstar_scan_MS_Xsfh_vmap_Xmah_vmap(
-            tarr, lgt, dt, mah_params, sfr_u_ps, index_select, index_high, fstar_tdelay,
+            tarr,
+            lgt,
+            dt,
+            mah_params,
+            sfr_u_ps,
+            index_select,
+            index_high,
+            fstar_tdelay,
         )
         for (mah_params, sfr_u_ps) in gen
     ]
