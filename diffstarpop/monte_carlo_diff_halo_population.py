@@ -1591,7 +1591,7 @@ def calculate_sfh_MIX(
     return mstar, sfr, fstar, p50_sampled, weight
 
 
-@partial(jjit, static_argnames=["n_histories"])
+@jjit
 def draw_single_sfh_MIX(
     t_table,
     logmh,
@@ -1703,3 +1703,7 @@ def draw_single_sfh_MIX(
     weight = jnp.array([frac_quench, (1.0 - frac_quench)])
 
     return sfr, weight
+
+
+_A = (None, 0, 0, 0, 0, *[None] * 4)
+draw_single_sfh_MIX_vmap = jjit(vmap(draw_single_sfh_MIX, in_axes=_A))
