@@ -1592,11 +1592,12 @@ def calculate_sfh_MIX(
 
 
 @jjit
-def draw_single_sfh_MIX(
+def draw_single_sfh_MIX_with_exsitu(
     t_table,
     logmh,
     mah_params,
     p50,
+    sfr_exsitu,
     ran_key,
     pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
     pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
@@ -1687,17 +1688,21 @@ def draw_single_sfh_MIX(
     q_params_Q = q_params_Q[0]
     sfr_params_MS = sfr_params_MS[0]
 
-    sfr_Q = sfr_history_diffstar_scan(
+    sfr_Q_insitu = sfr_history_diffstar_scan(
         t_table,
         mah_params,
         sfr_params_Q,
         q_params_Q,
     )
-    sfr_MS = sfr_history_diffstar_scan_MS(
+    sfr_MS_insitu = sfr_history_diffstar_scan_MS(
         t_table,
         mah_params,
         sfr_params_MS,
     )
+
+    sfr_Q = sfr_Q_insitu + sfr_exsitu
+    sfr_MS = sfr_MS + sfr_exsitu
+
     sfr = jnp.array([sfr_Q, sfr_MS])
 
     weight = jnp.array([frac_quench, (1.0 - frac_quench)])
@@ -1705,5 +1710,7 @@ def draw_single_sfh_MIX(
     return sfr, weight
 
 
-_A = (None, 0, 0, 0, 0, *[None] * 4)
-draw_single_sfh_MIX_vmap = jjit(vmap(draw_single_sfh_MIX, in_axes=_A))
+_A = (None, 0, 0, 0, 0, 0, *[None] * 4)
+draw_single_sfh_MIX_with_exsitu_vmap = jjit(
+    vmap(draw_single_sfh_MIX_with_exsitu, in_axes=_A)
+)
