@@ -19,7 +19,7 @@ from .pdf_model_assembly_bias_shifts import (
     DEFAULT_R_QUENCH_PARAMS,
     DEFAULT_R_MAINSEQ_PARAMS,
 )
-from .utils import _tw_cuml_lax_kern
+from .utils import _tw_cuml_lax_kern, get_t50_p50
 
 from .lightcone_colors import (
     DEFAULT_lgfburst_u_params,
@@ -35,6 +35,11 @@ from dsps.cosmology import DEFAULT_COSMOLOGY
 from dsps.data_loaders import load_ssp_templates
 from dsps.data_loaders.load_filter_data import load_transmission_curve
 from dsps.photometry.utils import interpolate_filter_trans_curves
+
+from diffmah.individual_halo_assembly import _calc_halo_history
+
+_calc_halo_history_vmap = jjit(vmap(_calc_halo_history, in_axes=(None, *[0] * 6)))
+
 
 _tw_cuml_lax_kern_vmap = jjit(vmap(_tw_cuml_lax_kern, in_axes=(0, None, None)))
 
@@ -612,7 +617,6 @@ def predict_COSMOS(params, loss_data, ran_key):
         gal_sfr_exsitu_arr,
         gal_z_arr,
         gal_ssp_obs_photflux_table,
-        halo_logmh_arr,
         halo_mah_params_arr,
         halo_p50_arr,
         filter_waves,
@@ -656,16 +660,6 @@ def predict_COSMOS(params, loss_data, ran_key):
         gal_ssp_obs_photflux_table_z11_13,
         gal_ssp_obs_photflux_table_z13_15,
     ) = gal_ssp_obs_photflux_table
-
-    (
-        halo_logmh_arr_z01_03,
-        halo_logmh_arr_z03_05,
-        halo_logmh_arr_z05_07,
-        halo_logmh_arr_z07_09,
-        halo_logmh_arr_z09_11,
-        halo_logmh_arr_z11_13,
-        halo_logmh_arr_z13_15,
-    ) = halo_logmh_arr
 
     (
         halo_mah_params_arr_z01_03,
@@ -746,7 +740,6 @@ def predict_COSMOS(params, loss_data, ran_key):
     _npar += N_DUST_BORIS
 
     def get_sfh_pop_COSMOS(
-        halo_logmh_arr_COS,
         halo_mah_params_arr_COS,
         halo_p50_arr_COS,
         gal_sfr_exsitu_arr_COS,
@@ -754,7 +747,6 @@ def predict_COSMOS(params, loss_data, ran_key):
     ):
         gal_sfr_arr, weight = draw_single_sfh_MIX_with_exsitu_vmap(
             t_table,
-            halo_logmh_arr_COS,
             halo_mah_params_arr_COS,
             halo_p50_arr_COS,
             gal_sfr_exsitu_arr_COS,
@@ -767,7 +759,6 @@ def predict_COSMOS(params, loss_data, ran_key):
         return gal_sfr_arr, weight
 
     gal_sfr_arr_z01_03, weight_sfr_z01_03 = get_sfh_pop_COSMOS(
-        halo_logmh_arr_z01_03,
         halo_mah_params_arr_z01_03,
         halo_p50_arr_z01_03,
         gal_sfr_exsitu_arr_z01_03,
@@ -775,7 +766,6 @@ def predict_COSMOS(params, loss_data, ran_key):
     )
 
     gal_sfr_arr_z03_05, weight_sfr_z03_05 = get_sfh_pop_COSMOS(
-        halo_logmh_arr_z03_05,
         halo_mah_params_arr_z03_05,
         halo_p50_arr_z03_05,
         gal_sfr_exsitu_arr_z03_05,
@@ -783,7 +773,6 @@ def predict_COSMOS(params, loss_data, ran_key):
     )
 
     gal_sfr_arr_z05_07, weight_sfr_z05_07 = get_sfh_pop_COSMOS(
-        halo_logmh_arr_z05_07,
         halo_mah_params_arr_z05_07,
         halo_p50_arr_z05_07,
         gal_sfr_exsitu_arr_z05_07,
@@ -791,7 +780,6 @@ def predict_COSMOS(params, loss_data, ran_key):
     )
 
     gal_sfr_arr_z07_09, weight_sfr_z07_09 = get_sfh_pop_COSMOS(
-        halo_logmh_arr_z07_09,
         halo_mah_params_arr_z07_09,
         halo_p50_arr_z07_09,
         gal_sfr_exsitu_arr_z07_09,
@@ -799,7 +787,6 @@ def predict_COSMOS(params, loss_data, ran_key):
     )
 
     gal_sfr_arr_z09_11, weight_sfr_z09_11 = get_sfh_pop_COSMOS(
-        halo_logmh_arr_z09_11,
         halo_mah_params_arr_z09_11,
         halo_p50_arr_z09_11,
         gal_sfr_exsitu_arr_z09_11,
@@ -807,7 +794,6 @@ def predict_COSMOS(params, loss_data, ran_key):
     )
 
     gal_sfr_arr_z11_13, weight_sfr_z11_13 = get_sfh_pop_COSMOS(
-        halo_logmh_arr_z11_13,
         halo_mah_params_arr_z11_13,
         halo_p50_arr_z11_13,
         gal_sfr_exsitu_arr_z11_13,
@@ -815,7 +801,6 @@ def predict_COSMOS(params, loss_data, ran_key):
     )
 
     gal_sfr_arr_z13_15, weight_sfr_z13_15 = get_sfh_pop_COSMOS(
-        halo_logmh_arr_z13_15,
         halo_mah_params_arr_z13_15,
         halo_p50_arr_z13_15,
         gal_sfr_exsitu_arr_z13_15,
@@ -1422,8 +1407,9 @@ target_data_path = "/lcrc/project/halotools/alarcon/data/DESC_mocks_data/"
 
 def get_loss_data_COSMOS(
     t_table,
-    gal_sfr_arr,
+    gal_sfr_exsitu_arr,
     gal_z_arr,
+    halo_mah_params_arr,
 ):
     print("Loading COSMOS filters")
     filter_list_COSMOS = [
@@ -1473,13 +1459,6 @@ def get_loss_data_COSMOS(
         filter_trans_COSMOS,
         DEFAULT_COSMOLOGY,
     )
-    # gal_ssp_table_COSMOS = interpolate_ssp_obs_photflux_table(
-    #     gal_z_arr, z_table, ssp_obs_photflux_table_COSMOS
-    # )
-    print("Interpolating SSPs to galaxy redshifts")
-    gal_ssp_table_COSMOS = interpolate_ssp_obs_photflux_table_batch(
-        gal_z_arr, z_table, ssp_obs_photflux_table_COSMOS
-    )
 
     fn = "COSMOS_target_data_20bins.h5"
     # fn = "COSMOS_target_data_20bins_nsigcolx3.h5"
@@ -1498,14 +1477,14 @@ def get_loss_data_COSMOS(
     bins_HI_color_COSMOS = bins_color_COSMOS[1:]
     ndsig_color_COSMOS = np.diff(bins_color_COSMOS)[0]  # * 3.0
 
-    gal_sfr_arr_out = (
-        gal_sfr_arr[(gal_z_arr > 0.1) & (gal_z_arr < 0.3)],
-        gal_sfr_arr[(gal_z_arr > 0.3) & (gal_z_arr < 0.5)],
-        gal_sfr_arr[(gal_z_arr > 0.5) & (gal_z_arr < 0.7)],
-        gal_sfr_arr[(gal_z_arr > 0.7) & (gal_z_arr < 0.9)],
-        gal_sfr_arr[(gal_z_arr > 0.9) & (gal_z_arr < 1.1)],
-        gal_sfr_arr[(gal_z_arr > 1.1) & (gal_z_arr < 1.3)],
-        gal_sfr_arr[(gal_z_arr > 1.3) & (gal_z_arr < 1.5)],
+    gal_sfr_exsitu_arr_out = (
+        gal_sfr_exsitu_arr[(gal_z_arr > 0.1) & (gal_z_arr < 0.3)],
+        gal_sfr_exsitu_arr[(gal_z_arr > 0.3) & (gal_z_arr < 0.5)],
+        gal_sfr_exsitu_arr[(gal_z_arr > 0.5) & (gal_z_arr < 0.7)],
+        gal_sfr_exsitu_arr[(gal_z_arr > 0.7) & (gal_z_arr < 0.9)],
+        gal_sfr_exsitu_arr[(gal_z_arr > 0.9) & (gal_z_arr < 1.1)],
+        gal_sfr_exsitu_arr[(gal_z_arr > 1.1) & (gal_z_arr < 1.3)],
+        gal_sfr_exsitu_arr[(gal_z_arr > 1.3) & (gal_z_arr < 1.5)],
     )
     gal_z_arr_out = (
         gal_z_arr[(gal_z_arr > 0.1) & (gal_z_arr < 0.3)],
@@ -1516,21 +1495,40 @@ def get_loss_data_COSMOS(
         gal_z_arr[(gal_z_arr > 1.1) & (gal_z_arr < 1.3)],
         gal_z_arr[(gal_z_arr > 1.3) & (gal_z_arr < 1.5)],
     )
-    gal_ssp_table_COSMOS_out = (
-        gal_ssp_table_COSMOS[(gal_z_arr > 0.1) & (gal_z_arr < 0.3)],
-        gal_ssp_table_COSMOS[(gal_z_arr > 0.3) & (gal_z_arr < 0.5)],
-        gal_ssp_table_COSMOS[(gal_z_arr > 0.5) & (gal_z_arr < 0.7)],
-        gal_ssp_table_COSMOS[(gal_z_arr > 0.7) & (gal_z_arr < 0.9)],
-        gal_ssp_table_COSMOS[(gal_z_arr > 0.9) & (gal_z_arr < 1.1)],
-        gal_ssp_table_COSMOS[(gal_z_arr > 1.1) & (gal_z_arr < 1.3)],
-        gal_ssp_table_COSMOS[(gal_z_arr > 1.3) & (gal_z_arr < 1.5)],
+    halo_mah_params_arr_out = (
+        halo_mah_params_arr[(gal_z_arr > 0.1) & (gal_z_arr < 0.3)],
+        halo_mah_params_arr[(gal_z_arr > 0.3) & (gal_z_arr < 0.5)],
+        halo_mah_params_arr[(gal_z_arr > 0.5) & (gal_z_arr < 0.7)],
+        halo_mah_params_arr[(gal_z_arr > 0.7) & (gal_z_arr < 0.9)],
+        halo_mah_params_arr[(gal_z_arr > 0.9) & (gal_z_arr < 1.1)],
+        halo_mah_params_arr[(gal_z_arr > 1.1) & (gal_z_arr < 1.3)],
+        halo_mah_params_arr[(gal_z_arr > 1.3) & (gal_z_arr < 1.5)],
     )
+
+    print("Interpolating SSPs to galaxy redshifts")
+    gal_ssp_table_COSMOS_out = [
+        interpolate_ssp_obs_photflux_table_batch(
+            gal_z_arr_X, z_table, ssp_obs_photflux_table_COSMOS
+        )
+        for gal_z_arr_X in gal_z_arr_out
+    ]
+
+    print("Calculating p50...")
+    halo_p50_arr_out = []
+    for halo_mah_params in halo_mah_params_arr_out:
+        log_mah = _calc_halo_history_vmap(jnp.log10(t_table), *halo_mah_params.T)[1]
+        p50 = get_t50_p50(
+            t_table, 10**log_mah, 0.5, log_mah[:, -1], window_length=int(1e4 + 1)
+        )[1]
+        halo_p50_arr_out.append(p50)
 
     loss_data_COSMOS = (
         t_table,
-        gal_sfr_arr_out,
+        gal_sfr_exsitu_arr_out,
         gal_z_arr_out,
         gal_ssp_table_COSMOS_out,
+        halo_mah_params_arr_out,
+        halo_p50_arr_out,
         filter_waves_COSMOS,
         filter_trans_COSMOS,
         ssp_lgmet,
