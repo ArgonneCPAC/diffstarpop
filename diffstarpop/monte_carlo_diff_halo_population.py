@@ -1594,7 +1594,6 @@ def calculate_sfh_MIX(
 @jjit
 def draw_single_sfh_MIX_with_exsitu(
     t_table,
-    logmh,
     mah_params,
     p50,
     sfr_exsitu,
@@ -1643,7 +1642,7 @@ def draw_single_sfh_MIX_with_exsitu(
     sfr : ndarray of shape (n_histories, n_times)
         Stores star formation rate history in units of Msun/yr.
     """
-    logmh = jnp.atleast_1d(logmh)
+    logmh = jnp.atleast_1d(mah_params[0])
 
     (quench_key, mainseq_key, ran_key) = jran.split(ran_key, 3)
 
