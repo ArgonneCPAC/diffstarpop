@@ -7,6 +7,7 @@ from jax import numpy as jnp
 from jax import random as jran
 from functools import partial
 
+
 from diffsky.experimental.dspspop.photpop import get_obs_photometry_singlez
 from diffsky.diffndhist import tw_ndhist_weighted, _tw_ndhist_weighted_kern
 
@@ -37,6 +38,7 @@ from dsps.data_loaders.load_filter_data import load_transmission_curve
 from dsps.photometry.utils import interpolate_filter_trans_curves
 
 from diffmah.individual_halo_assembly import _calc_halo_history
+from diffstar.constants import LGT0
 
 _calc_halo_history_vmap = jjit(vmap(_calc_halo_history, in_axes=(None, *[0] * 6)))
 
@@ -1516,7 +1518,17 @@ def get_loss_data_COSMOS(
     print("Calculating p50...")
     halo_p50_arr_out = []
     for halo_mah_params in halo_mah_params_arr_out:
-        log_mah = _calc_halo_history_vmap(jnp.log10(t_table), *halo_mah_params.T)[1]
+        halo_mah_params_in = np.array(
+            [
+                LGT0 * np.ones(len(halo_mah_params[:, 0])),
+                halo_mah_params[:, 0],
+                halo_mah_params[:, 1],
+                3.5 * np.ones(len(halo_mah_params[:, 0])),
+                halo_mah_params[:, 2],
+                halo_mah_params[:, 3],
+            ]
+        )
+        log_mah = _calc_halo_history_vmap(jnp.log10(t_table), *halo_mah_params_in)[1]
         p50 = get_t50_p50(
             t_table, 10**log_mah, 0.5, log_mah[:, -1], window_length=int(1e4 + 1)
         )[1]
