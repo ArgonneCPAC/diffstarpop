@@ -45,6 +45,7 @@ from jax.example_libraries import optimizers as jax_opt
 lightcone_path = "/lcrc/project/galsampler/SMDPL/DR1/lightcones/"
 root_dir = "/lcrc/project/galsampler/SMDPL/dr1_no_merging_upidh/"
 diffmah_path = root_dir + "sfh_binary_catalogs/diffmah_fits/subvol_%d/diffmah_fits.h5"
+crossmatch_dir = "/lcrc/project/halotools/alarcon/data/"
 
 
 def get_diffmah_params(halo_ids):
@@ -67,7 +68,7 @@ def get_diffmah_params(halo_ids):
 
 redshift_obs = []
 sfr_history_exsitu = []
-halo_id_crossmatch = []
+halo_id_at_z0 = []
 for light_id in range(3):
     fn = f"survey_z0.02-2.00_x60.00_y60.00_{light_id}.h5"
     with h5py.File(os.path.join(lightcone_path, fn), "r") as f:
@@ -95,16 +96,40 @@ for light_id in range(3):
             _sfr_history_all_prog - _sfr_history_main_prog,
         )
 
+    fn = (
+        crossmatch_dir + f"survey_z0.02-2.00_x60.00_y60.00_{light_id}.haloid_indices.h5"
+    )
+    with h5py.File(fn, "w") as hdf:
+        _halo_id_at_snapshot = hdf["halo_id_at_snapshot"][...]
+        _halo_id_at_z0 = hdf["halo_id_at_z0"][...]
+
     mask = _logmp_crossmatch > 11.0
-    redshift_obs.append(_redshift_obs[mask])
-    sfr_history_exsitu.append(_sfr_history_exsitu[mask])
-    halo_id_crossmatch.append(_halo_id_crossmatch[mask])
+
+    _redshift_obs = _redshift_obs[mask]
+    _sfr_history_exsitu = _sfr_history_exsitu[mask]
+    _halo_id_crossmatch = _halo_id_crossmatch[mask]
+
+    idx_x, idx_y = crossmatch(_halo_id_crossmatch, _halo_id_at_snapshot)
+
+    _halo_id_crossmatch = _halo_id_crossmatch[idx_x]
+    _redshift_obs = _redshift_obs[idx_x]
+    _sfr_history_exsitu = _sfr_history_exsitu[idx_x]
+
+    _halo_id_at_snapshot = _halo_id_at_snapshot[idx_y]
+    _halo_id_at_z0 = _halo_id_at_z0[idx_y]
+
+    assert np.allclose(_halo_id_crossmatch, _halo_id_at_snapshot)
+
+    redshift_obs.append(_redshift_obs)
+    sfr_history_exsitu.append(_sfr_history_exsitu)
+    halo_id_at_z0.append(_halo_id_at_z0)
+
 
 sfr_history_all_prog = np.concatenate(sfr_history_exsitu)
 redshift_obs = np.concatenate(redshift_obs)
-halo_id_crossmatch = np.concatenate(halo_id_crossmatch)
+halo_id_at_z0 = np.concatenate(halo_id_at_z0)
 
-diffmah_df, idx_reorder = get_diffmah_params(halo_id_crossmatch)
+diffmah_df, idx_reorder = get_diffmah_params(halo_id_at_z0)
 
 assert False
 
