@@ -12,8 +12,9 @@ import pandas as pd
 from astropy.cosmology import Planck18
 from collections import OrderedDict
 from halotools.utils import crossmatch
+from diffstarpop.json_utils import load_params
 
-from diffstarpop.desc_colors_DSPS import (
+from diffstarpop.desc_colors_DSPS_Diffstar import (
     loss_COSMOS,
     loss_COSMOS_deriv,
     loss_HSC,
@@ -38,9 +39,25 @@ from diffstarpop.lightcone_colors import (
     DEFAULT_boris_dust_u_params,
 )
 
+from diffstarpop.pdf_quenched import DEFAULT_SFH_PDF_QUENCH_PARAMS
+from diffstarpop.pdf_mainseq import DEFAULT_SFH_PDF_MAINSEQ_PARAMS
+from diffstarpop.pdf_model_assembly_bias_shifts import (
+    DEFAULT_R_QUENCH_PARAMS,
+    DEFAULT_R_MAINSEQ_PARAMS,
+)
+
 from fit_adam_helpers import jax_adam_wrapper
 from jax.example_libraries import optimizers as jax_opt
 
+N_PDF_Q = len(DEFAULT_SFH_PDF_QUENCH_PARAMS)
+N_PDF_MS = len(DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
+N_R_Q = len(DEFAULT_R_QUENCH_PARAMS)
+N_R_MS = len(DEFAULT_R_MAINSEQ_PARAMS)
+N_BURST_F = len(DEFAULT_lgfburst_u_params)
+N_BURST_SHAPE = len(DEFAULT_burstshape_u_params)
+N_DUST_LGAV = len(DEFAULT_lgav_dust_u_params)
+N_DUST_DELTA = len(DEFAULT_delta_dust_u_params)
+N_DUST_BORIS = len(DEFAULT_boris_dust_u_params)
 
 lightcone_path = "/lcrc/project/galsampler/SMDPL/DR1/lightcones/"
 root_dir = "/lcrc/project/galsampler/SMDPL/dr1_no_merging_upidh/"
@@ -49,8 +66,8 @@ crossmatch_dir = "/lcrc/project/halotools/alarcon/data/"
 
 
 def get_diffmah_params(halo_ids):
+    df = []
     for subvol in range(0, 576):
-        df = []
         diffmah_params = OrderedDict()
         fn = diffmah_path % subvol
         with h5py.File(fn, "r") as hdf:
@@ -58,18 +75,20 @@ def get_diffmah_params(halo_ids):
             # print(len(hdf["halo_id"]))
             for key in hdf.keys():
                 diffmah_params[key] = hdf[key][...]
-            subdf = pd.DataFrame(diffmah_params)
-            subdf = subdf[subdf.halo_id.isin(halo_ids)]
-            df.append(subdf)
-        df = pd.concat(df, ignore_index=True)
-        idx_reorder, idx_df = crossmatch(halo_ids, df.halo_id.values)
+        subdf = pd.DataFrame(diffmah_params)
+        subdf = subdf[subdf.halo_id.isin(halo_ids)]
+        df.append(subdf)
+    df = pd.concat(df, ignore_index=True)
+    unique_idx = np.unique(df.halo_id.values, return_index=True)[1]
+    df = df.iloc[unique_idx]
+    idx_reorder, idx_df = crossmatch(halo_ids, df.halo_id.values)
     return df.iloc[idx_df], idx_reorder
 
 
 redshift_obs = []
 sfr_history_exsitu = []
 halo_id_at_z0 = []
-for light_id in range(3):
+for light_id in range(1,5):
     fn = f"survey_z0.02-2.00_x60.00_y60.00_{light_id}.h5"
     with h5py.File(os.path.join(lightcone_path, fn), "r") as f:
         print(f.keys())
@@ -99,7 +118,7 @@ for light_id in range(3):
     fn = (
         crossmatch_dir + f"survey_z0.02-2.00_x60.00_y60.00_{light_id}.haloid_indices.h5"
     )
-    with h5py.File(fn, "w") as hdf:
+    with h5py.File(fn, "r") as hdf:
         _halo_id_at_snapshot = hdf["halo_id_at_snapshot"][...]
         _halo_id_at_z0 = hdf["halo_id_at_z0"][...]
 
@@ -109,6 +128,9 @@ for light_id in range(3):
     _sfr_history_exsitu = _sfr_history_exsitu[mask]
     _halo_id_crossmatch = _halo_id_crossmatch[mask]
 
+    unique_indices = np.unique(_halo_id_at_snapshot, return_index=True)[1]
+    _halo_id_at_snapshot = _halo_id_at_snapshot[unique_indices]
+    _halo_id_at_z0 = _halo_id_at_z0[unique_indices]
     idx_x, idx_y = crossmatch(_halo_id_crossmatch, _halo_id_at_snapshot)
 
     _halo_id_crossmatch = _halo_id_crossmatch[idx_x]
@@ -125,23 +147,21 @@ for light_id in range(3):
     halo_id_at_z0.append(_halo_id_at_z0)
 
 
-sfr_history_all_prog = np.concatenate(sfr_history_exsitu)
+sfr_history_exsitu = np.concatenate(sfr_history_exsitu)
 redshift_obs = np.concatenate(redshift_obs)
 halo_id_at_z0 = np.concatenate(halo_id_at_z0)
 
+print("Getting diffmah parameters")
 diffmah_df, idx_reorder = get_diffmah_params(halo_id_at_z0)
 
-assert False
-
-halo_mah_params_arr = np.array(
-    [
-        diffmah_df,
-    ]
-)
+mah_cols = ['t0','logmp_fit', 'mah_logtc', 'mah_k', 'early_index', 'late_index']
+halo_mah_params_arr = diffmah_df.loc[:,mah_cols].values
+halo_mah_params_arr[:,0] = np.log10(halo_mah_params_arr[:,0])
 
 sfr_history_exsitu = sfr_history_exsitu[idx_reorder]
 redshift_obs = redshift_obs[idx_reorder]
-halo_id_crossmatch = halo_id_crossmatch[idx_reorder]
+
+sfr_history_exsitu = np.where((sfr_history_exsitu!=-999.0)&(sfr_history_exsitu < 0.0), 0.0, sfr_history_exsitu)
 
 nines = np.sum(sfr_history_exsitu == -999.0, axis=1)
 last_sfr_value = sfr_history_exsitu[np.arange(len(nines)), -nines - 1]
@@ -162,7 +182,7 @@ area_norm_HSC = 10.0  # area in sq.deg
 # gal_sfr_exsitu_arr = gal_sfr_exsitu_arr[select]
 # redshift_obs = redshift_obs[select]
 
-select = np.random.choice(len(redshift_obs), int(1e5), replace=False)
+select = np.random.choice(len(redshift_obs), int(1e4), replace=False)
 undersampling_factor = len(select) / len(redshift_obs)
 
 # assert False
@@ -173,6 +193,7 @@ loss_data_COSMOS = get_loss_data_COSMOS(
     redshift_obs[select],
     halo_mah_params_arr[select],
 )
+# assert False
 """
 print("Get loss_data HSC")
 loss_data_HSC = get_loss_data_HSC(
@@ -191,28 +212,66 @@ loss_data_DEEP2 = get_loss_data_DEEP2(
     halo_mah_params_arr[select], 
 )
 """
-init_params = np.concatenate(
+path_json = "/home/aalarcongonzalez/source/diffstarpop/diffstarpop/bestfit_diffstarpop_params_UM_hists_v4.json"
+
+outputs = load_params(path_json)
+init_pdf_q_params = outputs[0][0:N_PDF_Q]
+init_pdf_ms_params = outputs[0][N_PDF_Q : N_PDF_Q + N_PDF_MS]
+init_r_q_params = outputs[0][N_PDF_Q + N_PDF_MS : N_PDF_Q + N_PDF_MS + N_R_Q]
+init_r_ms_params = outputs[0][
+    N_PDF_Q + N_PDF_MS + N_R_Q : N_PDF_Q + N_PDF_MS + N_R_Q + N_R_MS
+]
+output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS/test_COSMOSloss_230901_test1.npz"
+bestfit_params_file = np.load(output_filename)
+
+_npar = 0
+init_lgfburst_u_params = bestfit_params_file["best_fit_params"][_npar : _npar + N_BURST_F]
+_npar += N_BURST_F
+init_burstshape_u_params = bestfit_params_file["best_fit_params"][_npar : _npar + N_BURST_SHAPE]
+_npar += N_BURST_SHAPE
+init_lgav_dust_u_params = bestfit_params_file["best_fit_params"][_npar : _npar + N_DUST_LGAV]
+_npar += N_DUST_LGAV
+init_delta_dust_u_params = bestfit_params_file["best_fit_params"][_npar : _npar + N_DUST_DELTA]
+_npar += N_DUST_DELTA
+init_boris_dust_u_params = bestfit_params_file["best_fit_params"][_npar : _npar + N_DUST_BORIS]
+
+init_params = jnp.concatenate(
     (
-        DEFAULT_lgfburst_u_params,
-        DEFAULT_burstshape_u_params,
-        DEFAULT_lgav_dust_u_params,
-        DEFAULT_delta_dust_u_params,
-        DEFAULT_boris_dust_u_params,
+        init_pdf_q_params,
+        init_pdf_ms_params,
+        init_r_q_params,
+        init_r_ms_params,
+        init_lgfburst_u_params,
+        init_burstshape_u_params,
+        init_lgav_dust_u_params,
+        init_delta_dust_u_params,
+        init_boris_dust_u_params,
     )
 )
+
 # output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS/test_combloss_mean_230831_test3.npz"
 # output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS/test_COSMOSloss_230901_test1.npz"
-bestfit_params_file = np.load(output_filename)
-init_params = bestfit_params_file["best_fit_params"]
+# bestfit_params_file = np.load(output_filename)
+# init_params = bestfit_params_file["best_fit_params"]
 
 ran_key = jran.PRNGKey(np.random.randint(2**32))
-"""
+# """
 print("Get loss COSMOS")
+
+t0 = time.time() 
 loss_cosmos_val = loss_COSMOS(init_params, loss_data_COSMOS, ran_key)
+t1 = time.time() 
+print(t1-t0)
+print("Loss COSMOS: %.5f"%loss_cosmos_val)
+
+t0 = time.time()
 loss_deriv_cosmos_val = loss_COSMOS_deriv(init_params, loss_data_COSMOS, ran_key)
-print("Loss COSMOS: %.5f"%loss_cosmos_val) 
+t1 = time.time()
+print(t1-t0)
 print("Loss grads COSMOS:", loss_deriv_cosmos_val)
 
+assert False
+"""
 print("Get loss HSC")
 loss_hsc_val = loss_HSC(init_params, loss_data_HSC, ran_key)
 loss_deriv_hsc_val = loss_HSC_deriv(init_params, loss_data_HSC, ran_key)
