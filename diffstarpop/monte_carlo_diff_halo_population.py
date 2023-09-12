@@ -1653,7 +1653,7 @@ def draw_single_sfh_MIX_with_exsitu(
 
     R_vals_mainseq = _get_slopes_mainseq(logmh, *R_model_params_MS)
     R_vals_mainseq = jnp.array(R_vals_mainseq)[:, 0]
-    shifts_mainseq = jnp.einsum("p,h->hp", R_vals_mainseq, (p50 - 0.5))
+    shifts_mainseq = R_vals_mainseq * (p50 - 0.5)
 
     _res = get_smah_means_and_covs_quench(logmh, *pdf_parameters_Q)
     frac_quench, means_quench, covs_quench = _res
@@ -1664,7 +1664,7 @@ def draw_single_sfh_MIX_with_exsitu(
     _res = _get_slopes_quench(logmh, *R_model_params_Q)
     R_Fquench, R_vals_quench = _res[0], _res[1:]
     R_vals_quench = jnp.array(R_vals_quench)[:, 0]
-    shifts_quench = jnp.einsum("p,h->hp", R_vals_quench, (p50 - 0.5))
+    shifts_quench = R_vals_quench * (p50 - 0.5)
     shifts_Fquench = R_Fquench * (p50 - 0.5)
     fquench_x0 = pdf_parameters_Q[0] + shifts_Fquench
     frac_quench = frac_quench_vs_lgm0(logmh, fquench_x0, *pdf_parameters_Q[1:4])
@@ -1700,16 +1700,17 @@ def draw_single_sfh_MIX_with_exsitu(
     )
 
     sfr_Q = sfr_Q_insitu + sfr_exsitu
-    sfr_MS = sfr_MS + sfr_exsitu
+    sfr_MS = sfr_MS_insitu + sfr_exsitu
 
     sfr = jnp.array([sfr_Q, sfr_MS])
 
+    frac_quench = frac_quench[0]
     weight = jnp.array([frac_quench, (1.0 - frac_quench)])
 
     return sfr, weight
 
 
-_A = (None, 0, 0, 0, 0, 0, *[None] * 4)
+_A = (None, 0, 0, 0, 0, *[None] * 4)
 draw_single_sfh_MIX_with_exsitu_vmap = jjit(
     vmap(draw_single_sfh_MIX_with_exsitu, in_axes=_A)
 )
