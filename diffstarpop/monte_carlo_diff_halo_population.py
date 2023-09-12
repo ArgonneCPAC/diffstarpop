@@ -1711,7 +1711,7 @@ def draw_single_sfh_MIX_with_exsitu(
 
 
 _A = (None, 0, 0, 0, 0, *[None] * 4)
-draw_single_sfh_MIX_with_exsitu_vmap = jjit(
+_draw_single_sfh_MIX_with_exsitu_vmap = jjit(
     vmap(draw_single_sfh_MIX_with_exsitu, in_axes=_A)
 )
 
