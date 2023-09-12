@@ -241,7 +241,7 @@ def calculate_dNdz(z_arr, bins_dNdz, weights):
 
 
 @jjit
-def calculate_dNdz_DEEP2(mag_r, mag_i, z_obs, bins_dNdz):
+def calculate_dNdz_DEEP2(mag_r, mag_i, z_obs, bins_dNdz, weight_sfh):
     """
     Function to calculate DEEP2 dNdz for CFHT r and CFHT i magnitude bins
     from Table 4 in Coil et. al. (2004).
@@ -256,20 +256,20 @@ def calculate_dNdz_DEEP2(mag_r, mag_i, z_obs, bins_dNdz):
         - 18 < r < 22
         - 18 < r < 23
     """
-    weights_imag_18_20 = return_weights_magbin(mag_i, 18.0, 20.0)
-    weights_imag_18_21 = return_weights_magbin(mag_i, 18.0, 21.0)
-    weights_imag_18_22 = return_weights_magbin(mag_i, 18.0, 22.0)
-    weights_imag_18_23 = return_weights_magbin(mag_i, 18.0, 23.0)
+    weights_imag_18_20 = weight_sfh * return_weights_magbin(mag_i, 18.0, 20.0)
+    weights_imag_18_21 = weight_sfh * return_weights_magbin(mag_i, 18.0, 21.0)
+    weights_imag_18_22 = weight_sfh * return_weights_magbin(mag_i, 18.0, 22.0)
+    weights_imag_18_23 = weight_sfh * return_weights_magbin(mag_i, 18.0, 23.0)
 
     dNdz_imag_18_20 = calculate_dNdz(z_obs, bins_dNdz, weights_imag_18_20)
     dNdz_imag_18_21 = calculate_dNdz(z_obs, bins_dNdz, weights_imag_18_21)
     dNdz_imag_18_22 = calculate_dNdz(z_obs, bins_dNdz, weights_imag_18_22)
     dNdz_imag_18_23 = calculate_dNdz(z_obs, bins_dNdz, weights_imag_18_23)
 
-    weights_rmag_18_20 = return_weights_magbin(mag_r, 18.0, 20.0)
-    weights_rmag_18_21 = return_weights_magbin(mag_r, 18.0, 21.0)
-    weights_rmag_18_22 = return_weights_magbin(mag_r, 18.0, 22.0)
-    weights_rmag_18_23 = return_weights_magbin(mag_r, 18.0, 23.0)
+    weights_rmag_18_20 = weight_sfh * return_weights_magbin(mag_r, 18.0, 20.0)
+    weights_rmag_18_21 = weight_sfh * return_weights_magbin(mag_r, 18.0, 21.0)
+    weights_rmag_18_22 = weight_sfh * return_weights_magbin(mag_r, 18.0, 22.0)
+    weights_rmag_18_23 = weight_sfh * return_weights_magbin(mag_r, 18.0, 23.0)
 
     dNdz_rmag_18_20 = calculate_dNdz(z_obs, bins_dNdz, weights_rmag_18_20)
     dNdz_rmag_18_21 = calculate_dNdz(z_obs, bins_dNdz, weights_rmag_18_21)
@@ -509,9 +509,11 @@ def calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm):
 def predict_DEEP2(params, loss_data, ran_key):
     (
         t_table,
-        gal_sfr_arr,
+        gal_sfr_exsitu_arr,
         gal_z_arr,
         gal_ssp_obs_photflux_table,
+        halo_mah_params_arr,
+        halo_p50_arr,
         filter_waves,
         filter_trans,
         ssp_lgmet,
@@ -521,9 +523,15 @@ def predict_DEEP2(params, loss_data, ran_key):
         target_data,
     ) = loss_data
 
-    ran_key_arr = jran.split(ran_key, len(gal_z_arr))
-
     _npar = 0
+    pdf_q_u_params = params[_npar : _npar + N_PDF_Q]
+    _npar += N_PDF_Q
+    pdf_ms_u_params = params[_npar : _npar + N_PDF_MS]
+    _npar += N_PDF_MS
+    r_q_u_params = params[_npar : _npar + N_R_Q]
+    _npar += N_R_Q
+    r_ms_u_params = params[_npar : _npar + N_R_MS]
+    _npar += N_R_MS
     lgfburst_u_params = params[_npar : _npar + N_BURST_F]
     _npar += N_BURST_F
     burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
@@ -535,12 +543,32 @@ def predict_DEEP2(params, loss_data, ran_key):
     boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
     _npar += N_DUST_BORIS
 
+    sfh_key, phot_key = jran.split(ran_key, 2)
+    sfh_key_arr = jran.split(sfh_key, len(gal_z_arr))
+    phot_key_arr = jran.split(phot_key, 2 * len(gal_z_arr))
+
+    gal_sfr_arr, weight = draw_single_sfh_MIX_with_exsitu_vmap(
+        t_table,
+        halo_mah_params_arr,
+        halo_p50_arr,
+        gal_sfr_exsitu_arr,
+        sfh_key_arr,
+        pdf_q_u_params,
+        pdf_ms_u_params,
+        r_q_u_params,
+        r_ms_u_params,
+    )
+    gal_z_arr = jnp.concatenate((gal_z_arr, gal_z_arr), axis=0)
+    gal_ssp_obs_photflux_table = jnp.concatenate(
+        (gal_ssp_obs_photflux_table, gal_ssp_obs_photflux_table), axis=0
+    )
+
     mag_r_CFHT, mag_i_CFHT = get_colors_pop(
         t_table,
         gal_sfr_arr,
         gal_z_arr,
         gal_ssp_obs_photflux_table,
-        ran_key_arr,
+        phot_key_arr,
         filter_waves,
         filter_trans,
         ssp_lgmet,
@@ -553,7 +581,9 @@ def predict_DEEP2(params, loss_data, ran_key):
         boris_dust_u_params,
     ).T
 
-    pred_data = calculate_dNdz_DEEP2(mag_r_CFHT, mag_i_CFHT, gal_z_arr, bins_dNdz)
+    pred_data = calculate_dNdz_DEEP2(
+        mag_r_CFHT, mag_i_CFHT, gal_z_arr, bins_dNdz, weight
+    )
 
     return pred_data
 
@@ -614,6 +644,72 @@ def loss_DEEP2(params, loss_data, ran_key):
 
 @jjit
 def predict_COSMOS(params, loss_data, ran_key):
+    (
+        t_table,
+        gal_sfr_exsitu_arr,
+        gal_z_arr,
+        gal_ssp_obs_photflux_table,
+        halo_mah_params_arr,
+        halo_p50_arr,
+        filter_waves,
+        filter_trans,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        cosmo_params,
+        ndsig_mag,
+        ndsig_color,
+        bins_LO_mag,
+        bins_HI_mag,
+        bins_LO_color,
+        bins_HI_color,
+        target_data_COSMOS,
+    ) = loss_data
+
+    (
+        gal_mags_z01_03,
+        gal_mags_z03_05,
+        gal_mags_z05_07,
+        gal_mags_z07_09,
+        gal_mags_z09_11,
+        gal_mags_z11_13,
+        gal_mags_z13_15,
+        weight_sfr_z01_03,
+        weight_sfr_z03_05,
+        weight_sfr_z05_07,
+        weight_sfr_z07_09,
+        weight_sfr_z09_11,
+        weight_sfr_z11_13,
+        weight_sfr_z13_15,
+    ) = predict_COSMOS_mags(params, loss_data, ran_key)
+
+    pred_data = calculate_1d_COSMOS_colors_counts(
+        gal_mags_z01_03,
+        gal_mags_z03_05,
+        gal_mags_z05_07,
+        gal_mags_z07_09,
+        gal_mags_z09_11,
+        gal_mags_z11_13,
+        gal_mags_z13_15,
+        weight_sfr_z01_03,
+        weight_sfr_z03_05,
+        weight_sfr_z05_07,
+        weight_sfr_z07_09,
+        weight_sfr_z09_11,
+        weight_sfr_z11_13,
+        weight_sfr_z13_15,
+        ndsig_mag,
+        ndsig_color,
+        bins_LO_mag,
+        bins_HI_mag,
+        bins_LO_color,
+        bins_HI_color,
+    )
+
+    return pred_data
+
+
+@jjit
+def predict_COSMOS_mags(params, loss_data, ran_key):
     (
         t_table,
         gal_sfr_exsitu_arr,
@@ -759,7 +855,6 @@ def predict_COSMOS(params, loss_data, ran_key):
             r_q_u_params,
             r_ms_u_params,
         )
-        weight = jnp.concatenate(weight.T)
         return gal_sfr_arr, weight
 
     gal_sfr_arr_z01_03, weight_sfr_z01_03 = get_sfh_pop_COSMOS(
@@ -815,13 +910,6 @@ def predict_COSMOS(params, loss_data, ran_key):
     def get_colors_pop_COSMOS(
         gal_sfr_arr_COS, gal_z_arr_COS, gal_ssp_obs_photflux_table_COS, ran_key_arr_COS
     ):
-        ng = len(gal_z_arr_COS)
-        nt = len(t_table)
-        # sfhs are concatenated by vmap as (q_0, ms_0, q_1, ms_1, ...)
-        # reshaping so that (q_0, q_1, ..., ms_0, ms_1, ...)
-        gal_sfr_arr_COS = gal_sfr_arr_COS.reshape((ng, 2, nt))
-        gal_sfr_arr_COS = gal_sfr_arr_COS.swapaxes(0, 1)
-        gal_sfr_arr_COS = jnp.concatenate(gal_sfr_arr_COS, axis=0)
         # tile these arrays on axis 0
         gal_z_arr_COS = jnp.concatenate((gal_z_arr_COS, gal_z_arr_COS), axis=0)
         gal_ssp_obs_photflux_table_COS = jnp.concatenate(
@@ -895,7 +983,7 @@ def predict_COSMOS(params, loss_data, ran_key):
         phot_key_arr_z13_15,
     )
 
-    pred_data = calculate_1d_COSMOS_colors_counts(
+    output = (
         gal_mags_z01_03,
         gal_mags_z03_05,
         gal_mags_z05_07,
@@ -910,159 +998,6 @@ def predict_COSMOS(params, loss_data, ran_key):
         weight_sfr_z09_11,
         weight_sfr_z11_13,
         weight_sfr_z13_15,
-        ndsig_mag,
-        ndsig_color,
-        bins_LO_mag,
-        bins_HI_mag,
-        bins_LO_color,
-        bins_HI_color,
-    )
-
-    return pred_data
-
-
-@jjit
-def predict_COSMOS_mags(params, loss_data, ran_key):
-    (
-        t_table,
-        gal_sfr_arr,
-        gal_z_arr,
-        gal_ssp_obs_photflux_table,
-        filter_waves,
-        filter_trans,
-        ssp_lgmet,
-        ssp_lg_age_gyr,
-        cosmo_params,
-        ndsig_mag,
-        ndsig_color,
-        bins_LO_mag,
-        bins_HI_mag,
-        bins_LO_color,
-        bins_HI_color,
-        target_data_COSMOS,
-    ) = loss_data
-
-    (
-        gal_sfr_arr_z01_03,
-        gal_sfr_arr_z03_05,
-        gal_sfr_arr_z05_07,
-        gal_sfr_arr_z07_09,
-        gal_sfr_arr_z09_11,
-        gal_sfr_arr_z11_13,
-        gal_sfr_arr_z13_15,
-    ) = gal_sfr_arr
-    (
-        gal_z_arr_z01_03,
-        gal_z_arr_z03_05,
-        gal_z_arr_z05_07,
-        gal_z_arr_z07_09,
-        gal_z_arr_z09_11,
-        gal_z_arr_z11_13,
-        gal_z_arr_z13_15,
-    ) = gal_z_arr
-    (
-        gal_ssp_obs_photflux_table_z01_03,
-        gal_ssp_obs_photflux_table_z03_05,
-        gal_ssp_obs_photflux_table_z05_07,
-        gal_ssp_obs_photflux_table_z07_09,
-        gal_ssp_obs_photflux_table_z09_11,
-        gal_ssp_obs_photflux_table_z11_13,
-        gal_ssp_obs_photflux_table_z13_15,
-    ) = gal_ssp_obs_photflux_table
-
-    ran_key_arr_z01_03 = jran.split(ran_key, len(gal_z_arr_z01_03))
-    ran_key_arr_z03_05 = jran.split(ran_key, len(gal_z_arr_z03_05))
-    ran_key_arr_z05_07 = jran.split(ran_key, len(gal_z_arr_z05_07))
-    ran_key_arr_z07_09 = jran.split(ran_key, len(gal_z_arr_z07_09))
-    ran_key_arr_z09_11 = jran.split(ran_key, len(gal_z_arr_z09_11))
-    ran_key_arr_z11_13 = jran.split(ran_key, len(gal_z_arr_z11_13))
-    ran_key_arr_z13_15 = jran.split(ran_key, len(gal_z_arr_z13_15))
-
-    _npar = 0
-    lgfburst_u_params = params[_npar : _npar + N_BURST_F]
-    _npar += N_BURST_F
-    burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
-    _npar += N_BURST_SHAPE
-    lgav_dust_u_params = params[_npar : _npar + N_DUST_LGAV]
-    _npar += N_DUST_LGAV
-    delta_dust_u_params = params[_npar : _npar + N_DUST_DELTA]
-    _npar += N_DUST_DELTA
-    boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
-    _npar += N_DUST_BORIS
-
-    def get_colors_pop_COSMOS(
-        gal_sfr_arr_COS, gal_z_arr_COS, gal_ssp_obs_photflux_table_COS, ran_key_arr_COS
-    ):
-        gal_mags = get_colors_pop(
-            t_table,
-            gal_sfr_arr_COS,
-            gal_z_arr_COS,
-            gal_ssp_obs_photflux_table_COS,
-            ran_key_arr_COS,
-            filter_waves,
-            filter_trans,
-            ssp_lgmet,
-            ssp_lg_age_gyr,
-            cosmo_params,
-            lgfburst_u_params,
-            burstshape_u_params,
-            lgav_dust_u_params,
-            delta_dust_u_params,
-            boris_dust_u_params,
-        )
-        return gal_mags
-
-    gal_mags_z01_03 = get_colors_pop_COSMOS(
-        gal_sfr_arr_z01_03,
-        gal_z_arr_z01_03,
-        gal_ssp_obs_photflux_table_z01_03,
-        ran_key_arr_z01_03,
-    )
-    gal_mags_z03_05 = get_colors_pop_COSMOS(
-        gal_sfr_arr_z03_05,
-        gal_z_arr_z03_05,
-        gal_ssp_obs_photflux_table_z03_05,
-        ran_key_arr_z03_05,
-    )
-    gal_mags_z05_07 = get_colors_pop_COSMOS(
-        gal_sfr_arr_z05_07,
-        gal_z_arr_z05_07,
-        gal_ssp_obs_photflux_table_z05_07,
-        ran_key_arr_z05_07,
-    )
-    gal_mags_z07_09 = get_colors_pop_COSMOS(
-        gal_sfr_arr_z07_09,
-        gal_z_arr_z07_09,
-        gal_ssp_obs_photflux_table_z07_09,
-        ran_key_arr_z07_09,
-    )
-    gal_mags_z09_11 = get_colors_pop_COSMOS(
-        gal_sfr_arr_z09_11,
-        gal_z_arr_z09_11,
-        gal_ssp_obs_photflux_table_z09_11,
-        ran_key_arr_z09_11,
-    )
-    gal_mags_z11_13 = get_colors_pop_COSMOS(
-        gal_sfr_arr_z11_13,
-        gal_z_arr_z11_13,
-        gal_ssp_obs_photflux_table_z11_13,
-        ran_key_arr_z11_13,
-    )
-    gal_mags_z13_15 = get_colors_pop_COSMOS(
-        gal_sfr_arr_z13_15,
-        gal_z_arr_z13_15,
-        gal_ssp_obs_photflux_table_z13_15,
-        ran_key_arr_z13_15,
-    )
-
-    output = (
-        gal_mags_z01_03,
-        gal_mags_z03_05,
-        gal_mags_z05_07,
-        gal_mags_z07_09,
-        gal_mags_z09_11,
-        gal_mags_z11_13,
-        gal_mags_z13_15,
     )
 
     return output
@@ -1412,6 +1347,26 @@ DSPS_SDSS_filter_path = DSPS_data_path + "filters/SDSS_filters/"
 target_data_path = "/lcrc/project/halotools/alarcon/data/DESC_mocks_data/"
 
 
+def verify_loss_data(loss_data):
+    for x in loss_data:
+        if isinstance(x, np.ndarray):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, jnp.ndarray):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, tuple):
+            for xx in x:
+                assert np.all(np.isfinite(xx))
+        elif isinstance(x, float):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, int):
+            assert np.all(np.isfinite(x))
+        elif isinstance(x, list):
+            for xx in x:
+                assert np.all(np.isfinite(xx))
+        else:
+            assert False
+
+
 def get_loss_data_COSMOS(
     t_table,
     gal_sfr_exsitu_arr,
@@ -1526,13 +1481,15 @@ def get_loss_data_COSMOS(
         log_mah = _calc_halo_history_vmap(jnp.log10(t_table), *halo_mah_params.T)[1]
         log_mah = np.array(log_mah)
         window_length = int(0.1 * len(log_mah))
-        window_length = window_length+1 if window_length % 2 == 0 else window_length
+        window_length = window_length + 1 if window_length % 2 == 0 else window_length
         p50 = get_t50_p50(
             t_table, 10**log_mah, 0.5, log_mah[:, -1], window_length=window_length
         )[1]
         halo_p50_arr_out.append(p50)
 
-    halo_mah_params_arr_out = [x[:,np.array([1,2,4,5])] for x in halo_mah_params_arr_out]
+    halo_mah_params_arr_out = [
+        x[:, np.array([1, 2, 4, 5])] for x in halo_mah_params_arr_out
+    ]
 
     loss_data_COSMOS = (
         t_table,
@@ -1555,23 +1512,7 @@ def get_loss_data_COSMOS(
         target_data_COSMOS,
     )
 
-    for x in loss_data_COSMOS:
-        if isinstance(x, np.ndarray):
-            assert np.all(np.isfinite(x))
-        elif isinstance(x, jnp.ndarray):
-            assert np.all(np.isfinite(x))
-        elif isinstance(x, tuple):
-            for xx in x:
-                assert np.all(np.isfinite(xx))
-        elif isinstance(x, float):
-            assert np.all(np.isfinite(x))
-        elif isinstance(x, int):
-            assert np.all(np.isfinite(x))
-        elif isinstance(x, list):
-            for xx in x:
-                assert np.all(np.isfinite(xx))
-        else:
-            assert False
+    verify_loss_data(loss_data_COSMOS)
 
     return loss_data_COSMOS
 
@@ -1644,28 +1585,16 @@ def get_loss_data_HSC(
         target_data_HSC,
     )
 
-    for x in loss_data_HSC:
-        if isinstance(x, np.ndarray):
-            assert np.all(np.isfinite(x))
-        elif isinstance(x, jnp.ndarray):
-            assert np.all(np.isfinite(x))
-        elif isinstance(x, tuple):
-            for xx in x:
-                assert np.all(np.isfinite(xx))
-        elif isinstance(x, float):
-            assert np.all(np.isfinite(x))
-        elif isinstance(x, int):
-            assert np.all(np.isfinite(x))
-        else:
-            assert False
+    verify_loss_data(loss_data_HSC)
 
     return loss_data_HSC
 
 
 def get_loss_data_DEEP2(
     t_table,
-    gal_sfr_arr,
+    gal_sfr_exsitu_arr,
     gal_z_arr,
+    halo_mah_params_arr,
 ):
     print("Loading DEEP2 filters")
     filter_list_DEEP2 = [
@@ -1718,11 +1647,24 @@ def get_loss_data_DEEP2(
 
     target_data = np.concatenate((target_dNdz_rmag, target_dNdz_imag))
 
+    print("Calculating p50...")
+    log_mah = _calc_halo_history_vmap(jnp.log10(t_table), *halo_mah_params_arr.T)[1]
+    log_mah = np.array(log_mah)
+    window_length = int(0.1 * len(log_mah))
+    window_length = window_length + 1 if window_length % 2 == 0 else window_length
+    halo_p50_arr = get_t50_p50(
+        t_table, 10**log_mah, 0.5, log_mah[:, -1], window_length=window_length
+    )[1]
+
+    halo_mah_params_arr_out = halo_mah_params_arr[:, np.array([1, 2, 4, 5])]
+
     loss_data_DEEP2 = (
         t_table,
-        gal_sfr_arr,
+        gal_sfr_exsitu_arr,
         gal_z_arr,
         gal_ssp_table_DEEP2,
+        halo_mah_params_arr_out,
+        halo_p50_arr,
         filter_waves_DEEP2,
         filter_trans_DEEP2,
         ssp_lgmet,
@@ -1732,20 +1674,7 @@ def get_loss_data_DEEP2(
         target_data,
     )
 
-    for x in loss_data_DEEP2:
-        if isinstance(x, np.ndarray):
-            assert np.all(np.isfinite(x))
-        elif isinstance(x, jnp.ndarray):
-            assert np.all(np.isfinite(x))
-        elif isinstance(x, tuple):
-            for xx in x:
-                assert np.all(np.isfinite(xx))
-        elif isinstance(x, float):
-            assert np.all(np.isfinite(x))
-        elif isinstance(x, int):
-            assert np.all(np.isfinite(x))
-        else:
-            assert False
+    verify_loss_data(loss_data_DEEP2)
 
     return loss_data_DEEP2
 
