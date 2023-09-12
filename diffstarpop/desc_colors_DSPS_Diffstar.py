@@ -741,6 +741,7 @@ def predict_COSMOS(params, loss_data, ran_key):
     boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
     _npar += N_DUST_BORIS
 
+    @jjit
     def get_sfh_pop_COSMOS(
         halo_mah_params_arr_COS,
         halo_p50_arr_COS,
@@ -758,6 +759,7 @@ def predict_COSMOS(params, loss_data, ran_key):
             r_q_u_params,
             r_ms_u_params,
         )
+        weight = jnp.concatenate(weight.T)
         return gal_sfr_arr, weight
 
     gal_sfr_arr_z01_03, weight_sfr_z01_03 = get_sfh_pop_COSMOS(
@@ -809,6 +811,7 @@ def predict_COSMOS(params, loss_data, ran_key):
         sfh_key_arr_z13_15,
     )
 
+    @jjit
     def get_colors_pop_COSMOS(
         gal_sfr_arr_COS, gal_z_arr_COS, gal_ssp_obs_photflux_table_COS, ran_key_arr_COS
     ):
@@ -1071,9 +1074,11 @@ def loss_COSMOS(params, loss_data, ran_key):
 
     (
         t_table,
-        gal_sfr_arr,
+        gal_sfr_exsitu_arr,
         gal_z_arr,
         gal_ssp_obs_photflux_table,
+        halo_mah_params_arr,
+        halo_p50_arr,
         filter_waves,
         filter_trans,
         ssp_lgmet,
@@ -1518,21 +1523,16 @@ def get_loss_data_COSMOS(
     print("Calculating p50...")
     halo_p50_arr_out = []
     for halo_mah_params in halo_mah_params_arr_out:
-        halo_mah_params_in = np.array(
-            [
-                LGT0 * np.ones(len(halo_mah_params[:, 0])),
-                halo_mah_params[:, 0],
-                halo_mah_params[:, 1],
-                3.5 * np.ones(len(halo_mah_params[:, 0])),
-                halo_mah_params[:, 2],
-                halo_mah_params[:, 3],
-            ]
-        )
-        log_mah = _calc_halo_history_vmap(jnp.log10(t_table), *halo_mah_params_in)[1]
+        log_mah = _calc_halo_history_vmap(jnp.log10(t_table), *halo_mah_params.T)[1]
+        log_mah = np.array(log_mah)
+        window_length = int(0.1 * len(log_mah))
+        window_length = window_length+1 if window_length % 2 == 0 else window_length
         p50 = get_t50_p50(
-            t_table, 10**log_mah, 0.5, log_mah[:, -1], window_length=int(1e4 + 1)
+            t_table, 10**log_mah, 0.5, log_mah[:, -1], window_length=window_length
         )[1]
         halo_p50_arr_out.append(p50)
+
+    halo_mah_params_arr_out = [x[:,np.array([1,2,4,5])] for x in halo_mah_params_arr_out]
 
     loss_data_COSMOS = (
         t_table,
@@ -1567,6 +1567,9 @@ def get_loss_data_COSMOS(
             assert np.all(np.isfinite(x))
         elif isinstance(x, int):
             assert np.all(np.isfinite(x))
+        elif isinstance(x, list):
+            for xx in x:
+                assert np.all(np.isfinite(xx))
         else:
             assert False
 
@@ -1827,6 +1830,9 @@ def get_loss_data_SDSS(
             assert np.all(np.isfinite(x))
         elif isinstance(x, int):
             assert np.all(np.isfinite(x))
+        elif isinstance(x, list):
+            for xx in x:
+                assert np.all(np.isfinite(xx))
         else:
             assert False
 

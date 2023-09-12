@@ -937,7 +937,7 @@ def loss_COSMOS(params, loss_data, ran_key):
         counts_colors_z11_13,
         counts_colors_z13_15,
     ) = pred_data
-
+    """
     loss = mse(counts_i_z01_03, counts_i_z01_03_target)
     loss += mse(counts_i_z03_05, counts_i_z03_05_target)
     loss += mse(counts_i_z05_07, counts_i_z05_07_target)
@@ -945,8 +945,8 @@ def loss_COSMOS(params, loss_data, ran_key):
     loss += mse(counts_i_z09_11, counts_i_z09_11_target)
     loss += mse(counts_i_z11_13, counts_i_z11_13_target)
     loss += mse(counts_i_z13_15, counts_i_z13_15_target)
-
-    loss += mse(counts_colors_z01_03, counts_colors_z01_03_target)
+    """
+    loss = mse(counts_colors_z01_03, counts_colors_z01_03_target)
     loss += mse(counts_colors_z03_05, counts_colors_z03_05_target)
     loss += mse(counts_colors_z05_07, counts_colors_z05_07_target)
     loss += mse(counts_colors_z07_09, counts_colors_z07_09_target)
