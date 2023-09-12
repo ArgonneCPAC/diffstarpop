@@ -487,20 +487,20 @@ def calculate_1d_SDSS_colors_counts(
 
 
 @jjit
-def cumulative_imag_kern(mag, mag_cut_faint):
+def cumulative_imag_kern(mag, mag_cut_faint, weight_sfh):
     weights_magcut_faint = 1.0 - _tw_cuml_lax_kern_vmap(mag, mag_cut_faint, 0.1)
-    return jnp.sum(weights_magcut_faint)
+    return jnp.sum(weights_magcut_faint * weight_sfh)
 
 
-cumulative_imag = jjit(vmap(cumulative_imag_kern, in_axes=(None, 0)))
+cumulative_imag = jjit(vmap(cumulative_imag_kern, in_axes=(None, 0, None)))
 
 
 @jjit
-def calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm):
+def calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm, weight_sfh):
     """
     Function to calculate HSC cumulative i-band number density (gal/sq.deg).
     """
-    counts_imag = cumulative_imag(mag_i, mag_i_bins)
+    counts_imag = cumulative_imag(mag_i, mag_i_bins, weight_sfh)
 
     return counts_imag / area_norm
 
@@ -547,7 +547,7 @@ def predict_DEEP2(params, loss_data, ran_key):
     sfh_key_arr = jran.split(sfh_key, len(gal_z_arr))
     phot_key_arr = jran.split(phot_key, 2 * len(gal_z_arr))
 
-    gal_sfr_arr, weight = draw_single_sfh_MIX_with_exsitu_vmap(
+    gal_sfr_arr, weight_sfh = draw_single_sfh_MIX_with_exsitu_vmap(
         t_table,
         halo_mah_params_arr,
         halo_p50_arr,
@@ -582,7 +582,7 @@ def predict_DEEP2(params, loss_data, ran_key):
     ).T
 
     pred_data = calculate_dNdz_DEEP2(
-        mag_r_CFHT, mag_i_CFHT, gal_z_arr, bins_dNdz, weight
+        mag_r_CFHT, mag_i_CFHT, gal_z_arr, bins_dNdz, weight_sfh
     )
 
     return pred_data
@@ -844,7 +844,7 @@ def predict_COSMOS_mags(params, loss_data, ran_key):
         gal_sfr_exsitu_arr_COS,
         sfh_key_arr_COS,
     ):
-        gal_sfr_arr, weight = draw_single_sfh_MIX_with_exsitu_vmap(
+        gal_sfr_arr, weight_sfh = draw_single_sfh_MIX_with_exsitu_vmap(
             t_table,
             halo_mah_params_arr_COS,
             halo_p50_arr_COS,
@@ -855,7 +855,7 @@ def predict_COSMOS_mags(params, loss_data, ran_key):
             r_q_u_params,
             r_ms_u_params,
         )
-        return gal_sfr_arr, weight
+        return gal_sfr_arr, weight_sfh
 
     gal_sfr_arr_z01_03, weight_sfr_z01_03 = get_sfh_pop_COSMOS(
         halo_mah_params_arr_z01_03,
@@ -1118,8 +1118,10 @@ def arcsinh_log(val):
 def predict_HSC(params, loss_data, ran_key):
     (
         t_table,
-        gal_sfr_arr,
+        gal_sfr_exsitu_arr,
         gal_z_arr,
+        halo_mah_params_arr,
+        halo_p50_arr,
         gal_ssp_obs_photflux_table,
         filter_waves,
         filter_trans,
@@ -1131,39 +1133,11 @@ def predict_HSC(params, loss_data, ran_key):
         target_data_HSC,
     ) = loss_data
 
-    ran_key_arr = jran.split(ran_key, len(gal_z_arr))
+    mag_i, weight_sfh = predict_HSC_magi(params, loss_data, ran_key)
 
-    _npar = 0
-    lgfburst_u_params = params[_npar : _npar + N_BURST_F]
-    _npar += N_BURST_F
-    burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
-    _npar += N_BURST_SHAPE
-    lgav_dust_u_params = params[_npar : _npar + N_DUST_LGAV]
-    _npar += N_DUST_LGAV
-    delta_dust_u_params = params[_npar : _npar + N_DUST_DELTA]
-    _npar += N_DUST_DELTA
-    boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
-    _npar += N_DUST_BORIS
-
-    mag_i = get_colors_pop(
-        t_table,
-        gal_sfr_arr,
-        gal_z_arr,
-        gal_ssp_obs_photflux_table,
-        ran_key_arr,
-        filter_waves,
-        filter_trans,
-        ssp_lgmet,
-        ssp_lg_age_gyr,
-        cosmo_params,
-        lgfburst_u_params,
-        burstshape_u_params,
-        lgav_dust_u_params,
-        delta_dust_u_params,
-        boris_dust_u_params,
-    )[:, 0]
-
-    mag_i_cdf = calculate_1d_HSC_cumulative_imag(mag_i, mag_i_bins, area_norm)
+    mag_i_cdf = calculate_1d_HSC_cumulative_imag(
+        mag_i, mag_i_bins, area_norm, weight_sfh
+    )
 
     return mag_i_cdf
 
@@ -1172,8 +1146,10 @@ def predict_HSC(params, loss_data, ran_key):
 def predict_HSC_magi(params, loss_data, ran_key):
     (
         t_table,
-        gal_sfr_arr,
+        gal_sfr_exsitu_arr,
         gal_z_arr,
+        halo_mah_params_arr,
+        halo_p50_arr,
         gal_ssp_obs_photflux_table,
         filter_waves,
         filter_trans,
@@ -1185,9 +1161,15 @@ def predict_HSC_magi(params, loss_data, ran_key):
         target_data_HSC,
     ) = loss_data
 
-    ran_key_arr = jran.split(ran_key, len(gal_z_arr))
-
     _npar = 0
+    pdf_q_u_params = params[_npar : _npar + N_PDF_Q]
+    _npar += N_PDF_Q
+    pdf_ms_u_params = params[_npar : _npar + N_PDF_MS]
+    _npar += N_PDF_MS
+    r_q_u_params = params[_npar : _npar + N_R_Q]
+    _npar += N_R_Q
+    r_ms_u_params = params[_npar : _npar + N_R_MS]
+    _npar += N_R_MS
     lgfburst_u_params = params[_npar : _npar + N_BURST_F]
     _npar += N_BURST_F
     burstshape_u_params = params[_npar : _npar + N_BURST_SHAPE]
@@ -1199,12 +1181,32 @@ def predict_HSC_magi(params, loss_data, ran_key):
     boris_dust_u_params = params[_npar : _npar + N_DUST_BORIS]
     _npar += N_DUST_BORIS
 
+    sfh_key, phot_key = jran.split(ran_key, 2)
+    sfh_key_arr = jran.split(sfh_key, len(gal_z_arr))
+    phot_key_arr = jran.split(phot_key, 2 * len(gal_z_arr))
+
+    gal_sfr_arr, weight_sfh = draw_single_sfh_MIX_with_exsitu_vmap(
+        t_table,
+        halo_mah_params_arr,
+        halo_p50_arr,
+        gal_sfr_exsitu_arr,
+        sfh_key_arr,
+        pdf_q_u_params,
+        pdf_ms_u_params,
+        r_q_u_params,
+        r_ms_u_params,
+    )
+    gal_z_arr = jnp.concatenate((gal_z_arr, gal_z_arr), axis=0)
+    gal_ssp_obs_photflux_table = jnp.concatenate(
+        (gal_ssp_obs_photflux_table, gal_ssp_obs_photflux_table), axis=0
+    )
+
     mag_i = get_colors_pop(
         t_table,
         gal_sfr_arr,
         gal_z_arr,
         gal_ssp_obs_photflux_table,
-        ran_key_arr,
+        phot_key_arr,
         filter_waves,
         filter_trans,
         ssp_lgmet,
@@ -1217,7 +1219,7 @@ def predict_HSC_magi(params, loss_data, ran_key):
         boris_dust_u_params,
     )[:, 0]
 
-    return mag_i
+    return mag_i, weight_sfh
 
 
 @jjit
@@ -1519,8 +1521,9 @@ def get_loss_data_COSMOS(
 
 def get_loss_data_HSC(
     t_table,
-    gal_sfr_arr,
+    gal_sfr_exsitu_arr,
     gal_z_arr,
+    halo_mah_params_arr,
     area_norm_HSC,
 ):
     print("Loading HSC filters")
@@ -1570,10 +1573,23 @@ def get_loss_data_HSC(
         mag_i_bins_HSC = f["mag_i_bins"][...]
         target_data_HSC = f["hsc_cumcounts_imag_tri"][...]
 
+    print("Calculating p50...")
+    log_mah = _calc_halo_history_vmap(jnp.log10(t_table), *halo_mah_params_arr.T)[1]
+    log_mah = np.array(log_mah)
+    window_length = int(0.1 * len(log_mah))
+    window_length = window_length + 1 if window_length % 2 == 0 else window_length
+    halo_p50_arr = get_t50_p50(
+        t_table, 10**log_mah, 0.5, log_mah[:, -1], window_length=window_length
+    )[1]
+
+    halo_mah_params_arr_out = halo_mah_params_arr[:, np.array([1, 2, 4, 5])]
+
     loss_data_HSC = (
         t_table,
-        gal_sfr_arr,
+        gal_sfr_exsitu_arr,
         gal_z_arr,
+        halo_mah_params_arr_out,
+        halo_p50_arr,
         gal_ssp_table_HSC,
         filter_waves_HSC,
         filter_trans_HSC,
