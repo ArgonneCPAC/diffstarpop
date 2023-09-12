@@ -1714,3 +1714,79 @@ _A = (None, 0, 0, 0, 0, *[None] * 4)
 draw_single_sfh_MIX_with_exsitu_vmap = jjit(
     vmap(draw_single_sfh_MIX_with_exsitu, in_axes=_A)
 )
+
+
+def draw_single_sfh_MIX_with_exsitu_vmap(
+    t_table,
+    mah_params_arr,
+    p50_arr,
+    sfr_exsitu_arr,
+    ran_key_arr,
+    pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+    pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    R_model_params_Q=DEFAULT_R_QUENCH_PARAMS,
+    R_model_params_MS=DEFAULT_R_MAINSEQ_PARAMS,
+):
+    """
+    Calculate a Monte Carlo pair realization of the Quenched and Main Sequence
+    star formation history for an array of galaxies.
+
+    There is correlation with p50.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_times, )
+        Cosmic time array in Gyr.
+    mah_params_arr : ndarray of shape (ngal x 4)
+        Array with the diffmah parameters (logm, logtc, early, late)
+    p50_arr : mah_params : ndarray of shape (ngal, )
+        Formation time percentile of each halo conditioned on halo mass.
+    sfr_exsitu_arr : ndarray of shape (ngal, n_times)
+        Ex-situ contribution to the star formation history.
+    ran_key_arr : ndarray of shape (ngal, )
+        JAX random keys.
+    pdf_model_params_Q : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+    pdf_model_params_MS : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+    R_model_params_Q: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
+        diffstar and diffmah parameters for the quenched population.
+    R_model_params_MS: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
+        diffstar and diffmah parameters for the main sequence population.
+
+    Returns
+    -------
+    gal_sfr_arr : ndarray of shape (2 x ngal, n_times)
+        Stores star formation rate history in units of Msun/yr. The array is composed by the
+        concatenation of two arrays of shape (ngal, n_times) for the quenched and
+        main sequence draws for each galaxy, so that sfr_Q = sfr[:ngal] and sfr_MS = sfr[ngal:].
+    weight : ndarray of shape (2 x ngal, )
+        Array with the mixing weights for the quenched and main sequence SFHs for each galaxy.
+        It is the result of concatenating two arrays of shape (ngal, ) for the quenched and the
+        main sequence weights.
+    """
+    gal_sfr_arr, weight = _draw_single_sfh_MIX_with_exsitu_vmap(
+        t_table,
+        mah_params_arr,
+        p50_arr,
+        sfr_exsitu_arr,
+        ran_key_arr,
+        pdf_parameters_Q,
+        pdf_parameters_MS,
+        R_model_params_Q,
+        R_model_params_MS,
+    )
+
+    weight = jnp.concatenate(weight.T)
+    ng = len(p50_arr)
+    nt = len(t_table)
+    # sfhs are concatenated by vmap as (q_0, ms_0, q_1, ms_1, ...)
+    # reshaping so that (q_0, q_1, ..., ms_0, ms_1, ...)
+    gal_sfr_arr = gal_sfr_arr.reshape((ng, 2, nt))
+    gal_sfr_arr = gal_sfr_arr.swapaxes(0, 1)
+    gal_sfr_arr = jnp.concatenate(gal_sfr_arr, axis=0)
+    return gal_sfr_arr, weight
