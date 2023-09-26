@@ -13,22 +13,15 @@ from astropy.cosmology import Planck18
 from collections import OrderedDict
 from halotools.utils import crossmatch
 from diffstarpop.json_utils import load_params
-from diffstar.utils import _jax_get_dt_array
+
 from diffstarpop.desc_colors_DSPS_Diffstar import (
-    loss_COSMOS,
-    loss_COSMOS_deriv,
-    loss_HSC,
-    loss_HSC_deriv,
-    loss_DEEP2,
-    loss_DEEP2_deriv,
-    loss_SDSS,
-    loss_SDSS_deriv,
-    loss_combined,
-    loss_combined_deriv,
     get_loss_data_COSMOS,
     get_loss_data_HSC,
     get_loss_data_DEEP2,
     get_loss_data_SDSS,
+    predict_COSMOS,
+    predict_HSC,
+    predict_DEEP2,
 )
 
 from diffstarpop.lightcone_colors import (
@@ -79,11 +72,11 @@ def get_diffmah_params(halo_ids):
         subdf = subdf[subdf.halo_id.isin(halo_ids)]
         df.append(subdf)
     df = pd.concat(df, ignore_index=True)
+    breakpoint()
     unique_idx = np.unique(df.halo_id.values, return_index=True)[1]
     df = df.iloc[unique_idx]
     idx_reorder, idx_df = crossmatch(halo_ids, df.halo_id.values)
     return df.iloc[idx_df], idx_reorder
-
 
 def get_diffmah_paramsb_by_index(index_arr, subvol_arr):
     mah_cols = ['t0','logmp_fit', 'mah_logtc', 'mah_k', 'early_index', 'late_index']
@@ -135,21 +128,23 @@ for light_id in range(10):
         )
 
     fn = (
-        crossmatch_dir + f"survey_z0.02-2.00_x60.00_y60.00_{light_id}.haloid_indices.h5"
+        crossmatch_dir + f"survey_z0.02-2.00_x60.00_y60.00_{light_id}.haloid_indices_v1.h5"
     )
     with h5py.File(fn, "r") as hdf:
         _halo_id_at_snapshot = hdf["halo_id_at_snapshot"][...]
         _halo_id_at_z0 = hdf["halo_id_at_z0"][...]
         _halo_binary_index = hdf["binary_snapshot_index"][...]
         _halo_binary_subvol = hdf["binary_subvol_index"][...]
-
     mask = _logmp_crossmatch > 11.0
     count_all += mask.sum()
     _redshift_obs = _redshift_obs[mask]
     _sfr_history_exsitu = _sfr_history_exsitu[mask]
     _halo_id_crossmatch = _halo_id_crossmatch[mask]
-
+    # assert False
+    
     unique_indices = np.unique(_halo_id_at_snapshot, return_index=True)[1]
+    # df_unique_crossmatch = pd.DataFrame({"halo_id_at_snapshot":_halo_id_at_snapshot[unique_indices], "halo_id_at_z0":_halo_id_at_z0[unique_indices]})
+    # df_lightcone = pd.DataFrame({"halo_id_crossmatch":_halo_id_crossmatch})
     _halo_id_at_snapshot = _halo_id_at_snapshot[unique_indices]
     _halo_id_at_z0 = _halo_id_at_z0[unique_indices]
     _halo_binary_index = _halo_binary_index[unique_indices]
@@ -164,7 +159,6 @@ for light_id in range(10):
     _halo_id_at_z0 = _halo_id_at_z0[idx_y]
     _halo_binary_index = _halo_binary_index[idx_y]
     _halo_binary_subvol = _halo_binary_subvol[idx_y]
-
     assert np.allclose(_halo_id_crossmatch, _halo_id_at_snapshot)
 
     redshift_obs.append(_redshift_obs)
@@ -172,6 +166,7 @@ for light_id in range(10):
     halo_id_at_z0.append(_halo_id_at_z0)
     halo_binary_index.append(_halo_binary_index)
     halo_binary_subvol.append(_halo_binary_subvol)
+
 
 sfr_history_exsitu = np.concatenate(sfr_history_exsitu)
 redshift_obs = np.concatenate(redshift_obs)
@@ -186,6 +181,7 @@ print("Getting diffmah parameters")
 diffmah_df = get_diffmah_paramsb_by_index(halo_binary_index, halo_binary_subvol)
 # diffmah_df, idx_reorder = get_diffmah_params(halo_id_at_z0)
 
+# assert False
 mah_cols = ['t0','logmp_fit', 'mah_logtc', 'mah_k', 'early_index', 'late_index']
 halo_mah_params_arr = diffmah_df.loc[:,mah_cols].values
 halo_mah_params_arr[:,0] = np.log10(halo_mah_params_arr[:,0])
@@ -214,37 +210,14 @@ area_norm_HSC = 10.0  # area in sq.deg
 # gal_sfr_exsitu_arr = gal_sfr_exsitu_arr[select]
 # redshift_obs = redshift_obs[select]
 
-select = np.random.choice(len(redshift_obs), int(1.5e4), replace=False)
+select = np.random.choice(len(redshift_obs), int(5e5), replace=False)
 undersampling_factor = len(select) / len(redshift_obs) * crossmatch_downsampling
-
-gal_sfr_exsitu_arr_select = gal_sfr_exsitu_arr[select]
-
-# t_table = np.linspace(SMDPL_t[0]+1e-5, SMDPL_t[-1]-1e-5, 20)
-t_table = np.concatenate((
-    np.linspace(SMDPL_t[0]+1e-5, 3.0, 10),
-    np.linspace(3.0, SMDPL_t[-1]-1e-5, 11)[1:]
-))
-
-dt_t_table = _jax_get_dt_array(t_table)
-dt_SMDPL = _jax_get_dt_array(SMDPL_t)
-@jjit 
-def interp_exsitu(new_t, old_t, old_sfh):
-    old_dt = _jax_get_dt_array(old_t)
-    new_dt = _jax_get_dt_array(new_t)
-    old_mstar = jnp.cumsum(old_sfh * old_dt)*1e9
-    new_mstar = jnp.interp(new_t, old_t, old_mstar)
-    return jnp.diff(new_mstar) / 1e9 / new_dt[1:]
-interp_exsitu_vmap = jjit(vmap(interp_exsitu, in_axes=(None, None, 0)))
-
-gal_sfr_exsitu_arr_select_new = np.zeros((len(gal_sfr_exsitu_arr_select),len(t_table)))
-gal_sfr_exsitu_arr_select_new[:,1:] = interp_exsitu_vmap(t_table, SMDPL_t, gal_sfr_exsitu_arr_select)
-gal_sfr_exsitu_arr_select_new = np.clip(gal_sfr_exsitu_arr_select_new, 0.0, np.inf)
 
 # assert False
 print("Get loss_data COSMOS")
 loss_data_COSMOS = get_loss_data_COSMOS(
-    t_table, #SMDPL_t,
-    gal_sfr_exsitu_arr_select_new, #gal_sfr_exsitu_arr_select,
+    SMDPL_t,
+    gal_sfr_exsitu_arr[select],
     redshift_obs[select],
     halo_mah_params_arr[select],
 )
@@ -252,8 +225,8 @@ loss_data_COSMOS = get_loss_data_COSMOS(
 
 print("Get loss_data HSC")
 loss_data_HSC = get_loss_data_HSC(
-    t_table, #SMDPL_t,
-    gal_sfr_exsitu_arr_select_new, #gal_sfr_exsitu_arr_select,
+    SMDPL_t,
+    gal_sfr_exsitu_arr[select],
     redshift_obs[select],
     halo_mah_params_arr[select], 
     area_norm_HSC * undersampling_factor,
@@ -261,17 +234,12 @@ loss_data_HSC = get_loss_data_HSC(
 
 print("Get loss_data DEEP2")
 loss_data_DEEP2 = get_loss_data_DEEP2(
-    t_table, #SMDPL_t,
-    gal_sfr_exsitu_arr_select_new, #gal_sfr_exsitu_arr_select,
+    SMDPL_t,
+    gal_sfr_exsitu_arr[select],
     redshift_obs[select],
     halo_mah_params_arr[select], 
 )
-print("Get loss Combined")
-loss_data_comb = (
-    loss_data_COSMOS,
-    loss_data_HSC,
-    loss_data_DEEP2,
-)
+
 """
 path_json = "/home/aalarcongonzalez/source/diffstarpop/diffstarpop/bestfit_diffstarpop_params_UM_hists_v4.json"
 
@@ -310,134 +278,29 @@ init_params = jnp.concatenate(
     )
 )
 """
-# output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS/test_combloss_mean_230831_test3.npz"
-# output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS/test_COSMOSloss_230901_test1.npz"
-output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS_Diffstar/test_combloss_230913_test1.npz"
+output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS_Diffstar/test_combloss_230914_test1.npz"
 bestfit_params_file = np.load(output_filename)
 init_params = bestfit_params_file["best_fit_params"]
 
 ran_key = jran.PRNGKey(np.random.randint(2**32))
-# """
-"""
-print("Get loss COSMOS")
-
-t0 = time.time() 
-loss_cosmos_val = loss_COSMOS(init_params, loss_data_COSMOS, ran_key)
-t1 = time.time() 
-print(t1-t0)
-print("Loss COSMOS: %.5f"%loss_cosmos_val)
-
-t0 = time.time()
-loss_deriv_cosmos_val = loss_COSMOS_deriv(init_params, loss_data_COSMOS, ran_key)
-t1 = time.time()
-print(t1-t0)
-print("Loss grads COSMOS:", loss_deriv_cosmos_val)
 
 
-print("Get loss HSC")
-t0 = time.time()
-loss_hsc_val = loss_HSC(init_params, loss_data_HSC, ran_key)
-t1 = time.time()
-print(t1-t0)
-print("Loss HSC: %.5f"%loss_hsc_val)
+print("Predict COSMOS")
+pred_cosmos = predict_COSMOS(init_params, loss_data_COSMOS, ran_key)
 
-t0 = time.time()
-loss_deriv_hsc_val = loss_HSC_deriv(init_params, loss_data_HSC, ran_key)
-t1 = time.time()
-print(t1-t0)
-print("Loss grads HSC:", loss_deriv_hsc_val)
+print("Predict HSC")
+pred_hsc = predict_HSC(init_params, loss_data_HSC, ran_key)
 
-print("Get loss DEEP2")
-t0 = time.time()
-loss_deep2_val = loss_DEEP2(init_params, loss_data_DEEP2, ran_key)
-t1 = time.time()
-print(t1-t0)
-print("Loss DEEP2: %.5f"%loss_deep2_val)
+print("Predict DEEP2")
+pred_deep2 = predict_DEEP2(init_params, loss_data_DEEP2, ran_key)
 
-t0 = time.time()
-loss_deriv_deep2_val = loss_DEEP2_deriv(init_params, loss_data_DEEP2, ran_key)
-t1 = time.time()
-print(t1-t0)
-print("Loss grads DEEP2:", loss_deriv_deep2_val)
+out_path = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS_Diffstar/"
+# fn = "pred_init_params.h5"
+fn = "pred_bestfit_params.h5"
 
-print("Get loss Combined")
-loss_data_comb = (
-    loss_data_COSMOS,
-    loss_data_HSC,
-    loss_data_DEEP2,
-)
-t0 = time.time()
-loss_comb_val = loss_combined(init_params, loss_data_comb, ran_key)
-t1 = time.time()
-print(t1-t0)
-print("Loss Comb: %.5f"%loss_comb_val)
-
-t0 = time.time()
-loss_deriv_comb_val = loss_combined_deriv(init_params, loss_data_comb, ran_key)
-t1 = time.time()
-print(t1-t0)
-print("Loss grads Comb:", loss_deriv_comb_val)
-"""
-# assert False
-
-output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS_Diffstar/test_combloss_230914_test1.npz"
-
-
-n_step = int(1e4)
-step_size = 0.01
-
-opt_init, opt_update, get_params = jax_opt.adam(step_size)
-opt_state = opt_init(init_params)
-jax_optimizer = (opt_state, opt_update, get_params)
-
-print(f"Running grad descend")
-# """
-_res0 = jax_adam_wrapper(
-    init_params,
-    loss_data_comb,
-    loss_combined,
-    loss_combined_deriv,
-    n_step,
-    ran_key,
-    output_filename,
-    jax_optimizer,
-
-)
-"""
-_res0 = jax_adam_wrapper(
-    init_params,
-    loss_data_COSMOS,
-    loss_COSMOS,
-    loss_COSMOS_deriv,
-    n_step,
-    ran_key,
-    output_filename,
-    jax_optimizer,
-)
-"""
-best_fit_params = _res0[0]
-
-assert False
-N_BURST_F = len(DEFAULT_lgfburst_u_params)
-N_BURST_SHAPE = len(DEFAULT_burstshape_u_params)
-N_DUST_LGAV = len(DEFAULT_lgav_dust_u_params)
-N_DUST_DELTA = len(DEFAULT_delta_dust_u_params)
-N_DUST_BORIS = len(DEFAULT_boris_dust_u_params)
-
-
-npar = 0
-print("BURST_F grads:", loss_deriv_cosmos_val[npar : npar + N_BURST_F])
-npar += N_BURST_F
-print("BURST_SHAPE grads:", loss_deriv_cosmos_val[npar : npar + N_BURST_SHAPE])
-npar += N_BURST_SHAPE
-print("DUST_LGAV grads:", loss_deriv_cosmos_val[npar : npar + N_DUST_LGAV])
-npar += N_DUST_LGAV
-print("DUST_DELTA grads:", loss_deriv_cosmos_val[npar : npar + N_DUST_DELTA])
-npar += N_DUST_DELTA
-print("DUST_BORIS grads:", loss_deriv_cosmos_val[npar : npar + N_DUST_BORIS])
-npar += N_DUST_BORIS
-
-from jax import config
-
-config.update("jax_debug_nans", True)
-loss_deriv_cosmos_val = loss_COSMOS_deriv(init_params, loss_data_COSMOS, ran_key)
+with h5py.File(os.path.join(out_path, fn), "w") as f:
+    f["pred_cosmos_diff_i_counts"] = pred_cosmos[:7]
+    f["pred_cosmos_diff_color_counts"] = pred_cosmos[7:]
+    f["pred_hsc_cumcounts_imag_tri"] = pred_hsc
+    f["pred_deep2_dNdz_rmag"] = pred_deep2[:4]
+    f["pred_deep2_dNdz_imag"] =pred_deep2[4:]
