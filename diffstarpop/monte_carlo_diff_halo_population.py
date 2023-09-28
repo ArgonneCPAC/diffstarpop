@@ -12,6 +12,7 @@ from diffstar.stars import (
     calculate_sm_sfr_fstar_history_from_mah,
     DEFAULT_SFR_PARAMS as DEFAULT_SFR_PARAMS_DICT,
     _get_unbounded_sfr_params,
+    _get_bounded_sfr_params,
     _integrate_sfr,
     compute_fstar,
     fstar_tools,
@@ -19,6 +20,7 @@ from diffstar.stars import (
 from diffstar.quenching import (
     DEFAULT_Q_PARAMS as DEFAULT_Q_PARAMS_DICT,
     _get_unbounded_q_params,
+    _get_bounded_q_params,
     quenching_function,
 )
 from diffstar.main_sequence import get_ms_sfh_from_mah_kern
@@ -1790,3 +1792,303 @@ def draw_single_sfh_MIX_with_exsitu_vmap(
     gal_sfr_arr = gal_sfr_arr.swapaxes(0, 1)
     gal_sfr_arr = jnp.concatenate(gal_sfr_arr, axis=0)
     return gal_sfr_arr, weight
+
+
+@jjit
+def draw_single_sfh_params(
+    t_table,
+    mah_params,
+    p50,
+    ran_key,
+    pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
+    pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    R_model_params_Q=DEFAULT_R_QUENCH_PARAMS,
+    R_model_params_MS=DEFAULT_R_MAINSEQ_PARAMS,
+):
+    """
+    Generate Monte Carlo realization of the star formation histories of
+    a mixed population of quenched and main sequence galaxies
+    for a single halo mass bin.
+
+    There is correlation with p50.
+
+    Parameters
+    ----------
+    t_table : ndarray of shape (n_times, )
+        Cosmic time array in Gyr.
+    logmh : float
+        Base-10 log of present-day halo mass of the halo population
+    mah_params : ndarray of shape (n_mah_haloes x n_mah_params)
+        Array with the diffmah parameters that will be marginalized over. Could
+        be either individual fits of n_mah_haloes haloes, or be n_mah_haloes
+        samples from a population model. They are chosen at random n_halos times.
+    p50 : mah_params : ndarray of shape (n_mah_haloes, )
+        Formation time percentile of each halo conditioned on halo mass.
+    ran_key : ndarray of shape 2
+        JAX random key.
+    pdf_model_params_Q : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the quenched population.
+        Default is DEFAULT_SFH_PDF_QUENCH_PARAMS.
+    pdf_model_params_MS : ndarray of shape (n_pdf, )
+        Array containing the Diffstarpop parameters for the main sequence population.
+        Default is DEFAULT_SFH_PDF_MAINSEQ_PARAMS.
+    R_model_params_Q: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
+        diffstar and diffmah parameters for the quenched population.
+    R_model_params_MS: ndarray of shape (n_R, )
+        Array containing the Diffstarpop parameters for the correlation between
+        diffstar and diffmah parameters for the main sequence population.
+
+    Returns
+    -------
+    sfr : ndarray of shape (n_histories, n_times)
+        Stores star formation rate history in units of Msun/yr.
+    """
+    logmh = jnp.atleast_1d(mah_params[0])
+
+    (quench_key, mainseq_key, ran_key) = jran.split(ran_key, 3)
+
+    _res = get_smah_means_and_covs_mainseq(logmh, *pdf_parameters_MS)
+    means_mainseq, covs_mainseq = _res
+    means_mainseq = means_mainseq[0]
+    covs_mainseq = covs_mainseq[0]
+
+    R_vals_mainseq = _get_slopes_mainseq(logmh, *R_model_params_MS)
+    R_vals_mainseq = jnp.array(R_vals_mainseq)[:, 0]
+    shifts_mainseq = R_vals_mainseq * (p50 - 0.5)
+
+    _res = get_smah_means_and_covs_quench(logmh, *pdf_parameters_Q)
+    frac_quench, means_quench, covs_quench = _res
+    frac_quench = frac_quench[0]
+    means_quench = means_quench[0]
+    covs_quench = covs_quench[0]
+
+    _res = _get_slopes_quench(logmh, *R_model_params_Q)
+    R_Fquench, R_vals_quench = _res[0], _res[1:]
+    R_vals_quench = jnp.array(R_vals_quench)[:, 0]
+    shifts_quench = R_vals_quench * (p50 - 0.5)
+    shifts_Fquench = R_Fquench * (p50 - 0.5)
+    fquench_x0 = pdf_parameters_Q[0] + shifts_Fquench
+    frac_quench = frac_quench_vs_lgm0(logmh, fquench_x0, *pdf_parameters_Q[1:4])
+
+    sfh_params_Q = jran.multivariate_normal(
+        quench_key, means_quench, covs_quench, shape=(1,)
+    )
+    sfh_params_Q = sfh_params_Q + shifts_quench
+
+    sfr_params_Q = sfh_params_Q[:, 0:4]
+    q_params_Q = sfh_params_Q[:, 4:8]
+
+    sfr_params_MS = jran.multivariate_normal(
+        mainseq_key, means_mainseq, covs_mainseq, shape=(1,)
+    )
+    sfr_params_MS = sfr_params_MS + shifts_mainseq
+    q_params_MS = jnp.ones_like(q_params_Q) * 10.0
+
+    sfr_params_Q = sfr_params_Q[0]
+    q_params_Q = q_params_Q[0]
+    sfr_params_MS = sfr_params_MS[0]
+
+    frac_quench = frac_quench[0]
+
+    uval = jran.uniform(ran_key)
+    sfr_params = jnp.where(uval < frac_quench, sfr_params_Q, sfr_params_MS)
+    q_params = jnp.where(uval < frac_quench, q_params_Q, q_params_MS)
+
+    sfh = sfr_history_diffstar_scan(
+        t_table,
+        mah_params,
+        sfr_params_Q,
+        q_params_Q,
+    )
+
+    sfr_params = jnp.array([*sfr_params[0:3], UH, sfr_params[3]])
+
+    sfr_params = _get_bounded_sfr_params(*sfr_params)
+    q_params = _get_bounded_q_params(*q_params)
+
+    return sfr_params, q_params, sfh
+
+
+_A = (None, 0, 0, 0, *[None] * 4)
+draw_single_sfh_params_vmap = jjit(vmap(draw_single_sfh_params, in_axes=_A))
+
+
+
+@jjit
+def get_obs_photometry_singlez(
+    ran_key,
+    filter_waves,
+    filter_trans,
+    ssp_obs_photflux_table,
+    ssp_lgmet,
+    ssp_lg_age_gyr,
+    gal_t_table,
+    gal_sfr_table,
+    lgfburst_pop_u_params,
+    burstshapepop_u_params,
+    lgav_u_params,
+    dust_delta_u_params,
+    fracuno_pop_u_params,
+    cosmo_params,
+    z_obs,
+    met_params=DEFAULT_MZR_PARAMS,
+    lgmet_scatter=0.2,
+):
+    """Compute apparent magnitudes of galaxies at a single redshift
+
+    Parameters
+    ----------
+    ran_key : jax.random.PRNGKey
+
+    filter_waves : array of shape (n_filters, n_trans_curve)
+        Wavelength of the filter transmission curves in Angstroms
+
+    filter_trans : array of shape (n_filters, n_trans_curve)
+        Transmission curves defining fractional transmission of the filters
+
+    ssp_obs_photflux_table : ndarray of shape (n_met, n_age, n_filters)
+
+    ssp_lgmet : ndarray of shape (n_met, )
+        Array of log10(Z) of the SSP templates
+
+    ssp_lg_age_gyr : ndarray of shape (n_ages, )
+        Array of log10(age/Gyr) of the SSP templates
+
+    gal_t_table : ndarray of shape (n_t, )
+        Age of the universe in Gyr at which the input galaxy SFH and metallicity
+        have been tabulated
+
+    gal_sfr_table : ndarray of shape (n_gals, n_t)
+        Star formation history in Msun/yr evaluated at the input gal_t_table
+
+    lgfburst_pop_u_params : ndarray of shape (n_lgfburst_params, )
+        Unbounded parameters of the lgfburstpop model
+
+    burstshapepop_u_params : ndarray of shape (n_burstshapepop_params, )
+        Unbounded parameters of the burstshapepop model
+
+    lgav_u_params : ndarray of shape (n_lgavpop_params, )
+        Unbounded parameters of the lgav model
+
+    dust_delta_u_params : ndarray of shape (n_dust_deltapop_params, )
+        Unbounded parameters of the dust_delta model
+
+    fracuno_pop_u_params : ndarray of shape (n_funo_params, )
+        unbounded parameters of the boris_dust model
+
+    cosmo_params : 4-element sequence, (Om0, w0, wa, h)
+
+    z_obs : float
+
+    Returns
+    -------
+    weights : ndarray of shape (n_gals, n_met, n_ages)
+        SSP weights of the joint distribution of stellar age and metallicity
+
+    lgmet_weights : ndarray of shape (n_gals, n_met)
+        SSP weights of the distribution of stellar metallicity
+
+    smooth_age_weights : ndarray of shape (n_gals, n_ages)
+        SSP weights of the distribution of stellar age for the smooth SFH
+
+    bursty_age_weights : ndarray of shape (n_gals, n_ages)
+        SSP weights of the distribution of stellar age for the SFH that includes bursts
+
+    frac_trans : ndarray of shape (n_gals, n_ages, n_filters)
+        Fraction of the flux transmitted through dust for each galaxy in each filter
+
+    gal_obsflux_nodust : ndarray of shape (n_gals, n_filters)
+        Flux in Lsun of each galaxy in each filter, ignoring dust attenuation
+        gal_obsmags_nodust = -2.5*log10(gal_obsflux_nodust)
+
+    gal_obsflux : ndarray of shape (n_gals, n_filters)
+        Flux in Lsun of each galaxy in each filter, including dust attenuation
+        gal_obsmags = -2.5*log10(gal_obsflux)
+
+    """
+    n_gals = gal_sfr_table.shape[0]
+    n_met = ssp_lgmet.shape[0]
+    n_age = ssp_lg_age_gyr.shape[0]
+    n_filters = filter_waves.shape[0]
+
+    t_obs = _age_at_z_kern(z_obs, *cosmo_params)
+    lgt_obs = jnp.log10(t_obs)
+    lgt_table = jnp.log10(gal_t_table)
+
+    gal_sfr_table = jnp.where(gal_sfr_table < SFR_MIN, SFR_MIN, gal_sfr_table)
+    gal_logsm_table = _calc_logsm_table_from_sfh_table_vmap(
+        gal_t_table, gal_sfr_table, SFR_MIN
+    )
+    gal_logsfr_table = jnp.log10(gal_sfr_table)
+
+    gal_logsm_t_obs = _linterp_vmap(lgt_obs, lgt_table, gal_logsm_table)
+    gal_logsfr_t_obs = _linterp_vmap(lgt_obs, lgt_table, gal_logsfr_table)
+    gal_logssfr_t_obs = gal_logsfr_t_obs - gal_logsm_t_obs
+
+    gal_lgmet = mzr_model(gal_logsm_t_obs, t_obs, *met_params[:-1])
+
+    _res = calc_ssp_weights_sfh_table_lognormal_mdf_vmap(
+        gal_t_table,
+        gal_sfr_table,
+        gal_lgmet,
+        lgmet_scatter,
+        ssp_lgmet,
+        ssp_lg_age_gyr,
+        t_obs,
+    )
+    lgmet_weights, smooth_age_weights = _res[1:]
+
+    ran_key, burst_key, dust_key = jran.split(ran_key, 3)
+
+    gal_lgf_burst = _get_lgfburst_galpop_from_u_params(
+        gal_logsm_t_obs, gal_logssfr_t_obs, lgfburst_pop_u_params
+    )
+    gal_fburst = 10**gal_lgf_burst
+
+    burstshape_u_params = _get_burstshape_galpop_from_params(
+        gal_logsm_t_obs, gal_logssfr_t_obs, burstshapepop_u_params
+    )
+    burstshape_u_params = jnp.array(burstshape_u_params).T
+    ssp_lg_age_yr = ssp_lg_age_gyr + 9
+    burst_weights = _age_weights_from_u_params_vmap(ssp_lg_age_yr, burstshape_u_params)
+
+    _fb = gal_fburst.reshape((n_gals, 1))
+    bursty_age_weights = _fb * burst_weights + (1 - _fb) * smooth_age_weights
+
+    _w_age = bursty_age_weights.reshape((n_gals, 1, n_age))
+    _w_met = lgmet_weights.reshape((n_gals, n_met, 1))
+    _w = _w_age * _w_met
+    _norm = jnp.sum(_w, axis=(1, 2))
+    weights = _w / _norm.reshape((n_gals, 1, 1))
+
+    frac_trans, att_curve_params, frac_unobs = _frac_dust_transmission_singlez_kernel(
+        dust_key,
+        z_obs,
+        gal_logsm_t_obs,
+        gal_logssfr_t_obs,
+        gal_lgf_burst,
+        ssp_lg_age_gyr,
+        filter_waves,
+        filter_trans,
+        lgav_u_params,
+        dust_delta_u_params,
+        fracuno_pop_u_params,
+    )
+
+    _ssp_fluxes = ssp_obs_photflux_table.reshape((1, n_met, n_age, n_filters))
+    w = weights.reshape((n_gals, n_met, n_age, 1))
+    ft = frac_trans.reshape((n_gals, 1, n_age, n_filters))
+    gal_obsflux_per_mstar_nodust = jnp.sum(w * _ssp_fluxes, axis=(1, 2))
+    gal_obsflux_per_mstar = jnp.sum(w * _ssp_fluxes * ft, axis=(1, 2))
+
+    _gal_mstar = 10 ** gal_logsm_t_obs.reshape((n_gals, 1))
+    gal_obsflux_nodust = gal_obsflux_per_mstar_nodust * _gal_mstar
+    gal_obsflux = gal_obsflux_per_mstar * _gal_mstar
+
+    return (
+        burstshape_u_params
+        att_curve_params, 
+        frac_unobs
+        gal_obsflux,
+    )
