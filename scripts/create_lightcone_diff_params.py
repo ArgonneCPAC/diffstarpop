@@ -37,7 +37,7 @@ from diffstarpop.pdf_model_assembly_bias_shifts import (
 from diffstarpop.utils import get_t50_p50
 
 
-from diffstarpop.monte_carlo_diff_halo_population import draw_single_sfh_params
+from diffstarpop.monte_carlo_diff_halo_population import draw_single_sfh_params_vmap
 from diffsky.experimental.dspspop.photpop import get_obs_photometry_and_params_singlez
 
 from fit_adam_helpers import jax_adam_wrapper
@@ -86,6 +86,7 @@ def get_loss_data(
     print("Loading HSC filters")
     filter_list_HSC = [
         "COSMOS_HSC_i.h5",
+        "COSMOS_HSC_z.h5",
     ]
 
     def get_filter_data(filter_list, filter_path):
@@ -189,23 +190,32 @@ def get_colors_single_object(
         cosmo_params,
         gal_z_obs,
     )
-    """
     (
-        weights,
-        lgmet_weights,
-        smooth_age_weights,
-        bursty_age_weights,
-        frac_trans,
-        gal_obsflux_nodust,
+        gal_fburst,
+        gal_lgyr_peak,
+        gal_lgyr_max,
+        gal_eb,
+        gal_dust_delta,
+        gal_av,
+        frac_unobs,
         gal_obsflux,
     ) = res
 
-    gal_obsflux = gal_obsflux[0]
-
     gal_obs_mags = -2.5 * jnp.log10(gal_obsflux)
-    return gal_obs_mags
-    """
-    return res
+
+    output = (
+        gal_fburst[0],
+        gal_lgyr_peak[0],
+        gal_lgyr_max[0],
+        gal_eb[0],
+        gal_dust_delta[0],
+        gal_av[0],
+        frac_unobs[0],
+        gal_obs_mags[0]
+    )
+    
+    return output
+
 
 
 _A = (None, 0, 0, 0, 0, *[None] * 10)
@@ -357,7 +367,7 @@ for indx in indices:
         cosmo_params,
     ) = res
 
-    sfr_params, q_params, gal_sfr_table = draw_single_sfh_params(
+    sfr_params, q_params, gal_sfr_table = draw_single_sfh_params_vmap(
         gal_t_table,
         halo_mah_params_arr_out,
         halo_p50_arr,
@@ -373,7 +383,7 @@ for indx in indices:
         gal_sfr_table,
         gal_z_obs,
         gal_ssp_table,
-        ran_key,
+        phot_key_arr,
         filter_waves,
         filter_trans,
         ssp_lgmet,
