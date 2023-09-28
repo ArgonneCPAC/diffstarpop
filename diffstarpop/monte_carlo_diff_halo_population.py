@@ -1888,6 +1888,7 @@ def draw_single_sfh_params(
     sfr_params_Q = sfr_params_Q[0]
     q_params_Q = q_params_Q[0]
     sfr_params_MS = sfr_params_MS[0]
+    q_params_MS = q_params_MS[0]
 
     frac_quench = frac_quench[0]
 
@@ -1898,8 +1899,8 @@ def draw_single_sfh_params(
     sfh = sfr_history_diffstar_scan(
         t_table,
         mah_params,
-        sfr_params_Q,
-        q_params_Q,
+        sfr_params,
+        q_params,
     )
 
     sfr_params = jnp.array([*sfr_params[0:3], UH, sfr_params[3]])
