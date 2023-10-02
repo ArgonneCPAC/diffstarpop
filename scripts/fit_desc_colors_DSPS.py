@@ -53,8 +53,10 @@ for light_id in range(10):
         # redshift_true = f["redshift_true"][...]
         # mpeak_lightcone = f["mpeak"][...]
         # halo_id_lightcone = f["halo_id"][...]
-        
-    fn = f"sfh_crossmatch/survey_z0.02-2.00_x60.00_y60.00_{light_id}.sfh_crossmatched.h5"
+
+    fn = (
+        f"sfh_crossmatch/survey_z0.02-2.00_x60.00_y60.00_{light_id}.sfh_crossmatched.h5"
+    )
     with h5py.File(os.path.join(lightcone_path, fn), "r") as f:
         print(f.keys())
 
@@ -72,27 +74,36 @@ sfr_history_all_prog = np.concatenate(sfr_history_all_prog)
 redshift_obs = np.concatenate(redshift_obs)
 
 
+# Replace -999.0 SFHs by the last positive SFH value of each halo.
 nines = np.sum(sfr_history_all_prog == -999.0, axis=1)
-last_sfr_value = sfr_history_all_prog[np.arange(len(nines)), -nines-1]
+last_sfr_value = sfr_history_all_prog[np.arange(len(nines)), -nines - 1]
 last_sfr_value_arr = np.ones_like(sfr_history_all_prog) * last_sfr_value[:, None]
-gal_sfr_arr = np.where(sfr_history_all_prog==-999.0, last_sfr_value_arr, sfr_history_all_prog)
-assert np.all(gal_sfr_arr >=0.0)
+gal_sfr_arr = np.where(
+    sfr_history_all_prog == -999.0, last_sfr_value_arr, sfr_history_all_prog
+)
+assert np.all(gal_sfr_arr >= 0.0)
 
 SMDPL_a = np.load("/lcrc/project/halotools/alarcon/data/scale_list_SMDPL.npy")
 SMDPL_z = 1.0 / SMDPL_a - 1.0
 SMDPL_t = Planck18.age(SMDPL_z).value
 
-area_norm_HSC = 10.0 # area in sq.deg
+area_norm_HSC = 10.0  # area in sq.deg
 
-# select = np.random.choice(len(redshift_obs), int(1e5), replace=False)
+# For more efficient calculations make a mass cut
 # select = logmp_crossmatch > 11.0
 # gal_sfr_arr = gal_sfr_arr[select]
 # redshift_obs = redshift_obs[select]
 
-select = np.random.choice(len(redshift_obs), int(1e5), replace=False)
-undersampling_factor =  len(select) / len(redshift_obs)
+Nuse = int(1e5)
+select = np.random.choice(len(redshift_obs), Nuse, replace=False)
+undersampling_factor = len(select) / len(redshift_obs)
 
-# assert False
+# Main input data needed beyond this point:
+#    gal_t_table : ndarray of shape (nt, )
+#    gal_sfr_arr : ndarray of shape (ng, nt)
+#    redshift_obs : ndarray of shape (ng, )
+#    area_norm_HSC : float
+#    undersampling_factor : float
 print("Get loss_data COSMOS")
 loss_data_COSMOS = get_loss_data_COSMOS(
     SMDPL_t,
@@ -105,7 +116,7 @@ loss_data_HSC = get_loss_data_HSC(
     SMDPL_t,
     gal_sfr_arr[select],
     redshift_obs[select],
-    area_norm_HSC * undersampling_factor,
+    area_norm_HSC * undersampling_factor,  # Take into acount undersampling fraction.
 )
 
 print("Get loss_data DEEP2")
@@ -115,20 +126,97 @@ loss_data_DEEP2 = get_loss_data_DEEP2(
     redshift_obs[select],
 )
 
-init_params = np.concatenate((
-    DEFAULT_lgfburst_u_params,
-    DEFAULT_burstshape_u_params,
-    DEFAULT_lgav_dust_u_params,
-    DEFAULT_delta_dust_u_params,
-    DEFAULT_boris_dust_u_params,
-))
-# output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS/test_combloss_mean_230831_test3.npz"
-output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS/test_COSMOSloss_230901_test1.npz"
-bestfit_params_file = np.load(output_filename)
+
+# saved_params_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS/test_COSMOSloss_230901_test1.npz"
+saved_params_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS/test_combloss_mean_230831_test3.npz"
+bestfit_params_file = np.load(saved_params_filename)
 init_params = bestfit_params_file["best_fit_params"]
 
 ran_key = jran.PRNGKey(np.random.randint(2**32))
+
+print("Get loss Combined")
+loss_data_comb = (
+    loss_data_COSMOS,
+    loss_data_HSC,
+    loss_data_DEEP2,
+)
+
+# In case you want to pre-compile loss and loss grad functions.
 """
+t0 = time.time()
+loss_comb_val = loss_combined(init_params, loss_data_comb, ran_key)
+loss_deriv_comb_val = loss_combined_deriv(init_params, loss_data_comb, ran_key)
+t1 = time.time()
+print(t1-t0)
+print("Loss Comb: %.5f"%loss_comb_val)
+print("Loss grads Comb:", loss_deriv_comb_val)
+"""
+# Define output filename
+# output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS/test_combloss_mean_230831_test3.npz"
+output_filename = "/your/output/path/and/params_filename.npz"
+
+
+n_step = int(1e4)  # Define loss Nmax length.
+step_size = 0.01  # and Adam step size
+
+
+opt_init, opt_update, get_params = jax_opt.adam(step_size)
+opt_state = opt_init(init_params)
+jax_optimizer = (opt_state, opt_update, get_params)
+
+print(f"Running grad descend")
+
+_res0 = jax_adam_wrapper(
+    init_params,
+    loss_data_comb,
+    loss_combined,
+    loss_combined_deriv,
+    n_step,
+    ran_key,
+    output_filename,
+    jax_optimizer,
+)
+
+best_fit_params = _res0[0]
+
+#### Old code goes here
+
+"""
+N_BURST_F = len(DEFAULT_lgfburst_u_params)
+N_BURST_SHAPE = len(DEFAULT_burstshape_u_params)
+N_DUST_LGAV = len(DEFAULT_lgav_dust_u_params)
+N_DUST_DELTA = len(DEFAULT_delta_dust_u_params)
+N_DUST_BORIS = len(DEFAULT_boris_dust_u_params)
+
+
+npar = 0
+print("BURST_F grads:", loss_deriv_cosmos_val[npar : npar + N_BURST_F])
+npar += N_BURST_F
+print("BURST_SHAPE grads:", loss_deriv_cosmos_val[npar : npar + N_BURST_SHAPE])
+npar += N_BURST_SHAPE
+print("DUST_LGAV grads:", loss_deriv_cosmos_val[npar : npar + N_DUST_LGAV])
+npar += N_DUST_LGAV
+print("DUST_DELTA grads:", loss_deriv_cosmos_val[npar : npar + N_DUST_DELTA])
+npar += N_DUST_DELTA
+print("DUST_BORIS grads:", loss_deriv_cosmos_val[npar : npar + N_DUST_BORIS])
+npar += N_DUST_BORIS
+
+from jax import config
+
+config.update("jax_debug_nans", True)
+loss_deriv_cosmos_val = loss_COSMOS_deriv(init_params, loss_data_COSMOS, ran_key)
+
+"""
+"""
+init_params = np.concatenate(
+    (
+        DEFAULT_lgfburst_u_params,
+        DEFAULT_burstshape_u_params,
+        DEFAULT_lgav_dust_u_params,
+        DEFAULT_delta_dust_u_params,
+        DEFAULT_boris_dust_u_params,
+    )
+)
 print("Get loss COSMOS")
 loss_cosmos_val = loss_COSMOS(init_params, loss_data_COSMOS, ran_key)
 loss_deriv_cosmos_val = loss_COSMOS_deriv(init_params, loss_data_COSMOS, ran_key)
@@ -147,44 +235,7 @@ loss_deriv_deep2_val = loss_DEEP2_deriv(init_params, loss_data_DEEP2, ran_key)
 print("Loss DEEP2: %.5f"%loss_deep2_val)
 print("Loss grads DEEP2:", loss_deriv_deep2_val)
 """
-"""
-print("Get loss Combined")
-loss_data_comb = (
-    loss_data_COSMOS,
-    loss_data_HSC,
-    loss_data_DEEP2,
-)
-t0 = time.time()
-loss_comb_val = loss_combined(init_params, loss_data_comb, ran_key)
-loss_deriv_comb_val = loss_combined_deriv(init_params, loss_data_comb, ran_key)
-t1 = time.time()
-print(t1-t0)
-print("Loss Comb: %.5f"%loss_comb_val)
-print("Loss grads Comb:", loss_deriv_comb_val)
-"""
-output_filename = "/lcrc/project/halotools/alarcon/results/DESC_mocks/vary_DSPS/test_COSMOSloss_230901_test1.npz"
 
-
-n_step = int(1e4)
-step_size = 0.01
-
-opt_init, opt_update, get_params = jax_opt.adam(step_size)
-opt_state = opt_init(init_params)
-jax_optimizer = (opt_state, opt_update, get_params)
-
-print(f"Running grad descend")
-"""
-_res0 = jax_adam_wrapper(
-    init_params,
-    loss_data_comb,
-    loss_combined,
-    loss_combined_deriv,
-    n_step,
-    ran_key,
-    output_filename,
-    jax_optimizer,
-
-)
 """
 _res0 = jax_adam_wrapper(
     init_params,
@@ -195,31 +246,5 @@ _res0 = jax_adam_wrapper(
     ran_key,
     output_filename,
     jax_optimizer,
-
 )
-best_fit_params = _res0[0]
-
-assert False
-N_BURST_F = len(DEFAULT_lgfburst_u_params)
-N_BURST_SHAPE = len(DEFAULT_burstshape_u_params)
-N_DUST_LGAV = len(DEFAULT_lgav_dust_u_params)
-N_DUST_DELTA = len(DEFAULT_delta_dust_u_params)
-N_DUST_BORIS = len(DEFAULT_boris_dust_u_params)
-
-
-
-npar = 0
-print("BURST_F grads:", loss_deriv_cosmos_val[npar:npar+N_BURST_F])
-npar += N_BURST_F
-print("BURST_SHAPE grads:", loss_deriv_cosmos_val[npar:npar+N_BURST_SHAPE])
-npar += N_BURST_SHAPE
-print("DUST_LGAV grads:", loss_deriv_cosmos_val[npar:npar+N_DUST_LGAV])
-npar += N_DUST_LGAV
-print("DUST_DELTA grads:", loss_deriv_cosmos_val[npar:npar+N_DUST_DELTA])
-npar += N_DUST_DELTA
-print("DUST_BORIS grads:", loss_deriv_cosmos_val[npar:npar+N_DUST_BORIS])
-npar += N_DUST_BORIS
-
-from jax import config
-config.update("jax_debug_nans", True)
-loss_deriv_cosmos_val = loss_COSMOS_deriv(init_params, loss_data_COSMOS, ran_key)
+"""
