@@ -143,15 +143,15 @@ for i in range(len(bands)):
     gal_mags[:, i] = flux2lupmag(df[bands[i] + "_FLUX"].values)
 
 bins_mag = np.linspace(18, 23, 20)
-bins_color = np.linspace(-1.0, 2.0, 20)
+bins_color = np.linspace(-1.0, 2.5, 20)
 
 bins_LO_mag = bins_mag[:-1]
 bins_HI_mag = bins_mag[1:]
-ndsig_mag = np.ones_like(colors_data[0]) * np.diff(bins_mag)[0]
+ndsig_mag = np.diff(bins_mag)[0]
 
 bins_LO_color = bins_color[:-1]
 bins_HI_color = bins_color[1:]
-ndsig_color = np.ones_like(colors_data[0]) * np.diff(bins_color)[0]
+ndsig_color = np.diff(bins_color)[0] # * 3.0
 
 true_i_counts = []
 true_color_counts = []
@@ -172,8 +172,8 @@ def get_counts(zmin, zmax):
 
     diff_counts_i, diff_counts_colors = calculate_1d_COSMOS_colors_counts_singlez_bin(
         gal_mags[mask_z],
-        ndsig_mag[mask_z],
-        ndsig_color[mask_z],
+        ndsig_mag,
+        ndsig_color,
         bins_LO_mag,
         bins_HI_mag,
         bins_LO_color,
@@ -201,6 +201,7 @@ diff_color_counts = np.array(diff_color_counts)
 
 outpath = "/lcrc/project/halotools/alarcon/data/DESC_mocks_data/"
 out_name = "COSMOS_target_data_20bins.h5"
+# out_name = "COSMOS_target_data_20bins_nsigcolx3.h5"
 with h5py.File(os.path.join(outpath, out_name), 'w') as f:
     f["bins_mag"] = bins_mag 
     f["bins_color"] = bins_color
