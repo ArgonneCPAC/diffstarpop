@@ -19,15 +19,19 @@ from diffstarpop.monte_carlo_diff_halo_population import (
 from diffstarpop.fit_pop_helpers import (
     loss_hists_vmap,
     loss_hists_vmap_deriv,
+    loss_hists_scan,
+    loss_hists_scan_deriv,
 )
 
 from diffstar.constants import TODAY
 from diffstar.stars import fstar_tools
 import astropy.units as u
 from astropy.cosmology import Planck13, z_at_value
-from diffstarpop.json_utils import load_params
+from diffstarpop.json_utils import load_params, write_params_json
+
 
 from fit_UM_histograms_helpers import calculate_SMDPL_sumstats, jax_adam_wrapper
+
 
 t_table = np.linspace(1.0, TODAY, 20)
 z_table = np.array([z_at_value(Planck13.age, x * u.Gyr, zmin=-1) for x in t_table])
@@ -106,7 +110,7 @@ outputs = load_params(path_json)
 
 
 n_histories = int(1e3)
-n_step = int(1e1)
+n_step = 360# int(1e3)
 step_size = 0.01
 
 
@@ -143,6 +147,8 @@ _res0 = jax_adam_wrapper(
     loss_data,
     loss_hists_vmap,
     loss_hists_vmap_deriv,
+    #loss_hists_scan,
+    #loss_hists_scan_deriv,
     n_step,
     n_histories,
     ran_key,
@@ -154,12 +160,13 @@ best_fit_params = _res0[0]
 
 #################################
 
+params_init = best_fit_params.copy()
 opt_init, opt_update, get_params = jax_opt.adam(step_size)
 opt_state = opt_init(best_fit_params)
 jax_optimizer = (opt_state, opt_update, get_params)
 
 n_histories = int(1e4)
-n_step = int(1e1)
+n_step = 70# int(1e1)
 step_size = 0.01
 
 ndsig = np.ones((2 * n_histories, 2))
@@ -187,6 +194,8 @@ _res1 = jax_adam_wrapper(
     loss_data,
     loss_hists_vmap,
     loss_hists_vmap_deriv,
+    #loss_hists_scan,
+    #loss_hists_scan_deriv,
     n_step,
     n_histories,
     ran_key,
@@ -196,14 +205,19 @@ _res1 = jax_adam_wrapper(
 best_fit_params1 = _res1[0]
 # jax_optimizer = _res1[4]
 
-#################################
 
+path_json = "../diffstarpop/bestfit_diffstarpop_params_UM_hists.json"
+write_params_json(path_json, best_fit_params1)
+
+"""
+#################################
+params_init = best_fit_params1.copy()
 opt_init, opt_update, get_params = jax_opt.adam(step_size)
 opt_state = opt_init(best_fit_params1)
 jax_optimizer = (opt_state, opt_update, get_params)
 
-n_histories = int(1e5)
-n_step = int(1e1)
+n_histories = int(5e4)
+n_step = 2 #int(1e1)
 step_size = 0.01
 
 ndsig = np.ones((2 * n_histories, 2))
@@ -231,6 +245,8 @@ _res2 = jax_adam_wrapper(
     loss_data,
     loss_hists_vmap,
     loss_hists_vmap_deriv,
+    # loss_hists_scan,
+    # loss_hists_scan_deriv,
     n_step,
     n_histories,
     ran_key,
@@ -239,3 +255,4 @@ _res2 = jax_adam_wrapper(
 
 best_fit_params2 = _res2[0]
 # jax_optimizer = _res1[4]
+""" 
