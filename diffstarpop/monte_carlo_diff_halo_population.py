@@ -8,7 +8,7 @@ from jax import lax
 from collections import OrderedDict
 from functools import partial
 
-from diffstar.stars import (
+from diffstar.fitting_helpers.stars import (
     calculate_sm_sfr_fstar_history_from_mah,
     DEFAULT_SFR_PARAMS as DEFAULT_SFR_PARAMS_DICT,
     _get_unbounded_sfr_params,
@@ -17,13 +17,13 @@ from diffstar.stars import (
     compute_fstar,
     fstar_tools,
 )
-from diffstar.quenching import (
+from diffstar.kernels.quenching_kernels import (
     DEFAULT_Q_PARAMS as DEFAULT_Q_PARAMS_DICT,
     _get_unbounded_q_params,
     _get_bounded_q_params,
     quenching_function,
 )
-from diffstar.main_sequence import get_ms_sfh_from_mah_kern
+from diffstar.kernels.main_sequence_kernels import get_ms_sfh_from_mah_kern
 from diffstar.utils import jax_np_interp, _jax_get_dt_array
 
 
