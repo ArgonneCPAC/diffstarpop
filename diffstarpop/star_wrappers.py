@@ -16,10 +16,11 @@ from diffstar.kernels.quenching_kernels import (
     _get_unbounded_q_params,
     _quenching_kern_u_params as quenching_function
 )
+
+from diffstar.kernels.kernel_builders import get_ms_sfh_from_mah_kern
+
 from jax import numpy as jnp, jit as jjit, vmap, lax
 from collections import OrderedDict
-from diffstar.main_sequence import get_ms_sfh_from_mah_kern
-
 
 DEFAULT_UNBOUND_SFR_PARAMS = _get_unbounded_sfr_params(
     *tuple(DEFAULT_SFR_PARAMS_DICT.values())
