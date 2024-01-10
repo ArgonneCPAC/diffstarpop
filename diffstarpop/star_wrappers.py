@@ -1,12 +1,16 @@
 import numpy as np
-from diffstar.stars import (
+from diffstar.kernels.main_sequence_kernels import (
+    DEFAULT_MS_PARAMS as DEFAULT_SFR_PARAMS_DICT,
+    _get_unbounded_sfr_params
+)
+
+from diffstar.fitting_helpers.fitting_kernels import (
     calculate_sm_sfr_fstar_history_from_mah,
-    DEFAULT_SFR_PARAMS as DEFAULT_SFR_PARAMS_DICT,
-    _get_unbounded_sfr_params,
-    _ms_sfr_history_from_mah,
     _integrate_sfr,
     compute_fstar,
+    _ms_sfr_history_from_mah
 )
+
 from diffstar.quenching import (
     DEFAULT_Q_PARAMS as DEFAULT_Q_PARAMS_DICT,
     _get_unbounded_q_params,
