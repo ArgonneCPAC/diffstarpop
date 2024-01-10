@@ -8,7 +8,7 @@ from collections import OrderedDict
 from functools import partial
 
 from diffstar.kernels.main_sequence_kernels import (
-    DEFAULT_MS_PARAMS as DEFAULT_SFR_PARAMS_DICT,
+    DEFAULT_MS_PDICT as DEFAULT_SFR_PARAMS_DICT,
     _get_unbounded_sfr_params,
     _get_bounded_sfr_params)
 
