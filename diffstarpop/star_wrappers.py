@@ -11,10 +11,10 @@ from diffstar.fitting_helpers.fitting_kernels import (
     _ms_sfr_history_from_mah
 )
 
-from diffstar.quenching import (
+from diffstar.kernels.quenching_kernels import (
     DEFAULT_Q_PARAMS as DEFAULT_Q_PARAMS_DICT,
     _get_unbounded_q_params,
-    quenching_function,
+    _quenching_kern_u_params as quenching_function
 )
 from jax import numpy as jnp, jit as jjit, vmap, lax
 from collections import OrderedDict
