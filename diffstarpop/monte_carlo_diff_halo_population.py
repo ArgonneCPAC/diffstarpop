@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.random import RandomState
 from jax import vmap
 from jax import jit as jjit
 from jax import numpy as jnp
@@ -8,27 +7,19 @@ from jax import lax
 from collections import OrderedDict
 from functools import partial
 
-from diffstar.fitting_helpers.stars import (
-    calculate_sm_sfr_fstar_history_from_mah,
-    DEFAULT_SFR_PARAMS as DEFAULT_SFR_PARAMS_DICT,
+from diffstar.kernels.main_sequence_kernels import (
+    DEFAULT_MS_PARAMS as DEFAULT_SFR_PARAMS_DICT,
     _get_unbounded_sfr_params,
     _get_bounded_sfr_params,
-    _integrate_sfr,
-    compute_fstar,
-    fstar_tools,
-)
+    get_ms_sfh_from_mah_kern)
+
 from diffstar.kernels.quenching_kernels import (
     DEFAULT_Q_PARAMS as DEFAULT_Q_PARAMS_DICT,
     _get_unbounded_q_params,
-    _get_bounded_q_params,
-    quenching_function,
+    _get_bounded_q_params
 )
-from diffstar.kernels.main_sequence_kernels import get_ms_sfh_from_mah_kern
+
 from diffstar.utils import jax_np_interp, _jax_get_dt_array
-
-
-from diffmah.individual_halo_assembly import _calc_halo_history
-
 
 from .pdf_quenched import (
     get_smah_means_and_covs_quench,
@@ -36,13 +27,14 @@ from .pdf_quenched import (
     frac_quench_vs_lgm0,
 )
 from .pdf_mainseq import get_smah_means_and_covs_mainseq, DEFAULT_SFH_PDF_MAINSEQ_PARAMS
+
 from .pdf_model_assembly_bias_shifts import (
     DEFAULT_R_QUENCH_PARAMS,
     DEFAULT_R_MAINSEQ_PARAMS,
     _get_slopes_quench,
     _get_slopes_mainseq,
-    _get_shift_to_PDF_mean,
 )
+
 from .star_wrappers import (
     sm_sfr_history_diffstar_scan_XsfhXmah_vmap,
     sm_sfr_history_diffstar_scan_MS_XsfhXmah_vmap,
