@@ -15,7 +15,7 @@ from diffstar.kernels.main_sequence_kernels import (
 from diffstar.kernels.kernel_builders import get_ms_sfh_from_mah_kern
 
 from diffstar.kernels.quenching_kernels import (
-    DEFAULT_Q_PARAMS as DEFAULT_Q_PARAMS_DICT,
+    DEFAULT_Q_PDICT as DEFAULT_Q_PARAMS_DICT,
     _get_unbounded_q_params,
     _get_bounded_q_params
 )

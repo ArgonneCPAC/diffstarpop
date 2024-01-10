@@ -12,7 +12,7 @@ from diffstar.fitting_helpers.fitting_kernels import (
 )
 
 from diffstar.kernels.quenching_kernels import (
-    DEFAULT_Q_PARAMS as DEFAULT_Q_PARAMS_DICT,
+    DEFAULT_Q_PDICT as DEFAULT_Q_PARAMS_DICT,
     _get_unbounded_q_params,
     _quenching_kern_u_params as quenching_function
 )
