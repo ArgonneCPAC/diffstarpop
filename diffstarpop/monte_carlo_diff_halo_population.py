@@ -10,8 +10,9 @@ from functools import partial
 from diffstar.kernels.main_sequence_kernels import (
     DEFAULT_MS_PARAMS as DEFAULT_SFR_PARAMS_DICT,
     _get_unbounded_sfr_params,
-    _get_bounded_sfr_params,
-    get_ms_sfh_from_mah_kern)
+    _get_bounded_sfr_params)
+
+from diffstar.kernels.kernel_builders import get_ms_sfh_from_mah_kern
 
 from diffstar.kernels.quenching_kernels import (
     DEFAULT_Q_PARAMS as DEFAULT_Q_PARAMS_DICT,
