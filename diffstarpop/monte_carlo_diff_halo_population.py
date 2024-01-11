@@ -1711,7 +1711,7 @@ def draw_single_sfh_MIX_with_exsitu(
     return sfr, weight
 
 
-_A = (None, 0, 0, 0, 0, *[None] * 4)
+_A = (None, 0, 0, 0, 0, *[None] * 6)
 _draw_single_sfh_MIX_with_exsitu_vmap = jjit(
     vmap(draw_single_sfh_MIX_with_exsitu, in_axes=_A)
 )
@@ -1723,6 +1723,8 @@ def draw_single_sfh_MIX_with_exsitu_vmap(
     p50_arr,
     sfr_exsitu_arr,
     ran_key_arr,
+    lgt0,
+    fb,
     pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
     pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
     R_model_params_Q=DEFAULT_R_QUENCH_PARAMS,
@@ -1776,6 +1778,8 @@ def draw_single_sfh_MIX_with_exsitu_vmap(
         p50_arr,
         sfr_exsitu_arr,
         ran_key_arr,
+        lgt0,
+        fb,
         pdf_parameters_Q,
         pdf_parameters_MS,
         R_model_params_Q,
