@@ -98,9 +98,11 @@ def sfr_history_diffstar_scan(
     mah_params,
     sfr_ms_params,
     q_params,
+    lgt0,
+    fb
 ):
     sfr_params = [*sfr_ms_params[0:3], UH, sfr_ms_params[3]]
-    ms_sfr = sfh_scan_tobs_kern(tarr, mah_params, sfr_params)
+    ms_sfr = sfh_scan_tobs_kern(tarr, mah_params, sfr_params, lgt0, fb)
     qfrac = quenching_function(jnp.log10(tarr), *q_params)
     sfr = qfrac * ms_sfr
     sfr = jnp.clip(sfr, MIN_SFR, None)
@@ -112,9 +114,11 @@ def sfr_history_diffstar_scan_MS(
     tarr,
     mah_params,
     sfr_ms_params,
+    lgt0,
+    fb
 ):
     sfr_params = [*sfr_ms_params[0:3], UH, sfr_ms_params[3]]
-    sfr = sfh_scan_tobs_kern(tarr, mah_params, sfr_params)
+    sfr = sfh_scan_tobs_kern(tarr, mah_params, sfr_params, lgt0, fb)
     sfr = jnp.clip(sfr, MIN_SFR, None)
     return sfr
 

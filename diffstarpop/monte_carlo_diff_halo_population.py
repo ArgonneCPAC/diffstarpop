@@ -1593,6 +1593,8 @@ def draw_single_sfh_MIX_with_exsitu(
     p50,
     sfr_exsitu,
     ran_key,
+    lgt0,
+    fb,
     pdf_parameters_Q=DEFAULT_SFH_PDF_QUENCH_PARAMS,
     pdf_parameters_MS=DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
     R_model_params_Q=DEFAULT_R_QUENCH_PARAMS,
@@ -1687,11 +1689,15 @@ def draw_single_sfh_MIX_with_exsitu(
         mah_params,
         sfr_params_Q,
         q_params_Q,
+        lgt0,
+        fb
     )
     sfr_MS_insitu = sfr_history_diffstar_scan_MS(
         t_table,
         mah_params,
         sfr_params_MS,
+        lgt0,
+        fb
     )
 
     sfr_Q = sfr_Q_insitu + sfr_exsitu
