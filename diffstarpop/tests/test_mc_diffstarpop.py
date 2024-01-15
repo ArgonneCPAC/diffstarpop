@@ -9,6 +9,7 @@ from ..defaults import DEFAULT_DIFFSTARPOP_PARAMS
 from ..kernels.start_over import mc_diffstar_u_params_singlegal_kernel
 from ..mc_diffstarpop import (
     mc_diffstar_params_galpop,
+    mc_diffstar_sfh_singlegal,
     mc_diffstar_u_params_galpop,
     mc_diffstar_u_params_singlegal,
 )
@@ -64,3 +65,21 @@ def test_mc_diffstar_params_galpop():
         assert p.shape == (ngals,)
     for p in params.q_params:
         assert p.shape == (ngals,)
+
+
+def test_mc_diffstar_sfh_singlegal():
+    ran_key = jran.PRNGKey(0)
+    p50 = 0.8
+    tarr = np.linspace(0.1, 13.7, 50)
+    diffstar_params, sfh = mc_diffstar_sfh_singlegal(
+        DEFAULT_DIFFSTARPOP_PARAMS, DEFAULT_MAH_PARAMS, p50, ran_key, tarr
+    )
+    assert sfh.shape == tarr.shape
+    assert np.all(np.isfinite(sfh))
+    assert np.all(sfh > 0)
+    assert np.all(sfh < 1e5)
+
+    assert len(diffstar_params.ms_params) == 5
+    assert len(diffstar_params.q_params) == 4
+    assert np.all(np.isfinite(diffstar_params.ms_params))
+    assert np.all(np.isfinite(diffstar_params.q_params))
