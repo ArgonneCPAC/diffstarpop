@@ -13,5 +13,6 @@ def test_mc_diffstar_u_params_singlegal_kernel_evaluates():
     p50 = 0.25
     args = DEFAULT_MAH_PARAMS, p50, ran_key
     u_params = start_over.mc_diffstar_u_params_singlegal_kernel(*args)
-    assert u_params.shape == (8,)
-    assert np.all(np.isfinite(u_params))
+    assert len(u_params.u_ms_params) + len(u_params.u_q_params) == 9
+    assert np.all(np.isfinite(u_params.u_ms_params))
+    assert np.all(np.isfinite(u_params.u_q_params))

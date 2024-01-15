@@ -2,7 +2,7 @@
 """
 from collections import OrderedDict
 
-from jax import jit as jjit
+from diffstar import DEFAULT_DIFFSTAR_U_PARAMS
 from jax import numpy as jnp
 from jax import random as jran
 
@@ -22,7 +22,6 @@ from .pdf_quenched import _get_mean_smah_params_quench, frac_quench_vs_lgm0
 DEFAULT_Q_U_PARAMS_UNQUENCHED = jnp.ones(4) * 5
 
 
-@jjit
 def mc_diffstar_u_params_singlegal_kernel(
     mah_params,
     p50,
@@ -80,6 +79,10 @@ def mc_diffstar_u_params_singlegal_kernel(
     u_params_q = u_params_q + shifts_q[1:]
 
     uran = jran.uniform(frac_q_key, minval=0, maxval=1, shape=())
-    u_params = jnp.where(uran < frac_quench, u_params_q, u_params_ms)
+    u_params_no_indx_hi = jnp.where(uran < frac_quench, u_params_q, u_params_ms)
+
+    u_indx_hi = DEFAULT_DIFFSTAR_U_PARAMS.u_ms_params.u_indx_hi
+
+    u_params = (*u_params_no_indx_hi[:3], u_indx_hi, *u_params_no_indx_hi[3:])
 
     return u_params
