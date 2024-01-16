@@ -104,5 +104,25 @@ def mc_diffstar_params_galpop(diffstarpop_params, mah_params, p50, ran_key):
 
 
 @jjit
+def mc_diffstar_sfh_galpop(
+    diffstarpop_params, mah_params, p50, ran_key, tarr, lgt0=LGT0, fb=FB
+):
+    diffstar_params = mc_diffstar_params_galpop(
+        diffstarpop_params, mah_params, p50, ran_key
+    )
+    sfh = sfh_galpop(
+        tarr,
+        mah_params,
+        jnp.array(diffstar_params.ms_params).T,
+        jnp.array(diffstar_params.q_params).T,
+        lgt0=lgt0,
+        fb=fb,
+        ms_param_type="bounded",
+        q_param_type="bounded",
+    )
+    return diffstar_params, sfh
+
+
+@jjit
 def _get_pdict_from_namedtuple(params):
     return OrderedDict([(key, val) for key, val in zip(params._fields, params)])
