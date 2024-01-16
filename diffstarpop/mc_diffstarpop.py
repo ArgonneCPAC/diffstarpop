@@ -5,13 +5,12 @@ from collections import OrderedDict
 from diffstar import (
     DiffstarParams,
     DiffstarUParams,
+    calc_sfh_galpop,
+    calc_sfh_singlegal,
     get_bounded_diffstar_params,
-    sfh_galpop,
-    sfh_singlegal,
 )
 from diffstar.defaults import FB, LGT0, MSUParams, QUParams
 from jax import jit as jjit
-from jax import numpy as jnp
 from jax import random as jran
 from jax import vmap
 
@@ -25,16 +24,7 @@ def mc_diffstar_sfh_singlegal(
     diffstar_params = mc_diffstar_params_singlegal(
         diffstarpop_params, mah_params, p50, ran_key
     )
-    sfh = sfh_singlegal(
-        tarr,
-        mah_params,
-        jnp.array(diffstar_params.ms_params),
-        jnp.array(diffstar_params.q_params),
-        lgt0=lgt0,
-        fb=fb,
-        ms_param_type="bounded",
-        q_param_type="bounded",
-    )
+    sfh = calc_sfh_singlegal(diffstar_params, mah_params, tarr, lgt0=lgt0, fb=fb)
     return diffstar_params, sfh
 
 
@@ -110,16 +100,7 @@ def mc_diffstar_sfh_galpop(
     diffstar_params = mc_diffstar_params_galpop(
         diffstarpop_params, mah_params, p50, ran_key
     )
-    sfh = sfh_galpop(
-        tarr,
-        mah_params,
-        jnp.array(diffstar_params.ms_params).T,
-        jnp.array(diffstar_params.q_params).T,
-        lgt0=lgt0,
-        fb=fb,
-        ms_param_type="bounded",
-        q_param_type="bounded",
-    )
+    sfh = calc_sfh_galpop(diffstar_params, mah_params, tarr, lgt0=lgt0, fb=fb)
     return diffstar_params, sfh
 
 

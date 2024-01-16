@@ -75,8 +75,7 @@ def test_mc_diffstar_params_galpop_evaluates():
 
     ngals = 15
     zz = np.zeros(ngals)
-    nmah = len(DEFAULT_MAH_PARAMS)
-    mah_params_galpop = np.repeat(DEFAULT_MAH_PARAMS, ngals).reshape((ngals, nmah))
+    mah_params_galpop = DiffmahParams(*[zz + x for x in DEFAULT_MAH_PARAMS])
     args = (DEFAULT_DIFFSTARPOP_PARAMS, mah_params_galpop, p50 + zz, ran_key)
     params = mc_diffstar_params_galpop(*args)
     assert len(params.ms_params) == len(DEFAULT_DIFFSTAR_PARAMS.ms_params)
@@ -93,17 +92,11 @@ def test_mc_diffstar_sfh_galpop_evaluates():
     nt = 50
     tarr = np.linspace(0.1, 13.7, nt)
     ngals = 150
-    nmah = len(DEFAULT_MAH_PARAMS)
     zz = np.zeros(ngals)
-    mah_params_galpop = np.repeat(DEFAULT_MAH_PARAMS, ngals).reshape((ngals, nmah))
+    mah_params_galpop = DiffmahParams(*[zz + x for x in DEFAULT_MAH_PARAMS])
     args = (DEFAULT_DIFFSTARPOP_PARAMS, mah_params_galpop, p50 + zz, ran_key, tarr)
     diffstar_params, sfh = mc_diffstar_sfh_galpop(*args)
     assert sfh.shape == (ngals, nt)
     assert np.all(np.isfinite(sfh))
     assert np.all(sfh > 0)
     assert np.all(sfh < 1e5)
-
-    # assert len(diffstar_params.ms_params) == 5
-    # assert len(diffstar_params.q_params) == 4
-    # assert np.all(np.isfinite(diffstar_params.ms_params))
-    # assert np.all(np.isfinite(diffstar_params.q_params))
