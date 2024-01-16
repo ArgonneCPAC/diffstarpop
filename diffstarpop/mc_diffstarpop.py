@@ -14,7 +14,7 @@ from jax import jit as jjit
 from jax import random as jran
 from jax import vmap
 
-from .kernels import mc_diffstar_u_params_singlegal_kernel
+from .kernels.legacy_wrapper import mc_diffstar_u_params_singlegal_kernel
 
 
 @jjit
