@@ -1,4 +1,7 @@
-"""
+"""This module implements a kernel for Monte Carlo generating a single
+point in Diffstar parameter space. This kernel is based on the original Diffstar
+implementation that used OrderedDicts for parameters.
+
 """
 from collections import OrderedDict
 

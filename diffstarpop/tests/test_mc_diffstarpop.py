@@ -6,7 +6,7 @@ from diffstar.defaults import DEFAULT_DIFFSTAR_PARAMS
 from jax import random as jran
 
 from ..defaults import DEFAULT_DIFFSTARPOP_PARAMS
-from ..kernels.start_over import mc_diffstar_u_params_singlegal_kernel
+from ..kernels.legacy_wrapper import mc_diffstar_u_params_singlegal_kernel
 from ..mc_diffstarpop import (
     mc_diffstar_params_galpop,
     mc_diffstar_sfh_galpop,
