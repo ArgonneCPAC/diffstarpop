@@ -20,7 +20,6 @@ from ..defaults import (
 from ..kernels.legacy_wrapper import mc_diffstar_u_params_singlegal_kernel
 from ..mc_diffstarpop import (
     mc_diffstar_params_galpop,
-    mc_diffstar_params_singlegal,
     mc_diffstar_sfh_galpop,
     mc_diffstar_sfh_singlegal,
     mc_diffstar_u_params_galpop,
