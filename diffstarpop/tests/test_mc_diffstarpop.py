@@ -1,14 +1,26 @@
 """
 """
+from collections import namedtuple
+from functools import partial
+
 import numpy as np
 from diffmah.defaults import DEFAULT_MAH_PARAMS, DiffmahParams
 from diffstar.defaults import DEFAULT_DIFFSTAR_PARAMS
+from jax import jit as jjit
+from jax import numpy as jnp
 from jax import random as jran
+from jax import value_and_grad
 
-from ..defaults import DEFAULT_DIFFSTARPOP_PARAMS
+from ..defaults import (
+    DEFAULT_DIFFSTARPOP_PARAMS,
+    DEFAULT_SFH_PDF_MAINSEQ_PDICT,
+    DEFAULT_SFH_PDF_QUENCH_PDICT,
+    DiffstarPopParams,
+)
 from ..kernels.legacy_wrapper import mc_diffstar_u_params_singlegal_kernel
 from ..mc_diffstarpop import (
     mc_diffstar_params_galpop,
+    mc_diffstar_params_singlegal,
     mc_diffstar_sfh_galpop,
     mc_diffstar_sfh_singlegal,
     mc_diffstar_u_params_galpop,
@@ -100,3 +112,56 @@ def test_mc_diffstar_sfh_galpop_evaluates():
     assert np.all(np.isfinite(sfh))
     assert np.all(sfh > 0)
     assert np.all(sfh < 1e5)
+
+
+def test_grad_mc_diffstar_params_singlegal_evaluates():
+    ran_key = jran.PRNGKey(0)
+
+    ngals = 200
+    zz = np.zeros(ngals)
+    mah_params_galpop = [zz + x for x in DEFAULT_MAH_PARAMS]
+    p50 = np.linspace(0.01, 0.99, ngals)
+    target_sfh_params = mc_diffstar_params_galpop(
+        DEFAULT_DIFFSTARPOP_PARAMS, mah_params_galpop, p50, ran_key
+    )
+
+    @jjit
+    def _mse(pred, target):
+        diff_ms = jnp.array(pred.ms_params) - jnp.array(target.ms_params)
+        diff_q = jnp.array(pred.q_params) - jnp.array(target.q_params)
+        return jnp.mean(diff_ms**2) + jnp.mean(diff_q**2)
+
+    @partial(jjit, static_argnames="ran_key")
+    def _loss(diffstarpop_params, mah_params, p50, ran_key):
+        sfh_params = mc_diffstar_params_galpop(
+            diffstarpop_params, mah_params, p50, ran_key
+        )
+        return _mse(sfh_params, target_sfh_params)
+
+    gfunc = jjit(value_and_grad(_loss, argnums=0))
+
+    Params = namedtuple("Params", list(DEFAULT_SFH_PDF_MAINSEQ_PDICT.keys()))
+    Params2 = namedtuple("Params2", list(DEFAULT_SFH_PDF_QUENCH_PDICT.keys()))
+    sfh_pdf_mainseq_params_alt = Params(
+        *[x + 0.1 for x in DEFAULT_DIFFSTARPOP_PARAMS.sfh_pdf_mainseq_params]
+    )
+    sfh_pdf_quench_params_alt = Params2(
+        *[x + 0.1 for x in DEFAULT_DIFFSTARPOP_PARAMS.sfh_pdf_quench_params]
+    )
+
+    init_diffstar_params = DiffstarPopParams(
+        sfh_pdf_mainseq_params_alt,
+        sfh_pdf_quench_params_alt,
+        *DEFAULT_DIFFSTARPOP_PARAMS[2:],
+    )
+
+    args = (init_diffstar_params, mah_params_galpop, p50, ran_key)
+    loss, grads = gfunc(*args)
+    assert np.isfinite(loss)
+    assert 0 < loss < 1
+
+    assert np.all(np.isfinite(grads.sfh_pdf_mainseq_params))
+    assert np.all(np.isfinite(grads.sfh_pdf_quench_params))
+
+    assert np.any(grads.sfh_pdf_mainseq_params != 0)
+    assert np.any(grads.sfh_pdf_quench_params != 0)
