@@ -73,6 +73,33 @@ def mc_diffstar_sfh_singlegal(
 
 @jjit
 def mc_diffstar_params_singlegal(diffstarpop_params, mah_params, p50, ran_key):
+    """Monte Carlo realization of a single point in Diffstar parameter space.
+
+    Parameters
+    ----------
+    diffstarpop_params : namedtuple
+        See defaults.DEFAULT_DIFFSTARPOP_PARAMS for an example
+
+    mah_params : namedtuple, length 4
+        mah_params is a tuple of floats
+        DiffmahParams = logmp, logtc, early_index, late_index
+
+    p50 : float
+        Prob(<t_50% | logm0), the CDF of the distribution of halo
+        formation times t_50% conditioned on mass logm0
+
+    ran_key : jax.random.PRNGKey
+        Single instance of a jax randum seed
+
+    Returns
+    -------
+    diffstar_params : namedtuple
+        DiffstarParams = ms_params, q_params
+            ms_params and q_params are tuples of floats
+            diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
+            diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
+
+    """
     diffstar_u_params = mc_diffstar_u_params_singlegal(
         diffstarpop_params, mah_params, p50, ran_key
     )
@@ -128,7 +155,33 @@ get_bounded_diffstar_params_galpop = jjit(vmap(get_bounded_diffstar_params, in_a
 
 @jjit
 def mc_diffstar_params_galpop(diffstarpop_params, mah_params, p50, ran_key):
-    """"""
+    """Monte Carlo realization of a population of points in Diffstar parameter space.
+
+    Parameters
+    ----------
+    diffstarpop_params : namedtuple
+        See defaults.DEFAULT_DIFFSTARPOP_PARAMS for an example
+
+    mah_params : namedtuple, length 4
+        mah_params is a tuple of ndarrays of shape (ngals, )
+        DiffmahParams = logmp, logtc, early_index, late_index
+
+    p50 : ndarray of shape (ngals, )
+        Prob(<t_50% | logm0), the CDF of the distribution of halo
+        formation times t_50% conditioned on mass logm0
+
+    ran_key : jax.random.PRNGKey
+        Single instance of a jax randum seed
+
+    Returns
+    -------
+    diffstar_params : namedtuple
+        DiffstarParams = ms_params, q_params
+            ms_params and q_params are tuples of floats
+            diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
+            diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
+
+    """
     diffstar_u_params = mc_diffstar_u_params_galpop(
         diffstarpop_params, mah_params, p50, ran_key
     )
