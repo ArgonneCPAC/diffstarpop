@@ -130,7 +130,7 @@ def test_grad_mc_diffstar_params_singlegal_evaluates():
         diff_q = jnp.array(pred.q_params) - jnp.array(target.q_params)
         return jnp.mean(diff_ms**2) + jnp.mean(diff_q**2)
 
-    @partial(jjit, static_argnames="ran_key")
+    @jjit
     def _loss(diffstarpop_params, mah_params, p50, ran_key):
         sfh_params = mc_diffstar_params_galpop(
             diffstarpop_params, mah_params, p50, ran_key
