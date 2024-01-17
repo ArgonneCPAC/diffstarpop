@@ -38,7 +38,12 @@ jobs:
           mamba install -y -q \
             flake8 \
             pytest \
-            pytest-xdist
+            pytest-xdist \
+            pytest-cov \
+            pip \
+            setuptools \
+            "setuptools_scm>=7,<8" \
+            python-build
           pip uninstall diffmah --yes
           pip uninstall diffstar --yes
           pip uninstall dsps --yes
