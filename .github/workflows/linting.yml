@@ -1,4 +1,4 @@
-name: tests
+name: linting
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
           miniforge-variant: Mambaforge
 
       - name: configure conda and install code
-      # Test against current main branch of all diff+ dependencies
+          # Test against latest releases of each code in the dependency chain
         shell: bash -l {0}
         run: |
           conda config --set always_yes yes
@@ -34,21 +34,16 @@ jobs:
           mamba install -y -q \
             flake8 \
             pytest \
-            pytest-xdist
-          pip uninstall diffmah --yes
-          pip uninstall diffstar --yes
-          pip uninstall dsps --yes
-          pip install --no-deps git+https://github.com/ArgonneCPAC/diffmah.git
-          pip install --no-deps git+https://github.com/ArgonneCPAC/diffstar.git
-          pip install --no-deps git+https://github.com/ArgonneCPAC/dsps.git
+            pytest-xdist \
+            pytest-cov \
+            pip \
+            setuptools \
+            "setuptools_scm>=7,<8" \
+            python-build \
+            flake8-pyproject
           python -m pip install --no-build-isolation --no-deps -e .
 
       - name: lint
         shell: bash -l {0}
         run: |
           flake8 diffstarpop
-
-      - name: test
-        shell: bash -l {0}
-        run: |
-          pytest -vvs diffstarpop
