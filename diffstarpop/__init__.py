@@ -1,6 +1,7 @@
 """
 """
 # flake8: noqa
+from ._version import __version__
 from .defaults import DEFAULT_DIFFSTARPOP_PARAMS, DiffstarPopParams
 from .mc_diffstarpop import (
     mc_diffstar_params_galpop,
