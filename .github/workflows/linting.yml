@@ -1,4 +1,4 @@
-name: tests
+name: linting
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
 
       - uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: 3.8
+          python-version: 3.9
           channels: conda-forge,defaults
           channel-priority: strict
           show-channel-urls: true
@@ -24,6 +24,7 @@ jobs:
           miniforge-variant: Mambaforge
 
       - name: configure conda and install code
+          # Test against latest releases of each code in the dependency chain
         shell: bash -l {0}
         run: |
           conda config --set always_yes yes
@@ -33,14 +34,16 @@ jobs:
           mamba install -y -q \
             flake8 \
             pytest \
-            pytest-xdist
+            pytest-xdist \
+            pytest-cov \
+            pip \
+            setuptools \
+            "setuptools_scm>=7,<8" \
+            python-build \
+            flake8-pyproject
+          python -m pip install --no-build-isolation --no-deps -e .
 
       - name: lint
         shell: bash -l {0}
         run: |
           flake8 diffstarpop
-
-      - name: test
-        shell: bash -l {0}
-        run: |
-          pytest -vvs diffstarpop
