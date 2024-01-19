@@ -368,3 +368,10 @@ def _get_chol_u_params_qseq(lgm, params):
     )
 
     return chol_params
+
+
+@jjit
+def _get_cov_qseq(lgm, params):
+    chol_params = _get_chol_u_params_qseq(lgm, params)
+    cov_qseq = _get_cov_scalar(*chol_params)
+    return cov_qseq
