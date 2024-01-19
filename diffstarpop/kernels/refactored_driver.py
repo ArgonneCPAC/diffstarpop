@@ -4,6 +4,7 @@
 from jax import jit as jjit
 from jax import numpy as jnp
 
+from .assembias_kernels import _get_slopes_mainseq, _get_slopes_qseq
 from .mainseq_massonly import (
     MainseqMassOnlyParams,
     _get_cov_mainseq,
@@ -17,6 +18,20 @@ from .qseq_massonly import (
 )
 
 DEFAULT_Q_U_PARAMS_UNQUENCHED = jnp.ones(4) * 5
+
+
+@jjit
+def get_assembias_slopes_mainseq(ab_ms_params, mah_params):
+    lgm0 = mah_params[0]
+    ab_slopes_ms = _get_slopes_mainseq(ab_ms_params, lgm0)
+    return ab_slopes_ms
+
+
+@jjit
+def get_assembias_slopes_qseq(ab_q_params, mah_params):
+    lgm0 = mah_params[0]
+    ab_slopes_q = _get_slopes_qseq(ab_q_params, lgm0)
+    return ab_slopes_q
 
 
 @jjit
