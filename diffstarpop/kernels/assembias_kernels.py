@@ -3,7 +3,6 @@ from collections import OrderedDict, namedtuple
 
 from jax import jit as jjit
 from jax import numpy as jnp
-from jax import vmap
 
 from ..utils import _sigmoid
 
@@ -48,19 +47,9 @@ ABQseqParams = namedtuple("Params", list(DEFAULT_AB_QSEQ_PDICT.keys()))
 DEFAULT_AB_QSEQ_PARAMS = ABQseqParams(**DEFAULT_AB_QSEQ_PDICT)
 
 
-# Helper functions
 @jjit
 def _fun_Mcrit(x, ymin, ymax):
     return _sigmoid(x, 12.0, 4.0, ymin, ymax)
-
-
-@jjit
-def _get_shift_to_PDF_mean_kern(p50, R):
-    return R * (p50 - 0.5)
-
-
-_g1 = vmap(_get_shift_to_PDF_mean_kern, in_axes=(0, None))
-_get_shift_to_PDF_mean = jjit(vmap(_g1, in_axes=(None, 0)))
 
 
 @jjit
@@ -102,65 +91,19 @@ def _get_slopes_qseq(params, lgm):
     return slopes
 
 
-# Main Sequence functions
 @jjit
-def R_ulgm_mainseq_vs_lgm0(
-    lgm0,
-    R_ulgm_mainseq_ylo=DEFAULT_AB_MAINSEQ_PDICT["R_ulgm_mainseq_ylo"],
-    R_ulgm_mainseq_yhi=DEFAULT_AB_MAINSEQ_PDICT["R_ulgm_mainseq_yhi"],
-):
-    return _sigmoid(lgm0, _LGM_X0, LGM_K, R_ulgm_mainseq_ylo, R_ulgm_mainseq_yhi)
-
-
-@jjit
-def R_ulgy_mainseq_vs_lgm0(
-    lgm0,
-    R_ulgy_mainseq_ylo=DEFAULT_AB_MAINSEQ_PDICT["R_ulgy_mainseq_ylo"],
-    R_ulgy_mainseq_yhi=DEFAULT_AB_MAINSEQ_PDICT["R_ulgy_mainseq_yhi"],
-):
-    return _sigmoid(lgm0, _LGM_X0, LGM_K, R_ulgy_mainseq_ylo, R_ulgy_mainseq_yhi)
-
-
-@jjit
-def R_ul_mainseq_vs_lgm0(
-    lgm0,
-    R_ul_mainseq_ylo=DEFAULT_AB_MAINSEQ_PDICT["R_ul_mainseq_ylo"],
-    R_ul_mainseq_yhi=DEFAULT_AB_MAINSEQ_PDICT["R_ul_mainseq_yhi"],
-):
-    return _sigmoid(lgm0, _LGM_X0, LGM_K, R_ul_mainseq_ylo, R_ul_mainseq_yhi)
-
-
-@jjit
-def R_utau_mainseq_vs_lgm0(
-    lgm0,
-    R_utau_mainseq_ylo=DEFAULT_AB_MAINSEQ_PDICT["R_utau_mainseq_ylo"],
-    R_utau_mainseq_yhi=DEFAULT_AB_MAINSEQ_PDICT["R_utau_mainseq_yhi"],
-):
-    return _sigmoid(lgm0, _LGM_X0, LGM_K, R_utau_mainseq_ylo, R_utau_mainseq_yhi)
-
-
-@jjit
-def _get_slopes_mainseq(
-    lgm,
-    R_ulgm_mainseq_ylo=DEFAULT_AB_MAINSEQ_PDICT["R_ulgm_mainseq_ylo"],
-    R_ulgm_mainseq_yhi=DEFAULT_AB_MAINSEQ_PDICT["R_ulgm_mainseq_yhi"],
-    R_ulgy_mainseq_ylo=DEFAULT_AB_MAINSEQ_PDICT["R_ulgy_mainseq_ylo"],
-    R_ulgy_mainseq_yhi=DEFAULT_AB_MAINSEQ_PDICT["R_ulgy_mainseq_yhi"],
-    R_ul_mainseq_ylo=DEFAULT_AB_MAINSEQ_PDICT["R_ul_mainseq_ylo"],
-    R_ul_mainseq_yhi=DEFAULT_AB_MAINSEQ_PDICT["R_ul_mainseq_yhi"],
-    R_utau_mainseq_ylo=DEFAULT_AB_MAINSEQ_PDICT["R_utau_mainseq_ylo"],
-    R_utau_mainseq_yhi=DEFAULT_AB_MAINSEQ_PDICT["R_utau_mainseq_yhi"],
-):
-    R_ulgm = R_ulgm_mainseq_vs_lgm0(lgm, R_ulgm_mainseq_ylo, R_ulgm_mainseq_yhi)
-    R_ulgy = R_ulgy_mainseq_vs_lgm0(lgm, R_ulgy_mainseq_ylo, R_ulgy_mainseq_yhi)
-    R_ul = R_ul_mainseq_vs_lgm0(lgm, R_ul_mainseq_ylo, R_ul_mainseq_yhi)
-    R_utau = R_utau_mainseq_vs_lgm0(lgm, R_utau_mainseq_ylo, R_utau_mainseq_yhi)
-
-    slopes = (
-        R_ulgm,
-        R_ulgy,
-        R_ul,
-        R_utau,
+def _get_slopes_mainseq(params, lgm):
+    R_ulgm = _sigmoid(
+        lgm, _LGM_X0, LGM_K, params.R_ulgm_mainseq_ylo, params.R_ulgm_mainseq_yhi
     )
-
+    R_ulgy = _sigmoid(
+        lgm, _LGM_X0, LGM_K, params.R_ulgy_mainseq_ylo, params.R_ulgy_mainseq_yhi
+    )
+    R_ul = _sigmoid(
+        lgm, _LGM_X0, LGM_K, params.R_ul_mainseq_ylo, params.R_ul_mainseq_yhi
+    )
+    R_utau = _sigmoid(
+        lgm, _LGM_X0, LGM_K, params.R_utau_mainseq_ylo, params.R_utau_mainseq_yhi
+    )
+    slopes = (R_ulgm, R_ulgy, R_ul, R_utau)
     return slopes
