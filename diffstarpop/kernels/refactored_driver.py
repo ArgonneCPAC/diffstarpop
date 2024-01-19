@@ -1,6 +1,6 @@
-from collections import OrderedDict
+"""
+"""
 
-from diffstar import DEFAULT_DIFFSTAR_U_PARAMS
 from jax import jit as jjit
 from jax import numpy as jnp
 
@@ -9,6 +9,7 @@ from .mainseq_massonly import (
     _get_cov_mainseq,
     _get_mean_u_params_mainseq,
 )
+from .qseq_massonly import QseqMassOnlyParams, _get_cov_qseq, _get_mean_u_params_qseq
 
 DEFAULT_Q_U_PARAMS_UNQUENCHED = jnp.ones(4) * 5
 
@@ -20,3 +21,12 @@ def main_sequence_mu_cov(ms_mass_params, mah_params):
     mu_ms = _get_mean_u_params_mainseq(lgm0, ms_mass_params)
     cov_ms = _get_cov_mainseq(lgm0, ms_mass_params)
     return mu_ms, cov_ms
+
+
+@jjit
+def quenched_sequence_mu_cov(qs_mass_params, mah_params):
+    qs_mass_params = QseqMassOnlyParams(*qs_mass_params)
+    lgm0 = mah_params[0]
+    mu_qs = _get_mean_u_params_qseq(lgm0, qs_mass_params)
+    cov_qs = _get_cov_qseq(lgm0, qs_mass_params)
+    return mu_qs, cov_qs
