@@ -54,6 +54,12 @@ def _fun(x, ymin, ymax):
 
 
 @jjit
+def _fun_chol_diag(x, ymin, ymax):
+    _res = 10 ** _fun(x, ymin, ymax)
+    return _res
+
+
+@jjit
 def _get_cov_scalar(
     ulgm_ulgm,
     ulgy_ulgy,
@@ -95,34 +101,34 @@ def _get_mean_smah_params_mainseq(lgm, params):
 
 @jjit
 def _get_chol_params_mainseq(lgm, params):
-    ulgm_ulgm = chol_ulgm_ulgm_mainseq_vs_lgm0(
+    ulgm_ulgm = _fun_chol_diag(
         lgm, params.chol_ulgm_ulgm_mainseq_ylo, params.chol_ulgm_ulgm_mainseq_yhi
     )
-    ulgy_ulgy = chol_ulgy_ulgy_mainseq_vs_lgm0(
+    ulgy_ulgy = _fun_chol_diag(
         lgm, params.chol_ulgy_ulgy_mainseq_ylo, params.chol_ulgy_ulgy_mainseq_yhi
     )
-    ul_ul = chol_ul_ul_mainseq_vs_lgm0(
+    ul_ul = _fun_chol_diag(
         lgm, params.chol_ul_ul_mainseq_ylo, params.chol_ul_ul_mainseq_yhi
     )
-    utau_utau = chol_utau_utau_mainseq_vs_lgm0(
+    utau_utau = _fun_chol_diag(
         lgm, params.chol_utau_utau_mainseq_ylo, params.chol_utau_utau_mainseq_yhi
     )
-    ulgy_ulgm = chol_ulgy_ulgm_mainseq_vs_lgm0(
+    ulgy_ulgm = _fun(
         lgm, params.chol_ulgy_ulgm_mainseq_ylo, params.chol_ulgy_ulgm_mainseq_yhi
     )
-    ul_ulgm = chol_ul_ulgm_mainseq_vs_lgm0(
+    ul_ulgm = _fun(
         lgm, params.chol_ul_ulgm_mainseq_ylo, params.chol_ul_ulgm_mainseq_yhi
     )
-    ul_ulgy = chol_ul_ulgy_mainseq_vs_lgm0(
+    ul_ulgy = _fun(
         lgm, params.chol_ul_ulgy_mainseq_ylo, params.chol_ul_ulgy_mainseq_yhi
     )
-    utau_ulgm = chol_utau_ulgm_mainseq_vs_lgm0(
+    utau_ulgm = _fun(
         lgm, params.chol_utau_ulgm_mainseq_ylo, params.chol_utau_ulgm_mainseq_yhi
     )
-    utau_ulgy = chol_utau_ulgy_mainseq_vs_lgm0(
+    utau_ulgy = _fun(
         lgm, params.chol_utau_ulgy_mainseq_ylo, params.chol_utau_ulgy_mainseq_yhi
     )
-    utau_ul = chol_utau_ul_mainseq_vs_lgm0(
+    utau_ul = _fun(
         lgm, params.chol_utau_ul_mainseq_ylo, params.chol_utau_ul_mainseq_yhi
     )
 
@@ -140,3 +146,11 @@ def _get_chol_params_mainseq(lgm, params):
     )
 
     return chol_params
+
+
+@jjit
+def _get_cov_mainseq(lgm, params):
+    params = MainseqMassOnlyParams(*params)
+    chol_params = _get_chol_params_mainseq(lgm, params)
+    cov_ms = _get_cov_scalar(*chol_params)
+    return cov_ms

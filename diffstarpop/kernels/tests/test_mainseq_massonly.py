@@ -6,8 +6,10 @@ import numpy as np
 
 from ..mainseq_massonly import (
     DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    _get_cov_mainseq,
     _get_mean_smah_params_mainseq,
 )
+from ..pdf_mainseq import _get_covs_mainseq as _old_get_covs_mainseq
 from ..pdf_mainseq import (
     _get_mean_smah_params_mainseq as _old_get_mean_smah_params_mainseq,
 )
@@ -24,7 +26,12 @@ def test_get_mean_smah_params_mainseq_agrees_with_legacy():
     assert np.allclose(mu_ms_new, mu_ms_orig)
 
 
-def test_get_mean_smah_params_mainseq_agrees_with_legacy():
+def test_get_cov_mainseq_agrees_with_legacy():
     lgm = 12.0
     gen = zip(DEFAULT_SFH_PDF_MAINSEQ_PARAMS._fields, DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
     ms_cov_pdict = OrderedDict([(key, val) for key, val in gen if "chol_" in key])
+    cov_old = _old_get_covs_mainseq(np.zeros(1) + lgm, **ms_cov_pdict)[0, :, :]
+
+    cov_new = _get_cov_mainseq(lgm, DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
+
+    assert np.allclose(cov_old, cov_new)
