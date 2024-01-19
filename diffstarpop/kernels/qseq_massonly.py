@@ -378,7 +378,7 @@ def _get_cov_qseq(params, lgm):
 
 
 @jjit
-def frac_quench_vs_lgm0(params, lgm0):
+def _frac_quench_vs_lgm0(params, lgm0):
     return _fun_fquench(
         lgm0,
         params.frac_quench_x0,

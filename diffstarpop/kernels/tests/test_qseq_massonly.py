@@ -12,10 +12,10 @@ from ..pdf_quenched import (
 from ..pdf_quenched import frac_quench_vs_lgm0 as old_frac_quench_vs_lgm0
 from ..qseq_massonly import (
     DEFAULT_SFH_PDF_QUENCH_PARAMS,
+    _frac_quench_vs_lgm0,
     _get_chol_u_params_qseq,
     _get_cov_qseq,
     _get_mean_u_params_qseq,
-    frac_quench_vs_lgm0,
 )
 
 
@@ -51,7 +51,7 @@ def test_get_cov_mainseq_agrees_with_legacy():
 
 def test_frac_quench_vs_lgm0():
     lgm = 13.0
-    fq = frac_quench_vs_lgm0(DEFAULT_SFH_PDF_QUENCH_PARAMS, lgm)
+    fq = _frac_quench_vs_lgm0(DEFAULT_SFH_PDF_QUENCH_PARAMS, lgm)
     assert 0 <= fq <= 1
 
     gen = zip(DEFAULT_SFH_PDF_QUENCH_PARAMS._fields, DEFAULT_SFH_PDF_QUENCH_PARAMS)

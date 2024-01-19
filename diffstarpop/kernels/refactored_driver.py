@@ -9,7 +9,12 @@ from .mainseq_massonly import (
     _get_cov_mainseq,
     _get_mean_u_params_mainseq,
 )
-from .qseq_massonly import QseqMassOnlyParams, _get_cov_qseq, _get_mean_u_params_qseq
+from .qseq_massonly import (
+    QseqMassOnlyParams,
+    _frac_quench_vs_lgm0,
+    _get_cov_qseq,
+    _get_mean_u_params_qseq,
+)
 
 DEFAULT_Q_U_PARAMS_UNQUENCHED = jnp.ones(4) * 5
 
@@ -30,3 +35,9 @@ def quenched_sequence_mu_cov(qs_mass_params, mah_params):
     mu_qs = _get_mean_u_params_qseq(qs_mass_params, lgm0)
     cov_qs = _get_cov_qseq(qs_mass_params, lgm0)
     return mu_qs, cov_qs
+
+
+@jjit
+def frac_quench_vs_lgm0(qs_mass_params, mah_params):
+    lgm0 = mah_params[0]
+    return _frac_quench_vs_lgm0(qs_mass_params, lgm0)
