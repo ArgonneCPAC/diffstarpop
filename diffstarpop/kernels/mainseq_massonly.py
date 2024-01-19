@@ -90,7 +90,7 @@ def _get_cov_scalar(
 
 
 @jjit
-def _get_mean_smah_params_mainseq(lgm, params):
+def _get_mean_u_params_mainseq(lgm, params):
     params = MainseqMassOnlyParams(*params)
     ulgm = _fun(lgm, params.mean_ulgm_mainseq_ylo, params.mean_ulgm_mainseq_yhi)
     ulgy = _fun(lgm, params.mean_ulgy_mainseq_ylo, params.mean_ulgy_mainseq_yhi)

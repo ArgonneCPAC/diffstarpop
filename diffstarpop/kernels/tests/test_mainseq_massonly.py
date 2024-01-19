@@ -7,7 +7,7 @@ import numpy as np
 from ..mainseq_massonly import (
     DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
     _get_cov_mainseq,
-    _get_mean_smah_params_mainseq,
+    _get_mean_u_params_mainseq,
 )
 from ..pdf_mainseq import _get_covs_mainseq as _old_get_covs_mainseq
 from ..pdf_mainseq import (
@@ -15,9 +15,9 @@ from ..pdf_mainseq import (
 )
 
 
-def test_get_mean_smah_params_mainseq_agrees_with_legacy():
+def test_get_mean_u_params_mainseq_agrees_with_legacy():
     lgm = 12.0
-    mu_ms_new = _get_mean_smah_params_mainseq(lgm, DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
+    mu_ms_new = _get_mean_u_params_mainseq(lgm, DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
     gen = zip(DEFAULT_SFH_PDF_MAINSEQ_PARAMS._fields, DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
 
     ms_mu_pdict = OrderedDict([(key, val) for key, val in gen if "mean_" in key])
