@@ -38,7 +38,7 @@ def mc_diffstar_sfh_singlegal(
         formation times t_50% conditioned on mass logm0
 
     ran_key : jax.random.PRNGKey
-        Single instance of a jax randum seed
+        Single instance of a jax random seed
 
     tarr : ndarray, shape (nt, )
 
@@ -89,7 +89,7 @@ def mc_diffstar_params_singlegal(diffstarpop_params, mah_params, p50, ran_key):
         formation times t_50% conditioned on mass logm0
 
     ran_key : jax.random.PRNGKey
-        Single instance of a jax randum seed
+        Single instance of a jax random seed
 
     Returns
     -------
@@ -171,7 +171,7 @@ def mc_diffstar_params_galpop(diffstarpop_params, mah_params, p50, ran_key):
         formation times t_50% conditioned on mass logm0
 
     ran_key : jax.random.PRNGKey
-        Single instance of a jax randum seed
+        Single instance of a jax random seed
 
     Returns
     -------
@@ -210,7 +210,7 @@ def mc_diffstar_sfh_galpop(
         formation times t_50% conditioned on mass logm0
 
     ran_key : jax.random.PRNGKey
-        Single instance of a jax randum seed
+        Single instance of a jax random seed
 
     tarr : ndarray, shape (nt, )
 
