@@ -63,111 +63,32 @@ _g1 = vmap(_get_shift_to_PDF_mean_kern, in_axes=(0, None))
 _get_shift_to_PDF_mean = jjit(vmap(_g1, in_axes=(None, 0)))
 
 
-# Quenched functions
 @jjit
-def R_ulgm_quench_vs_lgm0(
-    lgm0,
-    R_ulgm_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_ulgm_quench_ylo"],
-    R_ulgm_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_ulgm_quench_yhi"],
-):
-    return _fun_Mcrit(lgm0, R_ulgm_quench_ylo, R_ulgm_quench_yhi)
+def _get_slopes_qseq(params, lgm):
+    R_ulgm = _fun_Mcrit(lgm, params.R_ulgm_quench_ylo, params.R_ulgm_quench_yhi)
+    R_ulgy = _sigmoid(
+        lgm, _LGM_X0, LGM_K, params.R_ulgy_quench_ylo, params.R_ulgy_quench_yhi
+    )
 
-
-@jjit
-def R_ulgy_quench_vs_lgm0(
-    lgm0,
-    R_ulgy_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_ulgy_quench_ylo"],
-    R_ulgy_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_ulgy_quench_yhi"],
-):
-    return _sigmoid(lgm0, _LGM_X0, LGM_K, R_ulgy_quench_ylo, R_ulgy_quench_yhi)
-
-
-@jjit
-def R_ul_quench_vs_lgm0(
-    lgm0,
-    R_ul_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_ul_quench_ylo"],
-    R_ul_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_ul_quench_yhi"],
-):
-    return _sigmoid(lgm0, _LGM_X0, LGM_K, R_ul_quench_ylo, R_ul_quench_yhi)
-
-
-@jjit
-def R_utau_quench_vs_lgm0(
-    lgm0,
-    R_utau_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_utau_quench_ylo"],
-    R_utau_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_utau_quench_yhi"],
-):
-    return _sigmoid(lgm0, _LGM_X0, LGM_K, R_utau_quench_ylo, R_utau_quench_yhi)
-
-
-@jjit
-def R_uqt_quench_vs_lgm0(
-    lgm0,
-    R_uqt_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_uqt_quench_ylo"],
-    R_uqt_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_uqt_quench_yhi"],
-):
-    return _sigmoid(lgm0, _LGM_X0, LGM_K, R_uqt_quench_ylo, R_uqt_quench_yhi)
-
-
-@jjit
-def R_uqs_quench_vs_lgm0(
-    lgm0,
-    R_uqs_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_uqs_quench_ylo"],
-    R_uqs_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_uqs_quench_yhi"],
-):
-    return _sigmoid(lgm0, _LGM_X0, LGM_K, R_uqs_quench_ylo, R_uqs_quench_yhi)
-
-
-@jjit
-def R_udrop_quench_vs_lgm0(
-    lgm0,
-    R_udrop_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_udrop_quench_ylo"],
-    R_udrop_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_udrop_quench_yhi"],
-):
-    return _sigmoid(lgm0, _LGM_X0, LGM_K, R_udrop_quench_ylo, R_udrop_quench_yhi)
-
-
-@jjit
-def R_urej_quench_vs_lgm0(
-    lgm0,
-    R_urej_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_urej_quench_ylo"],
-    R_urej_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_urej_quench_yhi"],
-):
-    return _sigmoid(lgm0, _LGM_X0, LGM_K, R_urej_quench_ylo, R_urej_quench_yhi)
-
-
-@jjit
-def _get_slopes_qseq(
-    lgm,
-    R_Fquench=DEFAULT_AB_QSEQ_PDICT["R_Fquench"],
-    R_ulgm_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_ulgm_quench_ylo"],
-    R_ulgm_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_ulgm_quench_yhi"],
-    R_ulgy_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_ulgy_quench_ylo"],
-    R_ulgy_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_ulgy_quench_yhi"],
-    R_ul_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_ul_quench_ylo"],
-    R_ul_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_ul_quench_yhi"],
-    R_utau_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_utau_quench_ylo"],
-    R_utau_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_utau_quench_yhi"],
-    R_uqt_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_uqt_quench_ylo"],
-    R_uqt_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_uqt_quench_yhi"],
-    R_uqs_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_uqs_quench_ylo"],
-    R_uqs_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_uqs_quench_yhi"],
-    R_udrop_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_udrop_quench_ylo"],
-    R_udrop_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_udrop_quench_yhi"],
-    R_urej_quench_ylo=DEFAULT_AB_QSEQ_PDICT["R_urej_quench_ylo"],
-    R_urej_quench_yhi=DEFAULT_AB_QSEQ_PDICT["R_urej_quench_yhi"],
-):
-    R_ulgm = R_ulgm_quench_vs_lgm0(lgm, R_ulgm_quench_ylo, R_ulgm_quench_yhi)
-    R_ulgy = R_ulgy_quench_vs_lgm0(lgm, R_ulgy_quench_ylo, R_ulgy_quench_yhi)
-    R_ul = R_ul_quench_vs_lgm0(lgm, R_ul_quench_ylo, R_ul_quench_yhi)
-    R_utau = R_utau_quench_vs_lgm0(lgm, R_utau_quench_ylo, R_utau_quench_yhi)
-    R_uqt = R_uqt_quench_vs_lgm0(lgm, R_uqt_quench_ylo, R_uqt_quench_yhi)
-    R_uqs = R_uqs_quench_vs_lgm0(lgm, R_uqs_quench_ylo, R_uqs_quench_yhi)
-    R_udrop = R_udrop_quench_vs_lgm0(lgm, R_udrop_quench_ylo, R_udrop_quench_yhi)
-    R_urej = R_urej_quench_vs_lgm0(lgm, R_urej_quench_ylo, R_urej_quench_yhi)
+    R_ul = _sigmoid(lgm, _LGM_X0, LGM_K, params.R_ul_quench_ylo, params.R_ul_quench_yhi)
+    R_utau = _sigmoid(
+        lgm, _LGM_X0, LGM_K, params.R_utau_quench_ylo, params.R_utau_quench_yhi
+    )
+    R_uqt = _sigmoid(
+        lgm, _LGM_X0, LGM_K, params.R_uqt_quench_ylo, params.R_uqt_quench_yhi
+    )
+    R_uqs = _sigmoid(
+        lgm, _LGM_X0, LGM_K, params.R_uqs_quench_ylo, params.R_uqs_quench_yhi
+    )
+    R_udrop = _sigmoid(
+        lgm, _LGM_X0, LGM_K, params.R_udrop_quench_ylo, params.R_udrop_quench_yhi
+    )
+    R_urej = _sigmoid(
+        lgm, _LGM_X0, LGM_K, params.R_urej_quench_ylo, params.R_urej_quench_yhi
+    )
 
     slopes = (
-        R_Fquench,
+        params.R_Fquench,
         R_ulgm,
         R_ulgy,
         R_ul,

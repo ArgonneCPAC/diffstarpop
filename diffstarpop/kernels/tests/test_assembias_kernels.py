@@ -15,6 +15,6 @@ from ..pdf_model_assembly_bias_shifts import (
 
 def test_get_slopes_mainseq():
     lgm = 12.0
-    slopes_qseq = _get_slopes_qseq(lgm, *DEFAULT_AB_QSEQ_PARAMS)
+    slopes_qseq = _get_slopes_qseq(DEFAULT_AB_QSEQ_PARAMS, lgm)
     slopes_qseq_old = _old_get_slopes_quench(lgm)
     assert np.allclose(slopes_qseq, slopes_qseq_old)
