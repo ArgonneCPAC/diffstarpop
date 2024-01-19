@@ -375,3 +375,14 @@ def _get_cov_qseq(lgm, params):
     chol_params = _get_chol_u_params_qseq(lgm, params)
     cov_qseq = _get_cov_scalar(*chol_params)
     return cov_qseq
+
+
+@jjit
+def frac_quench_vs_lgm0(lgm0, params):
+    return _fun_fquench(
+        lgm0,
+        params.frac_quench_x0,
+        params.frac_quench_k,
+        params.frac_quench_ylo,
+        params.frac_quench_yhi,
+    )
