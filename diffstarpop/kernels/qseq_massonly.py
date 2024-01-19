@@ -219,7 +219,7 @@ def _get_cov_scalar(
 
 
 @jjit
-def _get_mean_u_params_qseq(lgm, params):
+def _get_mean_u_params_qseq(params, lgm):
     ulgm = _fun_Mcrit(lgm, params.mean_ulgm_quench_ylo, params.mean_ulgm_quench_yhi)
     ulgy = _fun(lgm, params.mean_ulgy_quench_ylo, params.mean_ulgy_quench_yhi)
     ul = _fun(lgm, params.mean_ul_quench_ylo, params.mean_ul_quench_yhi)
@@ -232,7 +232,7 @@ def _get_mean_u_params_qseq(lgm, params):
 
 
 @jjit
-def _get_chol_u_params_qseq(lgm, params):
+def _get_chol_u_params_qseq(params, lgm):
     ulgm_ulgm = _fun_chol_diag(
         lgm, params.chol_ulgm_ulgm_quench_ylo, params.chol_ulgm_ulgm_quench_yhi
     )
@@ -371,14 +371,14 @@ def _get_chol_u_params_qseq(lgm, params):
 
 
 @jjit
-def _get_cov_qseq(lgm, params):
-    chol_params = _get_chol_u_params_qseq(lgm, params)
+def _get_cov_qseq(params, lgm):
+    chol_params = _get_chol_u_params_qseq(params, lgm)
     cov_qseq = _get_cov_scalar(*chol_params)
     return cov_qseq
 
 
 @jjit
-def frac_quench_vs_lgm0(lgm0, params):
+def frac_quench_vs_lgm0(params, lgm0):
     return _fun_fquench(
         lgm0,
         params.frac_quench_x0,

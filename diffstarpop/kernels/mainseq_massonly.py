@@ -90,7 +90,7 @@ def _get_cov_scalar(
 
 
 @jjit
-def _get_mean_u_params_mainseq(lgm, params):
+def _get_mean_u_params_mainseq(params, lgm):
     params = MainseqMassOnlyParams(*params)
     ulgm = _fun(lgm, params.mean_ulgm_mainseq_ylo, params.mean_ulgm_mainseq_yhi)
     ulgy = _fun(lgm, params.mean_ulgy_mainseq_ylo, params.mean_ulgy_mainseq_yhi)
@@ -100,7 +100,7 @@ def _get_mean_u_params_mainseq(lgm, params):
 
 
 @jjit
-def _get_chol_params_mainseq(lgm, params):
+def _get_chol_params_mainseq(params, lgm):
     ulgm_ulgm = _fun_chol_diag(
         lgm, params.chol_ulgm_ulgm_mainseq_ylo, params.chol_ulgm_ulgm_mainseq_yhi
     )
@@ -149,8 +149,8 @@ def _get_chol_params_mainseq(lgm, params):
 
 
 @jjit
-def _get_cov_mainseq(lgm, params):
+def _get_cov_mainseq(params, lgm):
     params = MainseqMassOnlyParams(*params)
-    chol_params = _get_chol_params_mainseq(lgm, params)
+    chol_params = _get_chol_params_mainseq(params, lgm)
     cov_ms = _get_cov_scalar(*chol_params)
     return cov_ms

@@ -1,6 +1,5 @@
 """
 """
-import numpy as np
 from diffmah.defaults import DEFAULT_MAH_PARAMS
 
 from ...defaults import DEFAULT_DIFFSTARPOP_PARAMS

@@ -17,7 +17,7 @@ from ..pdf_mainseq import (
 
 def test_get_mean_u_params_mainseq_agrees_with_legacy():
     lgm = 12.0
-    mu_ms_new = _get_mean_u_params_mainseq(lgm, DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
+    mu_ms_new = _get_mean_u_params_mainseq(DEFAULT_SFH_PDF_MAINSEQ_PARAMS, lgm)
     gen = zip(DEFAULT_SFH_PDF_MAINSEQ_PARAMS._fields, DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
 
     ms_mu_pdict = OrderedDict([(key, val) for key, val in gen if "mean_" in key])
@@ -32,6 +32,6 @@ def test_get_cov_mainseq_agrees_with_legacy():
     ms_cov_pdict = OrderedDict([(key, val) for key, val in gen if "chol_" in key])
     cov_old = _old_get_covs_mainseq(np.zeros(1) + lgm, **ms_cov_pdict)[0, :, :]
 
-    cov_new = _get_cov_mainseq(lgm, DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
+    cov_new = _get_cov_mainseq(DEFAULT_SFH_PDF_MAINSEQ_PARAMS, lgm)
 
     assert np.allclose(cov_old, cov_new)
