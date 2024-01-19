@@ -229,3 +229,142 @@ def _get_mean_u_params_qseq(lgm, params):
     udrop = _fun(lgm, params.mean_udrop_quench_ylo, params.mean_udrop_quench_yhi)
     urej = _fun(lgm, params.mean_urej_quench_ylo, params.mean_urej_quench_yhi)
     return ulgm, ulgy, ul, utau, uqt, uqs, udrop, urej
+
+
+@jjit
+def _get_chol_u_params_qseq(lgm, params):
+    ulgm_ulgm = _fun_chol_diag(
+        lgm, params.chol_ulgm_ulgm_quench_ylo, params.chol_ulgm_ulgm_quench_yhi
+    )
+    ulgy_ulgy = _fun_chol_diag(
+        lgm, params.chol_ulgy_ulgy_quench_ylo, params.chol_ulgy_ulgy_quench_yhi
+    )
+    ul_ul = _fun_chol_diag(
+        lgm, params.chol_ul_ul_quench_ylo, params.chol_ul_ul_quench_yhi
+    )
+    utau_utau = _fun_chol_diag(
+        lgm, params.chol_utau_utau_quench_ylo, params.chol_utau_utau_quench_yhi
+    )
+    uqt_uqt = _fun_chol_diag(
+        lgm, params.chol_uqt_uqt_quench_ylo, params.chol_uqt_uqt_quench_yhi
+    )
+    uqs_uqs = _fun_chol_diag(
+        lgm, params.chol_uqs_uqs_quench_ylo, params.chol_uqs_uqs_quench_yhi
+    )
+    udrop_udrop = _fun_chol_diag(
+        lgm, params.chol_udrop_udrop_quench_ylo, params.chol_udrop_udrop_quench_yhi
+    )
+    urej_urej = _fun_chol_diag(
+        lgm, params.chol_urej_urej_quench_ylo, params.chol_urej_urej_quench_yhi
+    )
+    ulgy_ulgm = _fun(
+        lgm, params.chol_ulgy_ulgm_quench_ylo, params.chol_ulgy_ulgm_quench_yhi
+    )
+    ul_ulgm = _fun(lgm, params.chol_ul_ulgm_quench_ylo, params.chol_ul_ulgm_quench_yhi)
+    ul_ulgy = _fun(lgm, params.chol_ul_ulgy_quench_ylo, params.chol_ul_ulgy_quench_yhi)
+    utau_ulgm = _fun(
+        lgm, params.chol_utau_ulgm_quench_ylo, params.chol_utau_ulgm_quench_yhi
+    )
+    utau_ulgy = _fun(
+        lgm, params.chol_utau_ulgy_quench_ylo, params.chol_utau_ulgy_quench_yhi
+    )
+    utau_ul = _fun(lgm, params.chol_utau_ul_quench_ylo, params.chol_utau_ul_quench_yhi)
+    uqt_ulgm = _fun(
+        lgm, params.chol_uqt_ulgm_quench_ylo, params.chol_uqt_ulgm_quench_yhi
+    )
+    uqt_ulgy = _fun(
+        lgm, params.chol_uqt_ulgy_quench_ylo, params.chol_uqt_ulgy_quench_yhi
+    )
+    uqt_ul = _fun(lgm, params.chol_uqt_ul_quench_ylo, params.chol_uqt_ul_quench_yhi)
+    uqt_utau = _fun(
+        lgm, params.chol_uqt_utau_quench_ylo, params.chol_uqt_utau_quench_yhi
+    )
+    uqs_ulgm = _fun(
+        lgm, params.chol_uqs_ulgm_quench_ylo, params.chol_uqs_ulgm_quench_yhi
+    )
+    uqs_ulgy = _fun(
+        lgm, params.chol_uqs_ulgy_quench_ylo, params.chol_uqs_ulgy_quench_yhi
+    )
+    uqs_ul = _fun(lgm, params.chol_uqs_ul_quench_ylo, params.chol_uqs_ul_quench_yhi)
+    uqs_utau = _fun(
+        lgm, params.chol_uqs_utau_quench_ylo, params.chol_uqs_utau_quench_yhi
+    )
+    uqs_uqt = _fun(lgm, params.chol_uqs_uqt_quench_ylo, params.chol_uqs_uqt_quench_yhi)
+    udrop_ulgm = _fun(
+        lgm, params.chol_udrop_ulgm_quench_ylo, params.chol_udrop_ulgm_quench_yhi
+    )
+    udrop_ulgy = _fun(
+        lgm, params.chol_udrop_ulgy_quench_ylo, params.chol_udrop_ulgy_quench_yhi
+    )
+    udrop_ul = _fun(
+        lgm, params.chol_udrop_ul_quench_ylo, params.chol_udrop_ul_quench_yhi
+    )
+    udrop_utau = _fun(
+        lgm, params.chol_udrop_utau_quench_ylo, params.chol_udrop_utau_quench_yhi
+    )
+    udrop_uqt = _fun(
+        lgm, params.chol_udrop_uqt_quench_ylo, params.chol_udrop_uqt_quench_yhi
+    )
+    udrop_uqs = _fun(
+        lgm, params.chol_udrop_uqs_quench_ylo, params.chol_udrop_uqs_quench_yhi
+    )
+    urej_ulgm = _fun(
+        lgm, params.chol_urej_ulgm_quench_ylo, params.chol_urej_ulgm_quench_yhi
+    )
+    urej_ulgy = _fun(
+        lgm, params.chol_urej_ulgy_quench_ylo, params.chol_urej_ulgy_quench_yhi
+    )
+    urej_ul = _fun(lgm, params.chol_urej_ul_quench_ylo, params.chol_urej_ul_quench_yhi)
+    urej_utau = _fun(
+        lgm, params.chol_urej_utau_quench_ylo, params.chol_urej_utau_quench_yhi
+    )
+    urej_uqt = _fun(
+        lgm, params.chol_urej_uqt_quench_ylo, params.chol_urej_uqt_quench_yhi
+    )
+    urej_uqs = _fun(
+        lgm, params.chol_urej_uqs_quench_ylo, params.chol_urej_uqs_quench_yhi
+    )
+    urej_udrop = _fun(
+        lgm, params.chol_urej_udrop_quench_ylo, params.chol_urej_udrop_quench_yhi
+    )
+
+    chol_params = (
+        ulgm_ulgm,
+        ulgy_ulgy,
+        ul_ul,
+        utau_utau,
+        uqt_uqt,
+        uqs_uqs,
+        udrop_udrop,
+        urej_urej,
+        ulgy_ulgm,
+        ul_ulgm,
+        ul_ulgy,
+        utau_ulgm,
+        utau_ulgy,
+        utau_ul,
+        uqt_ulgm,
+        uqt_ulgy,
+        uqt_ul,
+        uqt_utau,
+        uqs_ulgm,
+        uqs_ulgy,
+        uqs_ul,
+        uqs_utau,
+        uqs_uqt,
+        udrop_ulgm,
+        udrop_ulgy,
+        udrop_ul,
+        udrop_utau,
+        udrop_uqt,
+        udrop_uqs,
+        urej_ulgm,
+        urej_ulgy,
+        urej_ul,
+        urej_utau,
+        urej_uqt,
+        urej_uqs,
+        urej_udrop,
+    )
+
+    return chol_params
