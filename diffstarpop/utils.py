@@ -1,8 +1,12 @@
 """
 """
+import numpy as np
+from diffstar.utils import jax_np_interp
+from halotools.utils import sliding_conditional_percentile
 from jax import jit as jjit
 from jax import lax
 from jax import numpy as jnp
+from jax import vmap
 from scipy.optimize import minimize
 
 
@@ -106,3 +110,23 @@ def _tw_bin_weight_lax_kern(x, sig, lo, hi):
     a = _tw_cuml_lax_kern(x, lo, sig)
     b = _tw_cuml_lax_kern(x, hi, sig)
     return a - b
+
+
+def return_searchsorted_like_results(mstar, mstar_frac):
+    _tmp = mstar - mstar[:, [-1]] * mstar_frac
+    _tmp = np.array(_tmp)
+    _tmp[_tmp < 0] = np.inf
+    _res = np.argmin(_tmp, axis=1)
+    _res = np.clip(_res, 1, None).astype(int)
+    return _res
+
+
+jax_np_interp_vmap = jjit(vmap(jax_np_interp, in_axes=(0, 0, None, 0)))
+
+
+def get_t50_p50(t_table, histories, threshold, logmpeak, window_length=101):
+    hist_val_at_threshold = histories[:, -1] * threshold
+    indices = return_searchsorted_like_results(histories, threshold)
+    t50 = jax_np_interp_vmap(hist_val_at_threshold, histories, t_table, indices)
+    p50 = sliding_conditional_percentile(logmpeak, t50, window_length=window_length)
+    return t50, p50
