@@ -6,10 +6,29 @@ from collections import namedtuple
 from jax import jit as jjit
 from jax import numpy as jnp
 
-from .assembias_kernels import DEFAULT_AB_MAINSEQ_PARAMS, DEFAULT_AB_QSEQ_PARAMS
-from .mainseq_massonly import DEFAULT_SFH_PDF_MAINSEQ_PARAMS
-from .qseq_massonly import DEFAULT_SFH_PDF_QUENCH_PARAMS
-from .satquenchpop_model import DEFAULT_SATQUENCHPOP_PARAMS
+from .assembias_kernels import (
+    DEFAULT_AB_MAINSEQ_PARAMS,
+    DEFAULT_AB_QSEQ_PARAMS,
+    get_bounded_ab_mainseq_params,
+    get_bounded_ab_qseq_params,
+    get_unbounded_ab_mainseq_params,
+    get_unbounded_ab_qseq_params,
+)
+from .mainseq_massonly import (
+    DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
+    get_bounded_mainseq_massonly_params,
+    get_unbounded_mainseq_massonly_params,
+)
+from .qseq_massonly import (
+    DEFAULT_SFH_PDF_QUENCH_PARAMS,
+    get_bounded_qseq_massonly_params,
+    get_unbounded_qseq_massonly_params,
+)
+from .satquenchpop_model import (
+    DEFAULT_SATQUENCHPOP_PARAMS,
+    get_bounded_satquenchpop_params,
+    get_unbounded_satquenchpop_params,
+)
 
 
 # Define a namedtuple container for the params of each component
@@ -31,25 +50,6 @@ DEFAULT_DIFFSTARPOP_PARAMS = DiffstarPopParams(
 
 _U_PNAMES = ["u_" + key for key in DEFAULT_DIFFSTARPOP_PARAMS._fields]
 DiffstarPopUParams = namedtuple("DiffstarPopUParams", _U_PNAMES)
-
-from .assembias_kernels import (
-    get_bounded_ab_mainseq_params,
-    get_bounded_ab_qseq_params,
-    get_unbounded_ab_mainseq_params,
-    get_unbounded_ab_qseq_params,
-)
-from .mainseq_massonly import (
-    get_bounded_mainseq_massonly_params,
-    get_unbounded_mainseq_massonly_params,
-)
-from .qseq_massonly import (
-    get_bounded_qseq_massonly_params,
-    get_unbounded_qseq_massonly_params,
-)
-from .satquenchpop_model import (
-    get_bounded_satquenchpop_params,
-    get_unbounded_satquenchpop_params,
-)
 
 
 @jjit
