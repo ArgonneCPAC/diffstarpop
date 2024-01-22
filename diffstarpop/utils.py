@@ -1,13 +1,13 @@
 """
 """
-from jax import jit as jjit
-from jax import lax
-from jax import vmap
-from jax import numpy as jnp
 import numpy as np
-from scipy.optimize import minimize
 from diffstar.utils import jax_np_interp
 from halotools.utils import sliding_conditional_percentile
+from jax import jit as jjit
+from jax import lax
+from jax import numpy as jnp
+from jax import vmap
+from scipy.optimize import minimize
 
 
 @jjit
@@ -114,6 +114,7 @@ def _tw_bin_weight_lax_kern(x, sig, lo, hi):
 
 def return_searchsorted_like_results(mstar, mstar_frac):
     _tmp = mstar - mstar[:, [-1]] * mstar_frac
+    _tmp = np.array(_tmp)
     _tmp[_tmp < 0] = np.inf
     _res = np.argmin(_tmp, axis=1)
     _res = np.clip(_res, 1, None).astype(int)
