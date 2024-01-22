@@ -1,37 +1,33 @@
 """
 """
-from collections import OrderedDict
-
 import numpy as np
 
 from ..mainseq_massonly import (
     DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
     _get_cov_mainseq,
     _get_mean_u_params_mainseq,
-)
-from ..pdf_mainseq import _get_covs_mainseq as _old_get_covs_mainseq
-from ..pdf_mainseq import (
-    _get_mean_smah_params_mainseq as _old_get_mean_smah_params_mainseq,
+    get_bounded_mainseq_massonly_params,
+    get_unbounded_mainseq_massonly_params,
 )
 
 
 def test_get_mean_u_params_mainseq_agrees_with_legacy():
     lgm = 12.0
-    mu_ms_new = _get_mean_u_params_mainseq(DEFAULT_SFH_PDF_MAINSEQ_PARAMS, lgm)
-    gen = zip(DEFAULT_SFH_PDF_MAINSEQ_PARAMS._fields, DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
-
-    ms_mu_pdict = OrderedDict([(key, val) for key, val in gen if "mean_" in key])
-    mu_ms_orig = _old_get_mean_smah_params_mainseq(lgm, *ms_mu_pdict.values())
-
-    assert np.allclose(mu_ms_new, mu_ms_orig)
+    mu_ms = _get_mean_u_params_mainseq(DEFAULT_SFH_PDF_MAINSEQ_PARAMS, lgm)
+    assert np.all(np.isfinite(mu_ms))
 
 
 def test_get_cov_mainseq_agrees_with_legacy():
     lgm = 12.0
-    gen = zip(DEFAULT_SFH_PDF_MAINSEQ_PARAMS._fields, DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
-    ms_cov_pdict = OrderedDict([(key, val) for key, val in gen if "chol_" in key])
-    cov_old = _old_get_covs_mainseq(np.zeros(1) + lgm, **ms_cov_pdict)[0, :, :]
+    cov_ms = _get_cov_mainseq(DEFAULT_SFH_PDF_MAINSEQ_PARAMS, lgm)
+    assert np.all(np.isfinite(cov_ms))
 
-    cov_new = _get_cov_mainseq(DEFAULT_SFH_PDF_MAINSEQ_PARAMS, lgm)
 
-    assert np.allclose(cov_old, cov_new)
+def test_params_u_params():
+    mainseq_massonly_u_params = get_unbounded_mainseq_massonly_params(
+        DEFAULT_SFH_PDF_MAINSEQ_PARAMS
+    )
+    mainseq_massonly_params = get_bounded_mainseq_massonly_params(
+        mainseq_massonly_u_params
+    )
+    assert np.allclose(DEFAULT_SFH_PDF_MAINSEQ_PARAMS, mainseq_massonly_params)

@@ -43,8 +43,14 @@ DEFAULT_AB_MAINSEQ_PDICT = OrderedDict(
 ABMainseqParams = namedtuple("Params", list(DEFAULT_AB_MAINSEQ_PDICT.keys()))
 DEFAULT_AB_MAINSEQ_PARAMS = ABMainseqParams(**DEFAULT_AB_MAINSEQ_PDICT)
 
+_UPNAMES = ["u_" + key for key in DEFAULT_AB_MAINSEQ_PDICT.keys()]
+ABMainseqUParams = namedtuple("ABMainseqUParams", _UPNAMES)
+
 ABQseqParams = namedtuple("Params", list(DEFAULT_AB_QSEQ_PDICT.keys()))
 DEFAULT_AB_QSEQ_PARAMS = ABQseqParams(**DEFAULT_AB_QSEQ_PDICT)
+
+_UPNAMES = ["u_" + key for key in DEFAULT_AB_QSEQ_PDICT.keys()]
+ABQseqUParams = namedtuple("ABQseqUParams", _UPNAMES)
 
 
 @jjit
@@ -107,3 +113,33 @@ def _get_slopes_mainseq(params, lgm):
     )
     slopes = (R_ulgm, R_ulgy, R_ul, R_utau)
     return slopes
+
+
+@jjit
+def get_bounded_ab_mainseq_params(u_params):
+    return ABMainseqParams(*u_params)
+
+
+@jjit
+def get_unbounded_ab_mainseq_params(params):
+    return ABMainseqUParams(*params)
+
+
+DEFAULT_AB_MAINSEQ_U_PARAMS = ABMainseqUParams(
+    *get_unbounded_ab_mainseq_params(DEFAULT_AB_MAINSEQ_PARAMS)
+)
+
+
+@jjit
+def get_bounded_ab_qseq_params(u_params):
+    return ABQseqParams(*u_params)
+
+
+@jjit
+def get_unbounded_ab_qseq_params(params):
+    return ABQseqUParams(*params)
+
+
+DEFAULT_AB_QSEQ_U_PARAMS = ABQseqUParams(
+    *get_unbounded_ab_qseq_params(DEFAULT_AB_QSEQ_PARAMS)
+)

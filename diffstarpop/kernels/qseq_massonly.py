@@ -108,6 +108,9 @@ DEFAULT_SFH_PDF_QUENCH_PDICT = OrderedDict(
 QseqMassOnlyParams = namedtuple("Params", list(DEFAULT_SFH_PDF_QUENCH_PDICT.keys()))
 DEFAULT_SFH_PDF_QUENCH_PARAMS = QseqMassOnlyParams(**DEFAULT_SFH_PDF_QUENCH_PDICT)
 
+_UPNAMES = ["u_" + key for key in DEFAULT_SFH_PDF_QUENCH_PDICT.keys()]
+QseqMassOnlyUParams = namedtuple("QseqMassOnlyUParams", _UPNAMES)
+
 
 @jjit
 def _fun(x, ymin, ymax):
@@ -386,3 +389,18 @@ def _frac_quench_vs_lgm0(params, lgm0):
         params.frac_quench_ylo,
         params.frac_quench_yhi,
     )
+
+
+@jjit
+def get_bounded_qseq_massonly_params(u_params):
+    return QseqMassOnlyParams(*u_params)
+
+
+@jjit
+def get_unbounded_qseq_massonly_params(params):
+    return QseqMassOnlyUParams(*params)
+
+
+DEFAULT_SFH_PDF_QUENCH_U_PARAMS = QseqMassOnlyUParams(
+    *get_unbounded_qseq_massonly_params(DEFAULT_SFH_PDF_QUENCH_PARAMS)
+)

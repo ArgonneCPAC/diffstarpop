@@ -47,6 +47,9 @@ DEFAULT_SFH_PDF_MAINSEQ_PDICT = OrderedDict(
 MainseqMassOnlyParams = namedtuple("Params", list(DEFAULT_SFH_PDF_MAINSEQ_PDICT.keys()))
 DEFAULT_SFH_PDF_MAINSEQ_PARAMS = MainseqMassOnlyParams(**DEFAULT_SFH_PDF_MAINSEQ_PDICT)
 
+_UPNAMES = ["u_" + key for key in DEFAULT_SFH_PDF_MAINSEQ_PDICT.keys()]
+MainseqMassOnlyUParams = namedtuple("MainseqMassOnlyUParams", _UPNAMES)
+
 
 @jjit
 def _fun(x, ymin, ymax):
@@ -154,3 +157,18 @@ def _get_cov_mainseq(params, lgm):
     chol_params = _get_chol_params_mainseq(params, lgm)
     cov_ms = _get_cov_scalar(*chol_params)
     return cov_ms
+
+
+@jjit
+def get_bounded_mainseq_massonly_params(u_params):
+    return MainseqMassOnlyParams(*u_params)
+
+
+@jjit
+def get_unbounded_mainseq_massonly_params(params):
+    return MainseqMassOnlyUParams(*params)
+
+
+DEFAULT_SFH_PDF_MAINSEQ_U_PARAMS = MainseqMassOnlyUParams(
+    *get_unbounded_mainseq_massonly_params(DEFAULT_SFH_PDF_MAINSEQ_PARAMS)
+)
