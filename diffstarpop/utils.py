@@ -1,10 +1,11 @@
 """
 """
+
 import numpy as np
 from diffstar.utils import jax_np_interp
 from halotools.utils import sliding_conditional_percentile
 from jax import jit as jjit
-from jax import lax
+from jax import lax, nn
 from jax import numpy as jnp
 from jax import vmap
 from scipy.optimize import minimize
@@ -33,7 +34,7 @@ def _sigmoid(x, x0, k, ymin, ymax):
 
     """
     height_diff = ymax - ymin
-    return ymin + height_diff * lax.logistic(k * (x - x0))
+    return ymin + height_diff * nn.sigmoid(k * (x - x0))
 
 
 @jjit
@@ -90,13 +91,7 @@ def _tw_cuml_lax_kern(x, m, h):
     This kernel accepts and returns scalars for all arguments
     """
     z = (x - m) / h
-    val = (
-        -5 * z**7 / 69984
-        + 7 * z**5 / 2592
-        - 35 * z**3 / 864
-        + 35 * z / 96
-        + 1 / 2
-    )
+    val = -5 * z**7 / 69984 + 7 * z**5 / 2592 - 35 * z**3 / 864 + 35 * z / 96 + 1 / 2
     val = lax.cond(z < -3, lambda s: 0.0, lambda s: val, z)
     val = lax.cond(z > 3, lambda s: 1.0, lambda s: val, z)
     return val
