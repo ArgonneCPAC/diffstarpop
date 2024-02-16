@@ -1,7 +1,6 @@
 """Test that mc_diffstar_sfh_galpop has non-zero gradients w/r/t all its parameters"""
 
 import numpy as np
-import pytest
 from diffmah.defaults import DEFAULT_MAH_PARAMS
 from diffsky.mass_functions.mc_subhalo_catalog import mc_subhalo_catalog_singlez
 from dsps.constants import T_TABLE_MIN
@@ -56,7 +55,6 @@ def _enforce_nonzero_grads(grads):
     assert not np.allclose(grads.u_satquench_params, 0.0, rtol=1e-5)
 
 
-@pytest.mark.xfail
 def test_all_diffstarpop_u_param_gradients_are_nonzero():
     """Verify that <SFH(t)> has nonzero gradient w/r/t all u_params"""
     ran_key = jran.PRNGKey(0)
