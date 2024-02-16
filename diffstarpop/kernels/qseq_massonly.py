@@ -6,6 +6,8 @@ from jax import numpy as jnp
 
 from ..utils import _sigmoid
 
+from diffmah.utils import get_cholesky_from_params
+
 TODAY = 13.8
 LGT0 = jnp.log10(TODAY)
 
@@ -140,83 +142,8 @@ def _fun_fquench(x, x0, k, ymin, ymax):
 
 
 @jjit
-def _get_cov_scalar(
-    ulgm_ulgm,
-    ulgy_ulgy,
-    ul_ul,
-    utau_utau,
-    uqt_uqt,
-    uqs_uqs,
-    udrop_udrop,
-    urej_urej,
-    ulgy_ulgm,
-    ul_ulgm,
-    ul_ulgy,
-    utau_ulgm,
-    utau_ulgy,
-    utau_ul,
-    uqt_ulgm,
-    uqt_ulgy,
-    uqt_ul,
-    uqt_utau,
-    uqs_ulgm,
-    uqs_ulgy,
-    uqs_ul,
-    uqs_utau,
-    uqs_uqt,
-    udrop_ulgm,
-    udrop_ulgy,
-    udrop_ul,
-    udrop_utau,
-    udrop_uqt,
-    udrop_uqs,
-    urej_ulgm,
-    urej_ulgy,
-    urej_ul,
-    urej_utau,
-    urej_uqt,
-    urej_uqs,
-    urej_udrop,
-):
-    chol = jnp.zeros((8, 8)).astype("f4")
-    chol = chol.at[(0, 0)].set(ulgm_ulgm)
-    chol = chol.at[(1, 1)].set(ulgy_ulgy)
-    chol = chol.at[(2, 2)].set(ul_ul)
-    chol = chol.at[(3, 3)].set(utau_utau)
-    chol = chol.at[(4, 4)].set(uqt_uqt)
-    chol = chol.at[(5, 5)].set(uqs_uqs)
-    chol = chol.at[(6, 6)].set(udrop_udrop)
-    chol = chol.at[(7, 7)].set(urej_urej)
-
-    chol = chol.at[(1, 0)].set(ulgy_ulgm * ulgy_ulgy * ulgm_ulgm)
-    chol = chol.at[(2, 0)].set(ul_ulgm * ul_ul * ulgm_ulgm)
-    chol = chol.at[(2, 1)].set(ul_ulgy * ul_ul * ulgy_ulgy)
-    chol = chol.at[(3, 0)].set(utau_ulgm * utau_utau * ulgm_ulgm)
-    chol = chol.at[(3, 1)].set(utau_ulgy * utau_utau * ulgy_ulgy)
-    chol = chol.at[(3, 2)].set(utau_ul * utau_utau * ul_ul)
-    chol = chol.at[(4, 0)].set(uqt_ulgm * uqt_uqt * ulgm_ulgm)
-    chol = chol.at[(4, 1)].set(uqt_ulgy * uqt_uqt * ulgy_ulgy)
-    chol = chol.at[(4, 2)].set(uqt_ul * uqt_uqt * ul_ul)
-    chol = chol.at[(4, 3)].set(uqt_utau * uqt_uqt * utau_utau)
-    chol = chol.at[(5, 0)].set(uqs_ulgm * uqs_uqs * ulgm_ulgm)
-    chol = chol.at[(5, 1)].set(uqs_ulgy * uqs_uqs * ulgy_ulgy)
-    chol = chol.at[(5, 2)].set(uqs_ul * uqs_uqs * ul_ul)
-    chol = chol.at[(5, 3)].set(uqs_utau * uqs_uqs * utau_utau)
-    chol = chol.at[(5, 4)].set(uqs_uqt * uqs_uqs * uqt_uqt)
-    chol = chol.at[(6, 0)].set(udrop_ulgm * udrop_udrop * ulgm_ulgm)
-    chol = chol.at[(6, 1)].set(udrop_ulgy * udrop_udrop * ulgy_ulgy)
-    chol = chol.at[(6, 2)].set(udrop_ul * udrop_udrop * ul_ul)
-    chol = chol.at[(6, 3)].set(udrop_utau * udrop_udrop * utau_utau)
-    chol = chol.at[(6, 4)].set(udrop_uqt * udrop_udrop * uqt_uqt)
-    chol = chol.at[(6, 5)].set(udrop_uqs * udrop_udrop * uqs_uqs)
-    chol = chol.at[(7, 0)].set(urej_ulgm * urej_urej * ulgm_ulgm)
-    chol = chol.at[(7, 1)].set(urej_ulgy * urej_urej * ulgy_ulgy)
-    chol = chol.at[(7, 2)].set(urej_ul * urej_urej * ul_ul)
-    chol = chol.at[(7, 3)].set(urej_utau * urej_urej * utau_utau)
-    chol = chol.at[(7, 4)].set(urej_uqt * urej_urej * uqt_uqt)
-    chol = chol.at[(7, 5)].set(urej_uqs * urej_urej * uqs_uqs)
-    chol = chol.at[(7, 6)].set(urej_udrop * urej_urej * udrop_udrop)
-
+def _get_cov_scalar(chol_params):
+    chol = get_cholesky_from_params(jnp.array(chol_params))
     cov = jnp.dot(chol, chol.T)
     return cov
 
@@ -376,7 +303,7 @@ def _get_chol_u_params_qseq(params, lgm):
 @jjit
 def _get_cov_qseq(params, lgm):
     chol_params = _get_chol_u_params_qseq(params, lgm)
-    cov_qseq = _get_cov_scalar(*chol_params)
+    cov_qseq = _get_cov_scalar(chol_params)
     return cov_qseq
 
 
