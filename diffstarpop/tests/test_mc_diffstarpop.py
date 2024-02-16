@@ -2,7 +2,6 @@
 """
 
 import os
-import pickle
 
 import numpy as np
 from diffmah.defaults import DEFAULT_MAH_PARAMS, DiffmahParams
