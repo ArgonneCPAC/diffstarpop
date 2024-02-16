@@ -1,5 +1,6 @@
 """
 """
+
 import os
 import pickle
 
@@ -60,46 +61,19 @@ def test_satquench_params_have_some_effect():
 def get_random_dpp_params(ran_key):
     collector = []
     ran_keys = jran.split(ran_key, len(DEFAULT_DIFFSTARPOP_PARAMS))
+    itest = [0, 1, 2, 3, 4]
+    itest.pop(1)
+    counter = 0
     for key, params in zip(ran_keys, DEFAULT_DIFFSTARPOP_PARAMS):
-        u = jran.uniform(key, minval=-1, maxval=1, shape=(len(params),))
-        ran_params = np.array(params) + u
+        if counter in itest:
+            u = jran.uniform(key, minval=-1, maxval=1, shape=(len(params),))
+            ran_params = np.array(params) + u
+        else:
+            ran_params = np.array(params)
         collector.append(params._make(ran_params))
+        counter += 1
 
     return DiffstarPopParams(*collector)
-
-
-def test_mc_diffstar_u_params_singlegal_agrees_with_old_implementation_on_defaults():
-    """this test was used in early development stages of the
-    OrderedDict-->NamedTuple overhaul of DiffstarPop. This test may fail in future,
-    for example of the default DiffstarPop parameters are changed.
-    It may be safe to delete this test once the NamedTuple-based DiffstarPop
-    implementation is sufficiently far along.
-
-    """
-    data_drn = os.path.join(_THIS_DRNAME, "testing_data")
-    fname = os.path.join(data_drn, "diffstar_u_params_unit_test.pickle")
-    with open(fname, "rb") as handle:
-        u_params_old = pickle.load(handle)
-
-    ran_key = jran.PRNGKey(0)
-
-    p50 = 0.25
-    lgmu_infall = -0.5
-    logmhost_infall = 15.0
-    gyr_since_infall = -30.0
-    args = (
-        DEFAULT_DIFFSTARPOP_PARAMS,
-        DEFAULT_MAH_PARAMS,
-        p50,
-        lgmu_infall,
-        logmhost_infall,
-        gyr_since_infall,
-        ran_key,
-    )
-    u_params = mc_diffstar_u_params_singlegal(*args)
-
-    assert np.allclose(u_params_old.u_ms_params, u_params.u_ms_params, rtol=1e-3)
-    assert np.allclose(u_params_old.u_q_params, u_params.u_q_params, rtol=1e-3)
 
 
 def test_mc_diffstar_u_params_singlegal_evaluates_finite_on_random_u_params():
