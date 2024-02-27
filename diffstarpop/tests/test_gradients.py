@@ -41,6 +41,12 @@ def get_random_dpp_params(ran_key, dp=0.1):
     return dpp_params, dpp_u_params
 
 
+def _check_grads_are_nonzero(grads):
+    if_grads_close_to_zero = np.isclose(grads, 0.0, rtol=1e-13)
+    if if_grads_close_to_zero.any():
+        raise AssertionError("Parameters with exact zero gradients:", list(np.array(grads._fields)[if_grads_close_to_zero]))
+    
+
 def _enforce_nonzero_grads(grads):
     assert np.all(np.isfinite(grads.u_sfh_pdf_mainseq_params))
     assert np.all(np.isfinite(grads.u_sfh_pdf_quench_params))
@@ -48,11 +54,11 @@ def _enforce_nonzero_grads(grads):
     assert np.all(np.isfinite(grads.u_assembias_quench_params))
     assert np.all(np.isfinite(grads.u_satquench_params))
 
-    assert not np.allclose(grads.u_sfh_pdf_mainseq_params, 0.0, rtol=1e-5)
-    assert not np.allclose(grads.u_sfh_pdf_quench_params, 0.0, rtol=1e-5)
-    assert not np.allclose(grads.u_assembias_mainseq_params, 0.0, rtol=1e-5)
-    assert not np.allclose(grads.u_assembias_quench_params, 0.0, rtol=1e-5)
-    assert not np.allclose(grads.u_satquench_params, 0.0, rtol=1e-5)
+    _check_grads_are_nonzero(grads.u_sfh_pdf_mainseq_params)
+    _check_grads_are_nonzero(grads.u_sfh_pdf_quench_params)
+    _check_grads_are_nonzero(grads.u_assembias_mainseq_params)
+    _check_grads_are_nonzero(grads.u_assembias_quench_params)
+    _check_grads_are_nonzero(grads.u_satquench_params)
 
 
 def test_all_diffstarpop_u_param_gradients_are_nonzero():
@@ -90,12 +96,15 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
         ran_key,
         tarr,
     )
-    diffstar_params, default_sfh = mc_diffstar_sfh_galpop(*args)
-    assert default_sfh.shape == (nhalos, ntimes)
-    assert np.all(np.isfinite(default_sfh))
+    diffstar_params_q, diffstar_params_ms, default_sfh_q, default_sfh_ms, frac_q = mc_diffstar_sfh_galpop(*args)
+
+    assert default_sfh_q.shape == (nhalos, ntimes)
+    assert np.all(np.isfinite(default_sfh_q))
 
     # Set target <SFH(t)> according to the default galpop
-    target_mean_sfh = np.mean(default_sfh, axis=0)
+    target_mean_sfh_q = np.mean(default_sfh_q, axis=0)
+    target_mean_sfh_ms = np.mean(default_sfh_ms, axis=0)
+    target_mean_sfh = np.mean(frac_q[:,None] * default_sfh_q + (1.0 - frac_q[:,None]) * default_sfh_ms,  axis=0)
 
     # Generate an alternate galpop at some other point in param space
     ran_params_key, ran_key = jran.split(ran_key, 2)
@@ -112,9 +121,10 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
         ran_key,
         tarr,
     )
-    alt_diffstar_params, alt_sfh = mc_diffstar_sfh_galpop(*args)
-    assert alt_sfh.shape == (nhalos, ntimes)
-    assert np.all(np.isfinite(alt_sfh))
+    # alt_diffstar_params, alt_sfh = mc_diffstar_sfh_galpop(*args)
+    alt_diffstar_params_q, alt_diffstar_params_ms, alt_sfh_q, alt_sfh_ms, alt_frac_q = mc_diffstar_sfh_galpop(*args)
+    assert alt_sfh_q.shape == (nhalos, ntimes)
+    assert np.all(np.isfinite(alt_sfh_q))
 
     # Define a dummy loss function based on the target <SFH(t)>
     @jjit
@@ -130,9 +140,11 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
             ran_key,
             tarr,
         )
-        __, pred_sfh = mc_diffstar_sfh_galpop(*args)
-        pred_mean_sfh = np.mean(pred_sfh, axis=0)
-        return _mse(pred_mean_sfh, target_mean_sfh)
+        # __, pred_sfh = mc_diffstar_sfh_galpop(*args)
+        pred_diffstar_params_q, pred_diffstar_params_ms, pred_sfh_q, pred_sfh_ms, pred_frac_q  = mc_diffstar_sfh_galpop(*args)
+        pred_mean_sfh_total = jnp.mean(pred_frac_q[:,None] * pred_sfh_q + (1.0 - pred_frac_q[:,None]) * pred_sfh_ms, axis=0)
+
+        return _mse(pred_mean_sfh_total, target_mean_sfh)
 
     loss_and_grad = value_and_grad(_loss)
     loss, loss_grads = loss_and_grad(alt_dpp_u_params)
@@ -199,4 +211,4 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
     frac_q_loss, frac_q_grads = value_and_grad(_loss)(alt_dpp_u_params)
     assert np.isfinite(frac_q_loss)
     assert frac_q_loss > 1e-3
-    assert not np.allclose(frac_q_grads.u_satquench_params, 0.0)
+    _check_grads_are_nonzero(frac_q_grads.u_satquench_params)
