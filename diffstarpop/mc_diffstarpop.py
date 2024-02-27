@@ -72,17 +72,31 @@ def mc_diffstar_sfh_singlegal(
 
     Returns
     -------
-    diffstar_params : namedtuple
+    diffstar_params_q : namedtuple
+        Diffstar params for quenched galaxy
         DiffstarParams = ms_params, q_params
             ms_params and q_params are tuples of floats
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
-    sfh : ndarray, shape (nt, )
-        Star formation rate in units of Msun/yr
+    diffstar_params_ms : namedtuple
+        Diffstar params for main sequence galaxy
+        DiffstarParams = ms_params, q_params
+            ms_params and q_params are tuples of floats
+            diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
+            diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
+
+    sfh_q : ndarray, shape (nt, )
+        Star formation rate in units of Msun/yr for quenched galaxy
+
+    sfh_ms : ndarray, shape (nt, )
+        Star formation rate in units of Msun/yr for main sequence galaxy
+
+    frac_q : float
+        Quenched fraction. 
 
     """
-    diffstar_params = mc_diffstar_params_singlegal(
+    diffstar_params_q, diffstar_params_ms, frac_q = mc_diffstar_params_singlegal(
         diffstarpop_params,
         mah_params,
         p50,
@@ -91,8 +105,9 @@ def mc_diffstar_sfh_singlegal(
         gyr_since_infall,
         ran_key,
     )
-    sfh = calc_sfh_singlegal(diffstar_params, mah_params, tarr, lgt0=lgt0, fb=fb)
-    return diffstar_params, sfh
+    sfh_q = calc_sfh_singlegal(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
+    sfh_ms = calc_sfh_singlegal(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
+    return diffstar_params_q, diffstar_params_ms, sfh_q, sfh_ms, frac_q
 
 
 @jjit
@@ -137,14 +152,25 @@ def mc_diffstar_params_singlegal(
 
     Returns
     -------
-    diffstar_params : namedtuple
+    diffstar_params_q : namedtuple
+        Diffstar params for quenched galaxy
         DiffstarParams = ms_params, q_params
             ms_params and q_params are tuples of floats
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
+    diffstar_params_ms : namedtuple
+        Diffstar params for main sequence galaxy
+        DiffstarParams = ms_params, q_params
+            ms_params and q_params are tuples of floats
+            diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
+            diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
+
+    frac_q : float
+        Quenched fraction. 
+
     """
-    diffstar_u_params = mc_diffstar_u_params_singlegal(
+    diffstar_u_params_q, diffstar_u_params_ms, frac_q = mc_diffstar_u_params_singlegal(
         diffstarpop_params,
         mah_params,
         p50,
@@ -153,8 +179,11 @@ def mc_diffstar_params_singlegal(
         gyr_since_infall,
         ran_key,
     )
-    diffstar_params = get_bounded_diffstar_params(diffstar_u_params)
-    return DiffstarParams(*diffstar_params)
+    diffstar_params_q = get_bounded_diffstar_params(diffstar_u_params_q)
+    diffstar_params_ms = get_bounded_diffstar_params(diffstar_u_params_ms)
+    diffstar_params_q = DiffstarParams(*diffstar_params_q)
+    diffstar_params_ms = DiffstarParams(*diffstar_params_ms)
+    return diffstar_params_q, diffstar_params_ms, frac_q
 
 
 @jjit
@@ -177,8 +206,13 @@ def mc_diffstar_u_params_singlegal(
         gyr_since_infall,
         ran_key,
     )
-    diffstar_u_params = mc_diffstar_u_params_singlegal_kernel(*args)
-    return diffstar_u_params
+    
+    (
+        diffstar_u_params_q, 
+        diffstar_u_params_ms, 
+        frac_q
+    ) = mc_diffstar_u_params_singlegal_kernel(*args)
+    return diffstar_u_params_q, diffstar_u_params_ms, frac_q
 
 
 _POP = (None, 0, 0, 0, 0, 0, 0)
@@ -200,7 +234,11 @@ def mc_diffstar_u_params_galpop(
     """"""
     ngals = p50.size
     ran_keys = jran.split(ran_key, ngals)
-    diffstar_u_params = mc_diffstar_u_params_galpop_kernel(
+    (
+        diffstar_u_params_q, 
+        diffstar_u_params_ms, 
+        frac_q
+    ) = mc_diffstar_u_params_galpop_kernel(
         diffstarpop_params,
         mah_params,
         p50,
@@ -209,7 +247,7 @@ def mc_diffstar_u_params_galpop(
         gyr_since_infall,
         ran_keys,
     )
-    return diffstar_u_params
+    return diffstar_u_params_q, diffstar_u_params_ms, frac_q
 
 
 get_bounded_diffstar_params_galpop = jjit(vmap(get_bounded_diffstar_params, in_axes=0))
@@ -257,14 +295,25 @@ def mc_diffstar_params_galpop(
 
     Returns
     -------
-    diffstar_params : namedtuple
+    diffstar_params_q : namedtuple
+    Diffstar params for quenched galaxy
         DiffstarParams = ms_params, q_params
-            ms_params and q_params are tuples of floats
+            ms_params and q_params are tuples of ndarrays of shape (ngals, )
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
+    diffstar_params_ms : namedtuple
+        Diffstar params for main sequence galaxy
+        DiffstarParams = ms_params, q_params
+            ms_params and q_params are tuples of ndarrays of shape (ngals, )
+            diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
+            diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
+
+    frac_q : ndarray of shape (ngals, )
+        Quenched fraction. 
+
     """
-    diffstar_u_params = mc_diffstar_u_params_galpop(
+    diffstar_u_params_q, diffstar_u_params_ms, frac_q = mc_diffstar_u_params_galpop(
         diffstarpop_params,
         mah_params,
         p50,
@@ -273,8 +322,9 @@ def mc_diffstar_params_galpop(
         gyr_since_infall,
         ran_key,
     )
-    diffstar_params = get_bounded_diffstar_params_galpop(diffstar_u_params)
-    return diffstar_params
+    diffstar_params_q = get_bounded_diffstar_params_galpop(diffstar_u_params_q)
+    diffstar_params_ms = get_bounded_diffstar_params_galpop(diffstar_u_params_ms)
+    return diffstar_params_q, diffstar_params_ms, frac_q
 
 
 @jjit
@@ -335,17 +385,31 @@ def mc_diffstar_sfh_galpop(
 
     Returns
     -------
-    diffstar_params : namedtuple
+    diffstar_params_q : namedtuple
+    Diffstar params for quenched galaxy
         DiffstarParams = ms_params, q_params
             ms_params and q_params are tuples of ndarrays of shape (ngals, )
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
-    sfh : ndarray, shape (ngals, nt)
-        Star formation rate in units of Msun/yr
+    diffstar_params_ms : namedtuple
+        Diffstar params for main sequence galaxy
+        DiffstarParams = ms_params, q_params
+            ms_params and q_params are tuples of ndarrays of shape (ngals, )
+            diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
+            diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
+
+    sfh_q : ndarray, shape (ngals, nt)
+        Star formation rate in units of Msun/yr for quenched galaxy
+
+    sfh_ms : ndarray, shape (ngals, nt)
+        Star formation rate in units of Msun/yr for main sequence galaxy
+
+    frac_q : ndarray of shape (ngals, )
+        Quenched fraction. 
 
     """
-    diffstar_params = mc_diffstar_params_galpop(
+    diffstar_params_q, diffstar_params_ms, frac_q = mc_diffstar_params_galpop(
         diffstarpop_params,
         mah_params,
         p50,
@@ -354,5 +418,6 @@ def mc_diffstar_sfh_galpop(
         gyr_since_infall,
         ran_key,
     )
-    sfh = calc_sfh_galpop(diffstar_params, mah_params, tarr, lgt0=lgt0, fb=fb)
-    return diffstar_params, sfh
+    sfh_q = calc_sfh_galpop(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
+    sfh_ms = calc_sfh_galpop(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
+    return diffstar_params_q, diffstar_params_ms, sfh_q, sfh_ms, frac_q
