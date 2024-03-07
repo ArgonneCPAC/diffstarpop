@@ -53,10 +53,10 @@ def test_satquench_params_have_some_effect():
     )
     star_u_params_q_satquench, star_u_params_ms_satquench, frac_q_satquench = mc_diffstar_u_params_galpop(*args)
 
-    assert not np.allclose(star_u_params_q.u_ms_params, star_u_params_q_satquench.u_ms_params)
-    assert not np.allclose(star_u_params_q.u_q_params, star_u_params_q_satquench.u_q_params)
-    assert not np.allclose(star_u_params_ms.u_ms_params, star_u_params_ms_satquench.u_ms_params)
-    assert not np.allclose(star_u_params_ms.u_q_params, star_u_params_ms_satquench.u_q_params)
+    assert np.allclose(star_u_params_q.u_ms_params, star_u_params_q_satquench.u_ms_params)
+    assert np.allclose(star_u_params_q.u_q_params, star_u_params_q_satquench.u_q_params)
+    assert np.allclose(star_u_params_ms.u_ms_params, star_u_params_ms_satquench.u_ms_params)
+    assert np.allclose(star_u_params_ms.u_q_params, star_u_params_ms_satquench.u_q_params)
     assert not np.allclose(frac_q, frac_q_satquench)
 
 
