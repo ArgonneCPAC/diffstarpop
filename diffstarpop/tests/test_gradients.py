@@ -1,7 +1,6 @@
 """Test that mc_diffstar_sfh_galpop has non-zero gradients w/r/t all its parameters"""
 
 import numpy as np
-import pytest
 from diffmah.defaults import DEFAULT_MAH_PARAMS
 from diffsky.mass_functions.mc_subhalo_catalog import mc_subhalo_catalog_singlez
 from dsps.constants import T_TABLE_MIN
@@ -18,9 +17,6 @@ from ..defaults import (
 from ..kernels.kernel_wrapper import _diffstarpop_pdf_params
 from ..kernels.param_bounding import get_bounded_diffstarpop_params
 from ..mc_diffstarpop import mc_diffstar_sfh_galpop
-
-# _A = [*[None] * 5, *[0] * 5]
-# _diffstarpop_pdf_params_vmap = jjit(vmap(_diffstarpop_pdf_params, in_axes=_A))
 
 
 @jjit
