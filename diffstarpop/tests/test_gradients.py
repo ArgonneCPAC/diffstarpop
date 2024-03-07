@@ -171,14 +171,13 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
     _enforce_nonzero_grads(loss_grads)
 
 
-@pytest.mark.xfail
 def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
     ran_key = jran.PRNGKey(0)
 
     p50 = 0.3
     lgmu_infall = -1.5
     log_mhost = 13.5
-    gyr_since_infall = 4.0
+    gyr_since_infall = 1.0
     args = (
         *DEFAULT_DIFFSTARPOP_PARAMS,
         DEFAULT_MAH_PARAMS,
