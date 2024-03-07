@@ -89,5 +89,9 @@ def test_mc_diffstar_u_params_singlegal_kernel():
         gyr_since_infall,
         ran_key,
     )
-    assert np.all(np.isfinite(res.u_ms_params))
-    assert np.all(np.isfinite(res.u_q_params))
+    u_params_q, u_params_ms, frac_q = res
+    assert np.all(np.isfinite(u_params_q.u_ms_params))
+    assert np.all(np.isfinite(u_params_q.u_q_params))
+    assert np.all(np.isfinite(u_params_ms.u_ms_params))
+    assert np.all(np.isfinite(u_params_ms.u_q_params))
+    assert np.isfinite(frac_q)

@@ -40,7 +40,7 @@ def test_satquench_params_have_some_effect():
         10 + zz,
         ran_key,
     )
-    u_params = mc_diffstar_u_params_galpop(*args)
+    star_u_params_q, star_u_params_ms, frac_q = mc_diffstar_u_params_galpop(*args)
 
     args = (
         DEFAULT_DIFFSTARPOP_PARAMS,
@@ -51,10 +51,13 @@ def test_satquench_params_have_some_effect():
         10 + zz,
         ran_key,
     )
-    u_params_satquench = mc_diffstar_u_params_galpop(*args)
+    star_u_params_q_satquench, star_u_params_ms_satquench, frac_q_satquench = mc_diffstar_u_params_galpop(*args)
 
-    assert not np.allclose(u_params.u_ms_params, u_params_satquench.u_ms_params)
-    assert not np.allclose(u_params.u_q_params, u_params_satquench.u_q_params)
+    assert not np.allclose(star_u_params_q.u_ms_params, star_u_params_q_satquench.u_ms_params)
+    assert not np.allclose(star_u_params_q.u_q_params, star_u_params_q_satquench.u_q_params)
+    assert not np.allclose(star_u_params_ms.u_ms_params, star_u_params_ms_satquench.u_ms_params)
+    assert not np.allclose(star_u_params_ms.u_q_params, star_u_params_ms_satquench.u_q_params)
+    assert not np.allclose(frac_q, frac_q_satquench)
 
 
 def get_random_dpp_params(ran_key):
@@ -96,9 +99,12 @@ def test_mc_diffstar_u_params_singlegal_evaluates_finite_on_random_u_params():
             test_key,
         )
 
-        u_params = mc_diffstar_u_params_singlegal(*args)
-        for up in u_params:
+        diffstar_u_params_q, diffstar_u_params_ms, frac_q = mc_diffstar_u_params_singlegal(*args)
+        for up in diffstar_u_params_q:
             assert np.all(np.isfinite(up))
+        for up in diffstar_u_params_ms:
+            assert np.all(np.isfinite(up))
+        assert np.all(np.isfinite(frac_q))
 
 
 def test_mc_diffstar_u_params_galpop_evaluates():
@@ -122,13 +128,22 @@ def test_mc_diffstar_u_params_galpop_evaluates():
         gyr_since_infall + zz,
         ran_key,
     )
-    u_params = mc_diffstar_u_params_galpop(*args)
-    assert len(u_params.u_ms_params) == len(DEFAULT_DIFFSTAR_PARAMS.ms_params)
-    assert len(u_params.u_q_params) == len(DEFAULT_DIFFSTAR_PARAMS.q_params)
-    for u_p in u_params.u_ms_params:
+    diffstar_u_params_q, diffstar_u_params_ms, frac_q = mc_diffstar_u_params_galpop(*args)
+    assert len(diffstar_u_params_q.u_ms_params) == len(DEFAULT_DIFFSTAR_PARAMS.ms_params)
+    assert len(diffstar_u_params_q.u_q_params) == len(DEFAULT_DIFFSTAR_PARAMS.q_params)
+    for u_p in diffstar_u_params_q.u_ms_params:
         assert u_p.shape == (ngals,)
-    for u_p in u_params.u_q_params:
+    for u_p in diffstar_u_params_q.u_q_params:
         assert u_p.shape == (ngals,)
+
+    assert len(diffstar_u_params_ms.u_ms_params) == len(DEFAULT_DIFFSTAR_PARAMS.ms_params)
+    assert len(diffstar_u_params_ms.u_q_params) == len(DEFAULT_DIFFSTAR_PARAMS.q_params)
+    for u_p in diffstar_u_params_ms.u_ms_params:
+        assert u_p.shape == (ngals,)
+    for u_p in diffstar_u_params_ms.u_q_params:
+        assert u_p.shape == (ngals,)
+
+    assert frac_q.shape == (ngals,)
 
 
 def test_mc_diffstar_params_galpop_evaluates():
@@ -151,13 +166,22 @@ def test_mc_diffstar_params_galpop_evaluates():
         gyr_since_infall + zz,
         ran_key,
     )
-    params = mc_diffstar_params_galpop(*args)
-    assert len(params.ms_params) == len(DEFAULT_DIFFSTAR_PARAMS.ms_params)
-    assert len(params.q_params) == len(DEFAULT_DIFFSTAR_PARAMS.q_params)
-    for p in params.ms_params:
+    params_q, params_ms, frac_q = mc_diffstar_params_galpop(*args)
+    assert len(params_q.ms_params) == len(DEFAULT_DIFFSTAR_PARAMS.ms_params)
+    assert len(params_q.q_params) == len(DEFAULT_DIFFSTAR_PARAMS.q_params)
+    for p in params_q.ms_params:
         assert p.shape == (ngals,)
-    for p in params.q_params:
+    for p in params_q.q_params:
         assert p.shape == (ngals,)
+
+    assert len(params_ms.ms_params) == len(DEFAULT_DIFFSTAR_PARAMS.ms_params)
+    assert len(params_ms.q_params) == len(DEFAULT_DIFFSTAR_PARAMS.q_params)
+    for p in params_ms.ms_params:
+        assert p.shape == (ngals,)
+    for p in params_ms.q_params:
+        assert p.shape == (ngals,)
+
+    assert frac_q.shape == (ngals,)
 
 
 def test_mc_diffstar_sfh_galpop_evaluates():
@@ -181,11 +205,16 @@ def test_mc_diffstar_sfh_galpop_evaluates():
         ran_key,
         tarr,
     )
-    diffstar_params, sfh = mc_diffstar_sfh_galpop(*args)
-    assert sfh.shape == (ngals, nt)
-    assert np.all(np.isfinite(sfh))
-    assert np.all(sfh > 0)
-    assert np.all(sfh < 1e5)
+    params_q, params_ms, sfh_q, sfh_ms, frac_q = mc_diffstar_sfh_galpop(*args)
+    assert sfh_q.shape == (ngals, nt)
+    assert np.all(np.isfinite(sfh_q))
+    assert np.all(sfh_q > 0)
+    assert np.all(sfh_q < 1e5)
+
+    assert sfh_ms.shape == (ngals, nt)
+    assert np.all(np.isfinite(sfh_ms))
+    assert np.all(sfh_ms > 0)
+    assert np.all(sfh_ms < 1e5)
 
 
 def test_grad_mc_diffstar_params_singlegal_evaluates():
@@ -198,7 +227,8 @@ def test_grad_mc_diffstar_params_singlegal_evaluates():
     lgmu_infall = -1.5 + zz
     logmhost_infall = 14.0 + zz
     gyr_since_infall = 3.0 + zz
-    target_sfh_params = mc_diffstar_params_galpop(
+
+    target_sfh_params_q, target_sfh_params_ms, target_frac_q = mc_diffstar_params_galpop(
         DEFAULT_DIFFSTARPOP_PARAMS,
         mah_params_galpop,
         p50,
@@ -224,7 +254,7 @@ def test_grad_mc_diffstar_params_singlegal_evaluates():
         gyr_since_infall,
         ran_key,
     ):
-        sfh_params = mc_diffstar_params_galpop(
+        sfh_params_q, sfh_params_ms, frac_q = mc_diffstar_params_galpop(
             diffstarpop_params,
             mah_params,
             p50,
@@ -233,7 +263,10 @@ def test_grad_mc_diffstar_params_singlegal_evaluates():
             gyr_since_infall,
             ran_key,
         )
-        return _mse(sfh_params, target_sfh_params)
+        mse_val = _mse(sfh_params_q, target_sfh_params_q)
+        mse_val += _mse(sfh_params_ms, target_sfh_params_ms)
+        mse_val += jnp.sum((frac_q - target_frac_q)**2)
+        return mse_val
 
     gfunc = jjit(value_and_grad(_loss, argnums=0))
 
