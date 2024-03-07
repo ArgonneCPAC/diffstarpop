@@ -1,5 +1,6 @@
 """This module implements kernels for Monte Carlo generating Diffstar SFHs
 """
+
 from diffstar import (
     DiffstarParams,
     calc_sfh_galpop,
@@ -93,7 +94,7 @@ def mc_diffstar_sfh_singlegal(
         Star formation rate in units of Msun/yr for main sequence galaxy
 
     frac_q : float
-        Quenched fraction. 
+        Quenched fraction.
 
     """
     diffstar_params_q, diffstar_params_ms, frac_q = mc_diffstar_params_singlegal(
@@ -167,7 +168,7 @@ def mc_diffstar_params_singlegal(
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
     frac_q : float
-        Quenched fraction. 
+        Quenched fraction.
 
     """
     diffstar_u_params_q, diffstar_u_params_ms, frac_q = mc_diffstar_u_params_singlegal(
@@ -206,12 +207,10 @@ def mc_diffstar_u_params_singlegal(
         gyr_since_infall,
         ran_key,
     )
-    
-    (
-        diffstar_u_params_q, 
-        diffstar_u_params_ms, 
-        frac_q
-    ) = mc_diffstar_u_params_singlegal_kernel(*args)
+
+    (diffstar_u_params_q, diffstar_u_params_ms, frac_q) = (
+        mc_diffstar_u_params_singlegal_kernel(*args)
+    )
     return diffstar_u_params_q, diffstar_u_params_ms, frac_q
 
 
@@ -234,18 +233,16 @@ def mc_diffstar_u_params_galpop(
     """"""
     ngals = p50.size
     ran_keys = jran.split(ran_key, ngals)
-    (
-        diffstar_u_params_q, 
-        diffstar_u_params_ms, 
-        frac_q
-    ) = mc_diffstar_u_params_galpop_kernel(
-        diffstarpop_params,
-        mah_params,
-        p50,
-        lgmu_infall,
-        logmhost_infall,
-        gyr_since_infall,
-        ran_keys,
+    (diffstar_u_params_q, diffstar_u_params_ms, frac_q) = (
+        mc_diffstar_u_params_galpop_kernel(
+            diffstarpop_params,
+            mah_params,
+            p50,
+            lgmu_infall,
+            logmhost_infall,
+            gyr_since_infall,
+            ran_keys,
+        )
     )
     return diffstar_u_params_q, diffstar_u_params_ms, frac_q
 
@@ -310,7 +307,7 @@ def mc_diffstar_params_galpop(
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
     frac_q : ndarray of shape (ngals, )
-        Quenched fraction. 
+        Quenched fraction.
 
     """
     diffstar_u_params_q, diffstar_u_params_ms, frac_q = mc_diffstar_u_params_galpop(
@@ -406,7 +403,7 @@ def mc_diffstar_sfh_galpop(
         Star formation rate in units of Msun/yr for main sequence galaxy
 
     frac_q : ndarray of shape (ngals, )
-        Quenched fraction. 
+        Quenched fraction.
 
     """
     diffstar_params_q, diffstar_params_ms, frac_q = mc_diffstar_params_galpop(

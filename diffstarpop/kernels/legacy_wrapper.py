@@ -3,6 +3,7 @@ point in Diffstar parameter space. This kernel is based on the original Diffstar
 implementation that used OrderedDicts for parameters.
 
 """
+
 from collections import OrderedDict
 
 from diffstar import DEFAULT_DIFFSTAR_U_PARAMS

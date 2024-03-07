@@ -1,5 +1,6 @@
 """
 """
+
 from diffstar import DiffstarUParams, MSUParams, QUParams
 from diffstar.defaults import DEFAULT_DIFFSTAR_U_PARAMS, DEFAULT_Q_U_PARAMS_UNQUENCHED
 from jax import jit as jjit
@@ -71,7 +72,9 @@ def mc_diffstar_u_params_singlegal_kernel(
     )
 
     u_params_q = DiffstarUParams(MSUParams(*u_params_q[:5]), QUParams(*u_params_q[5:]))
-    u_params_ms = DiffstarUParams(MSUParams(*u_params_ms[:5]), QUParams(*u_params_ms[5:]))
+    u_params_ms = DiffstarUParams(
+        MSUParams(*u_params_ms[:5]), QUParams(*u_params_ms[5:])
+    )
     return u_params_q, u_params_ms, frac_q
 
 
@@ -92,7 +95,6 @@ def mc_diffstar_u_params_singlegal_quenched_kernel(
 
     u_indx_hi = DEFAULT_DIFFSTAR_U_PARAMS.u_ms_params.u_indx_hi
 
-
     u_params_q_no_indx_hi = jran.multivariate_normal(
         q_key, jnp.array(mu_qs), cov_qs, shape=()
     )
@@ -102,6 +104,7 @@ def mc_diffstar_u_params_singlegal_quenched_kernel(
 
     u_params_q = DiffstarUParams(MSUParams(*u_params_q[:5]), QUParams(*u_params_q[5:]))
     return u_params_q
+
 
 @jjit
 def mc_diffstar_u_params_singlegal_mainseq_kernel(
@@ -131,7 +134,9 @@ def mc_diffstar_u_params_singlegal_mainseq_kernel(
         )
     )
 
-    u_params_ms = DiffstarUParams(MSUParams(*u_params_ms[:5]), QUParams(*u_params_ms[5:]))
+    u_params_ms = DiffstarUParams(
+        MSUParams(*u_params_ms[:5]), QUParams(*u_params_ms[5:])
+    )
     return u_params_ms
 
 
@@ -218,8 +223,6 @@ def diffstarpop_frac_q(
 ):
     R_vals_q = get_assembias_slopes_qseq(ab_qs_params, mah_params)
     shifts_q = jnp.array(R_vals_q) * (p50 - 0.5)
-
-    mu_qs = tuple((x + y for x, y in zip(mu_qs, shifts_q[1:])))
 
     x0_shifted = qs_mass_params.frac_quench_x0 + shifts_q[0]
     qs_mass_params = qs_mass_params._replace(frac_quench_x0=x0_shifted)
