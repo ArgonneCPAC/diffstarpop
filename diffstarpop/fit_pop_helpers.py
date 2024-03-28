@@ -693,7 +693,7 @@ def calculate_SMDPL_sumstats(
     logm0_binmids,
     logm0_bin_widths,
     mah_params,
-    fit_params,
+    u_fit_params,
     p50,
 ):
     logmpeak = mah_params[:, 1]
@@ -722,8 +722,8 @@ def calculate_SMDPL_sumstats(
             lgt,
             dt,
             mah_params[sel][:, [1, 2, 4, 5]],
-            fit_params[sel][:, [0, 1, 2, 4]].copy(),
-            fit_params[sel][:, [5, 6, 7, 8]].copy(),
+            u_fit_params[sel][:, [0, 1, 2, 4]].copy(),
+            u_fit_params[sel][:, [5, 6, 7, 8]].copy(),
             index_select,
             index_high,
             fstar_tdelay,
