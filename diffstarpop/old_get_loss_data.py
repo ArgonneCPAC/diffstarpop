@@ -86,7 +86,7 @@ def calculate_SMDPL_sumstats(
     return new_stats
 
 
-def get_loss_p50_data(path="/lcrc/project/halotools/alarcon/data/"):
+def get_loss_p50_data(path="/lcrc/project/halotools/alarcon/data/", Nhalos=3000):
     # path = "/Users/alarcon/Documents/diffmah_data/SMDPL/"
 
     # Pre-aggregated halo and galaxy fits from all 576 SMDPL volumes.
@@ -118,7 +118,7 @@ def get_loss_p50_data(path="/lcrc/project/halotools/alarcon/data/"):
     MC_res_target = np.array(MC_res_target)
 
     # Select the subset of Nhalos per halo mass bin that will be used in the gradient descent of the loss function.
-    Nhalos = 3000
+
     halo_data_MC = []
     p50 = []
     for i in range(len(logm0_binmids)):
