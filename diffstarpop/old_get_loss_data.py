@@ -1,6 +1,8 @@
 """
 """
 
+import os
+
 import numpy as np
 from dsps.constants import SFR_MIN
 from dsps.utils import _jax_get_dt_array, cumulative_mstar_formed
@@ -90,10 +92,10 @@ def get_loss_p50_data(path="/lcrc/project/halotools/alarcon/data/"):
     # Pre-aggregated halo and galaxy fits from all 576 SMDPL volumes.
     # Below Mh<12 only a subset of halos are included in these files.
     # The selection makes the halo mass function is constant at Mh<12 (for speedup).
-    mah_params_arr = np.load(path + "mah_params_arr_576_small.npy")
-    u_fit_params_arr = np.load(path + "u_fit_params_arr_576_small.npy")
+    mah_params_arr = np.load(os.path.join(path, "mah_params_arr_576_small.npy"))
+    u_fit_params_arr = np.load(os.path.join(path, "u_fit_params_arr_576_small.npy"))
     # fit_params_arr = np.load(path+"fit_params_arr_576_small.npy")
-    p50_arr = np.load(path + "p50_arr_576_small.npy")
+    p50_arr = np.load(os.path.join(path, "p50_arr_576_small.npy"))
     logmpeak = mah_params_arr[:, 1]
 
     t_table = np.linspace(1.0, TODAY, 20)
