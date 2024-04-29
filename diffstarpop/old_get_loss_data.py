@@ -5,11 +5,10 @@ import os
 
 import numpy as np
 from dsps.constants import SFR_MIN
+from dsps.cosmology.defaults import TODAY
 from dsps.utils import _jax_get_dt_array, cumulative_mstar_formed
 from jax import jit as jjit
 from jax import numpy as jnp
-
-TODAY = 13.75
 
 
 @jjit
@@ -86,7 +85,9 @@ def calculate_SMDPL_sumstats(
     return new_stats
 
 
-def get_loss_p50_data(path="/lcrc/project/halotools/alarcon/data/", Nhalos=3000):
+def get_loss_p50_data(
+    path="/lcrc/project/halotools/alarcon/data/", Nhalos=3000, today=TODAY
+):
     # path = "/Users/alarcon/Documents/diffmah_data/SMDPL/"
 
     # Pre-aggregated halo and galaxy fits from all 576 SMDPL volumes.
@@ -98,7 +99,7 @@ def get_loss_p50_data(path="/lcrc/project/halotools/alarcon/data/", Nhalos=3000)
     p50_arr = np.load(os.path.join(path, "p50_arr_576_small.npy"))
     logmpeak = mah_params_arr[:, 1]
 
-    t_table = np.linspace(1.0, TODAY, 20)
+    t_table = np.linspace(1.0, today, 20)
     # Define some mass bins for predictions
     # logm0_binmids = np.linspace(11.5, 13.5, 5)
     logm0_binmids = np.linspace(11.0, 14.0, 7)
