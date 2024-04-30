@@ -50,8 +50,8 @@ def calculate_SMDPL_sumstats(
         mah_params = DiffmahParams(*mah_params_arr[:,np.array([1,2,4,5])][sel].T)
 
         histories = calc_sfh_galpop(diffstar_params, mah_params, t_table, lgt0=LGT0, fb=FB, return_smh=True)
-        mstar_histories = histories.sfh
-        sfr_histories = histories.smh
+        mstar_histories = histories.smh
+        sfr_histories = histories.sfh
 
         ssfr = sfr_histories / mstar_histories
         weights_quench_bin = jnp.where(ssfr > 1e-11, 1.0, 0.0)
