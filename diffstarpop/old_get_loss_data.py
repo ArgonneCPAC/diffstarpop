@@ -4,26 +4,21 @@
 import os
 
 import numpy as np
-from dsps.constants import SFR_MIN
+from diffmah.defaults import DiffmahParams
+from diffstar import (
+    DiffstarUParams,
+    MSParams,
+    QParams,
+    calc_sfh_galpop,
+    get_bounded_diffstar_params,
+)
+from diffstar.defaults import FB, LGT0
 from dsps.cosmology.defaults import TODAY
-from dsps.utils import _jax_get_dt_array, cumulative_mstar_formed
 from jax import jit as jjit
 from jax import numpy as jnp
 from jax import vmap
 
-from diffstar import (
-    DiffstarParams,
-    DiffstarUParams,
-    MSParams,
-    QParams,
-    calc_sfh_galpop, 
-    get_bounded_diffstar_params,
-)
-from diffmah.defaults import DEFAULT_MAH_PARAMS, DiffmahParams
-from diffstar.defaults import FB, LGT0
-
 get_bounded_diffstar_params_galpop = jjit(vmap(get_bounded_diffstar_params, in_axes=0))
-
 
 
 def calculate_SMDPL_sumstats(
@@ -45,11 +40,16 @@ def calculate_SMDPL_sumstats(
         )
         print("Nhalos:", sel.sum())
 
-        diffstar_u_params = DiffstarUParams(MSParams(*u_fit_params_arr[:,:5][sel].T), QParams(*u_fit_params_arr[:,5:][sel].T))
+        diffstar_u_params = DiffstarUParams(
+            MSParams(*u_fit_params_arr[:, :5][sel].T),
+            QParams(*u_fit_params_arr[:, 5:][sel].T),
+        )
         diffstar_params = get_bounded_diffstar_params_galpop(diffstar_u_params)
-        mah_params = DiffmahParams(*mah_params_arr[:,np.array([1,2,4,5])][sel].T)
+        mah_params = DiffmahParams(*mah_params_arr[:, np.array([1, 2, 4, 5])][sel].T)
 
-        histories = calc_sfh_galpop(diffstar_params, mah_params, t_table, lgt0=LGT0, fb=FB, return_smh=True)
+        histories = calc_sfh_galpop(
+            diffstar_params, mah_params, t_table, lgt0=LGT0, fb=FB, return_smh=True
+        )
         mstar_histories = histories.smh
         sfr_histories = histories.sfh
 
