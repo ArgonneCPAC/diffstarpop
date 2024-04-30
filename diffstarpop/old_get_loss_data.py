@@ -9,28 +9,27 @@ from dsps.cosmology.defaults import TODAY
 from dsps.utils import _jax_get_dt_array, cumulative_mstar_formed
 from jax import jit as jjit
 from jax import numpy as jnp
+from jax import vmap
 
+from diffstar import (
+    DiffstarParams,
+    DiffstarUParams,
+    MSParams,
+    QParams,
+    calc_sfh_galpop, 
+    get_bounded_diffstar_params,
+)
+from diffmah.defaults import DEFAULT_MAH_PARAMS, DiffmahParams
+from diffstar.defaults import FB, LGT0
 
-@jjit
-def sm_sfr_history_diffstar_scan(tarr, lgt, mah_params, sfr_ms_params, q_params):
-    sfr_params = [*sfr_ms_params[0:3], UH, sfr_ms_params[3]]
-    ms_sfr = sfh_scan_tobs_kern(tarr, mah_params, sfr_params)
-    qfrac = quenching_function(lgt, *q_params)
-    sfr = qfrac * ms_sfr
-    sfr = jnp.clip(sfr, SFR_MIN, None)
-    mstar = cumulative_mstar_formed(tarr, sfr)
-    return mstar, sfr
+get_bounded_diffstar_params_galpop = jjit(vmap(get_bounded_diffstar_params, in_axes=0))
+
 
 
 def calculate_SMDPL_sumstats(
-    t_table, logm0_binmids, logm0_bin_widths, mah_params, u_fit_params, p50
+    t_table, logm0_binmids, logm0_bin_widths, mah_params_arr, u_fit_params_arr, p50
 ):
-    logmpeak = mah_params[:, 1]
-
-    lgt = np.log10(t_table)
-
-    fstar_tdelay = 1.0
-    dt = _jax_get_dt_array(t_table)
+    logmpeak = mah_params_arr[:, 1]
 
     stats = []
     for i in range(len(logm0_binmids)):
@@ -45,23 +44,14 @@ def calculate_SMDPL_sumstats(
             logmpeak < logm0_binmids[i] + logm0_bin_widths[i]
         )
         print("Nhalos:", sel.sum())
-        _res = sm_sfr_history_diffstar_scan_XsfhXmah_vmap(
-            t_table,
-            lgt,
-            dt,
-            mah_params[sel][:, [1, 2, 4, 5]],
-            u_fit_params[sel][:, [0, 1, 2, 4]].copy(),
-            u_fit_params[sel][:, [5, 6, 7, 8]].copy(),
-            index_select,
-            index_high,
-            fstar_tdelay,
-        )
 
-        (
-            mstar_histories,
-            sfr_histories,
-            fstar_histories,
-        ) = _res
+        diffstar_u_params = DiffstarUParams(MSParams(*u_fit_params_arr[:,:5][sel].T), QParams(*u_fit_params_arr[:,5:][sel].T))
+        diffstar_params = get_bounded_diffstar_params_galpop(diffstar_u_params)
+        mah_params = DiffmahParams(*mah_params_arr[:,np.array([1,2,4,5])][sel].T)
+
+        histories = calc_sfh_galpop(diffstar_params, mah_params, t_table, lgt0=LGT0, fb=FB, return_smh=True)
+        mstar_histories = histories.sfh
+        sfr_histories = histories.smh
 
         ssfr = sfr_histories / mstar_histories
         weights_quench_bin = jnp.where(ssfr > 1e-11, 1.0, 0.0)
