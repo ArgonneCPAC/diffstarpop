@@ -153,6 +153,21 @@ def _diffstarpop_pdf_params(
     logmhost_infall,
     gyr_since_infall,
 ):
+    args = (ms_mass_params, qs_mass_params, ab_ms_params, ab_qs_params, mah_params, p50)
+    mu_ms, cov_ms, mu_qs, cov_qs, frac_q = _diffstarpop_pdf_params_cens(*args)
+
+    # Modify frac_q for satellites
+    frac_q = get_qprob_sat(
+        satquenchpop_params, lgmu_infall, logmhost_infall, gyr_since_infall, frac_q
+    )
+
+    return mu_ms, cov_ms, mu_qs, cov_qs, frac_q
+
+
+@jjit
+def _diffstarpop_pdf_params_cens(
+    ms_mass_params, qs_mass_params, ab_ms_params, ab_qs_params, mah_params, p50
+):
     mu_ms, cov_ms = main_sequence_mu_cov(ms_mass_params, mah_params)
     mu_qs, cov_qs = quenched_sequence_mu_cov(qs_mass_params, mah_params)
 
@@ -168,11 +183,6 @@ def _diffstarpop_pdf_params(
     x0_shifted = qs_mass_params.frac_quench_x0 + shifts_q[0]
     qs_mass_params = qs_mass_params._replace(frac_quench_x0=x0_shifted)
     frac_q = frac_quench_vs_lgm0(qs_mass_params, mah_params)
-
-    frac_q = get_qprob_sat(
-        satquenchpop_params, lgmu_infall, logmhost_infall, gyr_since_infall, frac_q
-    )
-
     return mu_ms, cov_ms, mu_qs, cov_qs, frac_q
 
 
