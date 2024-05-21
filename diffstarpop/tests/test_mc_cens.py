@@ -2,13 +2,13 @@
 """
 
 import numpy as np
-from diffmah.defaults import DEFAULT_MAH_PARAMS
+from diffmah.defaults import DEFAULT_MAH_PARAMS, DiffmahParams
 from diffstar import DEFAULT_DIFFSTAR_PARAMS
 from diffstar.defaults import T_TABLE_MIN, TODAY
 from jax import random as jran
 
 from ..defaults import DEFAULT_DIFFSTARPOP_PARAMS
-from ..mc_cens import mc_diffstar_sfh_singlecen
+from ..mc_cens import mc_diffstar_sfh_cenpop, mc_diffstar_sfh_singlecen
 
 
 def test_mc_diffstar_params_galpop_evaluates():
@@ -34,3 +34,24 @@ def test_mc_diffstar_params_galpop_evaluates():
         assert p.shape == ()
 
     assert frac_q.shape == ()
+
+
+def test_mc_diffstar_sfh_cenpop_evaluates():
+    ran_key = jran.PRNGKey(0)
+    p50 = 0.8
+    nt = 50
+    tarr = np.linspace(0.1, 13.7, nt)
+    ngals = 150
+    zz = np.zeros(ngals)
+    mah_params_galpop = DiffmahParams(*[zz + x for x in DEFAULT_MAH_PARAMS])
+    args = (DEFAULT_DIFFSTARPOP_PARAMS, mah_params_galpop, p50 + zz, ran_key, tarr)
+    params_q, params_ms, sfh_q, sfh_ms, frac_q = mc_diffstar_sfh_cenpop(*args)
+    assert sfh_q.shape == (ngals, nt)
+    assert np.all(np.isfinite(sfh_q))
+    assert np.all(sfh_q > 0)
+    assert np.all(sfh_q < 1e5)
+
+    assert sfh_ms.shape == (ngals, nt)
+    assert np.all(np.isfinite(sfh_ms))
+    assert np.all(sfh_ms > 0)
+    assert np.all(sfh_ms < 1e5)
