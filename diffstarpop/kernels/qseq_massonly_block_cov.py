@@ -1,6 +1,7 @@
 """Model of a quenched galaxy population calibrated to SMDPL halos."""
 
 from collections import OrderedDict, namedtuple
+from copy import deepcopy
 
 from diffmah.utils import get_cholesky_from_params
 from jax import jit as jjit
@@ -113,7 +114,7 @@ DEFAULT_SFH_PDF_QUENCH_PARAMS = QseqMassOnlyParams(**DEFAULT_SFH_PDF_QUENCH_PDIC
 _UPNAMES = ["u_" + key for key in DEFAULT_SFH_PDF_QUENCH_PDICT.keys()]
 QseqMassOnlyUParams = namedtuple("QseqMassOnlyUParams", _UPNAMES)
 
-DEFAULT_SFH_PDF_QUENCH_PDICT_MS_BLOCK = OrderedDict(
+DEFAULT_SFH_PDF_QUENCH_MS_BLOCK_PDICT = OrderedDict(
     mean_ulgm_quench_ylo=11.540,
     mean_ulgm_quench_yhi=12.080,
     mean_ulgy_quench_ylo=0.481,
@@ -143,7 +144,7 @@ DEFAULT_SFH_PDF_QUENCH_PDICT_MS_BLOCK = OrderedDict(
     chol_utau_ul_quench_ylo=-0.566,
     chol_utau_ul_quench_yhi=-0.848,
 )
-DEFAULT_SFH_PDF_QUENCH_PDICT_Q_BLOCK = OrderedDict(
+DEFAULT_SFH_PDF_QUENCH_Q_BLOCK_PDICT = OrderedDict(
     mean_uqt_quench_ylo=1.744,
     mean_uqt_quench_yhi=0.042,
     mean_uqs_quench_ylo=-2.979,
@@ -172,6 +173,15 @@ DEFAULT_SFH_PDF_QUENCH_PDICT_Q_BLOCK = OrderedDict(
     chol_urej_uqs_quench_yhi=2.030,
     chol_urej_udrop_quench_ylo=-1.445,
     chol_urej_udrop_quench_yhi=-2.245,
+)
+DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT = deepcopy(DEFAULT_SFH_PDF_QUENCH_MS_BLOCK_PDICT)
+DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT.update(DEFAULT_SFH_PDF_QUENCH_Q_BLOCK_PDICT)
+
+QseqMassOnlyBlockParams = namedtuple(
+    "Params", list(DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT.keys())
+)
+DEFAULT_SFH_PDF_QUENCH_BLOCK_PARAMS = QseqMassOnlyBlockParams(
+    **DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT
 )
 
 
@@ -220,6 +230,110 @@ def _get_mean_u_params_qseq(params, lgm):
     udrop = _fun(lgm, params.mean_udrop_quench_ylo, params.mean_udrop_quench_yhi)
     urej = _fun(lgm, params.mean_urej_quench_ylo, params.mean_urej_quench_yhi)
     return ulgm, ulgy, ul, utau, uqt, uqs, udrop, urej
+
+
+@jjit
+def _get_mean_u_params_qseq_ms_block(params, lgm):
+    ulgm = _fun_Mcrit(lgm, params.mean_ulgm_quench_ylo, params.mean_ulgm_quench_yhi)
+    ulgy = _fun(lgm, params.mean_ulgy_quench_ylo, params.mean_ulgy_quench_yhi)
+    ul = _fun(lgm, params.mean_ul_quench_ylo, params.mean_ul_quench_yhi)
+    utau = _fun(lgm, params.mean_utau_quench_ylo, params.mean_utau_quench_yhi)
+    return (ulgm, ulgy, ul, utau)
+
+
+@jjit
+def _get_mean_u_params_qseq_q_block(params, lgm):
+    uqt = _fun(lgm, params.mean_uqt_quench_ylo, params.mean_uqt_quench_yhi)
+    uqs = _fun(lgm, params.mean_uqs_quench_ylo, params.mean_uqs_quench_yhi)
+    udrop = _fun(lgm, params.mean_udrop_quench_ylo, params.mean_udrop_quench_yhi)
+    urej = _fun(lgm, params.mean_urej_quench_ylo, params.mean_urej_quench_yhi)
+    return uqt, uqs, udrop, urej
+
+
+@jjit
+def _get_chol_u_params_qseq_ms_block(params, lgm):
+    ulgm_ulgm = _fun_chol_diag(
+        lgm, params.chol_ulgm_ulgm_quench_ylo, params.chol_ulgm_ulgm_quench_yhi
+    )
+    ulgy_ulgy = _fun_chol_diag(
+        lgm, params.chol_ulgy_ulgy_quench_ylo, params.chol_ulgy_ulgy_quench_yhi
+    )
+    ul_ul = _fun_chol_diag(
+        lgm, params.chol_ul_ul_quench_ylo, params.chol_ul_ul_quench_yhi
+    )
+    utau_utau = _fun_chol_diag(
+        lgm, params.chol_utau_utau_quench_ylo, params.chol_utau_utau_quench_yhi
+    )
+
+    ulgy_ulgm = _fun(
+        lgm, params.chol_ulgy_ulgm_quench_ylo, params.chol_ulgy_ulgm_quench_yhi
+    )
+    ul_ulgm = _fun(lgm, params.chol_ul_ulgm_quench_ylo, params.chol_ul_ulgm_quench_yhi)
+    ul_ulgy = _fun(lgm, params.chol_ul_ulgy_quench_ylo, params.chol_ul_ulgy_quench_yhi)
+    utau_ulgm = _fun(
+        lgm, params.chol_utau_ulgm_quench_ylo, params.chol_utau_ulgm_quench_yhi
+    )
+    utau_ulgy = _fun(
+        lgm, params.chol_utau_ulgy_quench_ylo, params.chol_utau_ulgy_quench_yhi
+    )
+    utau_ul = _fun(lgm, params.chol_utau_ul_quench_ylo, params.chol_utau_ul_quench_yhi)
+
+    return (
+        ulgm_ulgm,
+        ulgy_ulgy,
+        ul_ul,
+        utau_utau,
+        ulgy_ulgm,
+        ul_ulgm,
+        ul_ulgy,
+        utau_ulgm,
+        utau_ulgy,
+        utau_ul,
+    )
+
+
+@jjit
+def _get_chol_u_params_qseq_q_block(params, lgm):
+    uqt_uqt = _fun_chol_diag(
+        lgm, params.chol_uqt_uqt_quench_ylo, params.chol_uqt_uqt_quench_yhi
+    )
+    uqs_uqs = _fun_chol_diag(
+        lgm, params.chol_uqs_uqs_quench_ylo, params.chol_uqs_uqs_quench_yhi
+    )
+    udrop_udrop = _fun_chol_diag(
+        lgm, params.chol_udrop_udrop_quench_ylo, params.chol_udrop_udrop_quench_yhi
+    )
+    urej_urej = _fun_chol_diag(
+        lgm, params.chol_urej_urej_quench_ylo, params.chol_urej_urej_quench_yhi
+    )
+    uqs_uqt = _fun(lgm, params.chol_uqs_uqt_quench_ylo, params.chol_uqs_uqt_quench_yhi)
+    udrop_uqt = _fun(
+        lgm, params.chol_udrop_uqt_quench_ylo, params.chol_udrop_uqt_quench_yhi
+    )
+    udrop_uqs = _fun(
+        lgm, params.chol_udrop_uqs_quench_ylo, params.chol_udrop_uqs_quench_yhi
+    )
+    urej_uqt = _fun(
+        lgm, params.chol_urej_uqt_quench_ylo, params.chol_urej_uqt_quench_yhi
+    )
+    urej_uqs = _fun(
+        lgm, params.chol_urej_uqs_quench_ylo, params.chol_urej_uqs_quench_yhi
+    )
+    urej_udrop = _fun(
+        lgm, params.chol_urej_udrop_quench_ylo, params.chol_urej_udrop_quench_yhi
+    )
+    return (
+        uqt_uqt,
+        uqs_uqs,
+        udrop_udrop,
+        urej_urej,
+        uqs_uqt,
+        udrop_uqt,
+        udrop_uqs,
+        urej_uqt,
+        urej_uqs,
+        urej_udrop,
+    )
 
 
 @jjit
