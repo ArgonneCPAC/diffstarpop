@@ -9,6 +9,7 @@ from jax import vmap
 from .. import qseq_massonly_block_cov as qseq
 
 get_cholesky_from_params_vmap = jjit(vmap(get_cholesky_from_params, in_axes=(0,)))
+_get_cov_qseq_vmap = jjit(vmap(qseq._get_cov_qseq, in_axes=(None, 0)))
 
 
 def test_frac_quench_vs_lgm0():
@@ -51,3 +52,23 @@ def test_get_chol_u_params_qseq():
     chols = get_cholesky_from_params_vmap(chol_params)
     assert np.allclose(chols0, chols[0, :])
     assert chols.shape == (ngals, 8, 8)
+
+
+def test_get_cov_qseq():
+    ngals = 100
+    lgmarr = np.linspace(11, 15, ngals)
+    params = qseq.DEFAULT_SFH_PDF_QUENCH_PARAMS
+    cov_qseq0 = qseq._get_cov_qseq(params, lgmarr[0])
+    covs_qseq = _get_cov_qseq_vmap(params, lgmarr)
+    assert np.allclose(cov_qseq0, covs_qseq[0, :, :])
+    assert covs_qseq.shape == (ngals, 8, 8)
+    assert np.all(np.isfinite(covs_qseq))
+    for cov in covs_qseq:
+        det = np.linalg.det(cov)
+        assert det.shape == ()
+        assert det > 0
+        covinv = np.linalg.inv(cov)
+        assert np.all(np.isfinite(covinv))
+        assert np.allclose(cov, cov.T)
+        evals, evecs = np.linalg.eigh(cov)
+        assert np.all(evals > 0)
