@@ -1,12 +1,12 @@
 """Model of a quenched galaxy population calibrated to SMDPL halos."""
+
 from collections import OrderedDict, namedtuple
 
+from diffmah.utils import get_cholesky_from_params
 from jax import jit as jjit
 from jax import numpy as jnp
 
 from ..utils import _sigmoid
-
-from diffmah.utils import get_cholesky_from_params
 
 TODAY = 13.8
 LGT0 = jnp.log10(TODAY)
@@ -112,6 +112,67 @@ DEFAULT_SFH_PDF_QUENCH_PARAMS = QseqMassOnlyParams(**DEFAULT_SFH_PDF_QUENCH_PDIC
 
 _UPNAMES = ["u_" + key for key in DEFAULT_SFH_PDF_QUENCH_PDICT.keys()]
 QseqMassOnlyUParams = namedtuple("QseqMassOnlyUParams", _UPNAMES)
+
+DEFAULT_SFH_PDF_QUENCH_PDICT_MS_BLOCK = OrderedDict(
+    mean_ulgm_quench_ylo=11.540,
+    mean_ulgm_quench_yhi=12.080,
+    mean_ulgy_quench_ylo=0.481,
+    mean_ulgy_quench_yhi=-0.223,
+    mean_ul_quench_ylo=-1.274,
+    mean_ul_quench_yhi=1.766,
+    mean_utau_quench_ylo=55.480,
+    mean_utau_quench_yhi=-66.540,
+    chol_ulgm_ulgm_quench_ylo=-1.645,
+    chol_ulgm_ulgm_quench_yhi=0.010,
+    chol_ulgy_ulgy_quench_ylo=-1.125,
+    chol_ulgy_ulgy_quench_yhi=-0.530,
+    chol_ul_ul_quench_ylo=-0.701,
+    chol_ul_ul_quench_yhi=0.544,
+    chol_utau_utau_quench_ylo=0.833,
+    chol_utau_utau_quench_yhi=1.100,
+    chol_ulgy_ulgm_quench_ylo=-0.809,
+    chol_ulgy_ulgm_quench_yhi=-1.790,
+    chol_ul_ulgm_quench_ylo=0.277,
+    chol_ul_ulgm_quench_yhi=0.357,
+    chol_ul_ulgy_quench_ylo=0.152,
+    chol_ul_ulgy_quench_yhi=0.068,
+    chol_utau_ulgm_quench_ylo=-1.214,
+    chol_utau_ulgm_quench_yhi=-0.822,
+    chol_utau_ulgy_quench_ylo=0.115,
+    chol_utau_ulgy_quench_yhi=0.204,
+    chol_utau_ul_quench_ylo=-0.566,
+    chol_utau_ul_quench_yhi=-0.848,
+)
+DEFAULT_SFH_PDF_QUENCH_PDICT_Q_BLOCK = OrderedDict(
+    mean_uqt_quench_ylo=1.744,
+    mean_uqt_quench_yhi=0.042,
+    mean_uqs_quench_ylo=-2.979,
+    mean_uqs_quench_yhi=3.520,
+    mean_udrop_quench_ylo=-0.508,
+    mean_udrop_quench_yhi=-3.785,
+    mean_urej_quench_ylo=2.139,
+    mean_urej_quench_yhi=-3.043,
+    chol_uqt_uqt_quench_ylo=-1.001,
+    chol_uqt_uqt_quench_yhi=-1.228,
+    chol_uqs_uqs_quench_ylo=-0.814,
+    chol_uqs_uqs_quench_yhi=-0.560,
+    chol_udrop_udrop_quench_ylo=-0.612,
+    chol_udrop_udrop_quench_yhi=-0.824,
+    chol_urej_urej_quench_ylo=0.560,
+    chol_urej_urej_quench_yhi=-1.103,
+    chol_uqs_uqt_quench_ylo=-0.395,
+    chol_uqs_uqt_quench_yhi=-0.508,
+    chol_udrop_uqt_quench_ylo=2.323,
+    chol_udrop_uqt_quench_yhi=3.009,
+    chol_udrop_uqs_quench_ylo=1.021,
+    chol_udrop_uqs_quench_yhi=-0.074,
+    chol_urej_uqt_quench_ylo=-0.508,
+    chol_urej_uqt_quench_yhi=0.758,
+    chol_urej_uqs_quench_ylo=1.561,
+    chol_urej_uqs_quench_yhi=2.030,
+    chol_urej_udrop_quench_ylo=-1.445,
+    chol_urej_udrop_quench_yhi=-2.245,
+)
 
 
 @jjit

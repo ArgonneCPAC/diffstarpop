@@ -72,3 +72,14 @@ def test_get_cov_qseq():
         assert np.allclose(cov, cov.T)
         evals, evecs = np.linalg.eigh(cov)
         assert np.all(evals > 0)
+
+
+def test_sub_block_param_dicts_have_expected_dimension():
+    ms_block_dict = qseq.DEFAULT_SFH_PDF_QUENCH_PDICT_MS_BLOCK
+    q_block_dict = qseq.DEFAULT_SFH_PDF_QUENCH_PDICT_Q_BLOCK
+    n_entries_chol_44 = 4 * (4 + 1) / 2
+    n_params_chol_44 = 2 * n_entries_chol_44
+    n_params_mean_44 = 2 * 4
+    n_params_block_44 = n_params_chol_44 + n_params_mean_44
+    assert len(ms_block_dict) == len(q_block_dict) == n_params_block_44
+    assert set(ms_block_dict.keys()) & set(q_block_dict.keys()) == set()
