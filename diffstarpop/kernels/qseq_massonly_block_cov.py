@@ -5,14 +5,15 @@ from collections import OrderedDict, namedtuple
 from diffmah.utils import get_cholesky_from_params
 from jax import jit as jjit
 from jax import numpy as jnp
+from jax import vmap
 
-from ..utils import _sigmoid
+from ..utils import _inverse_sigmoid, _sigmoid
 
 TODAY = 13.8
 LGT0 = jnp.log10(TODAY)
 
 LGM_X0, LGM_K = 13.0, 0.5
-
+BOUNDING_K = 0.1
 
 DEFAULT_SFH_PDF_QUENCH_MS_BLOCK_PDICT = OrderedDict(
     mean_ulgm_quench_ylo=11.540,
@@ -76,9 +77,9 @@ DEFAULT_SFH_PDF_QUENCH_Q_BLOCK_PDICT = OrderedDict(
 )
 DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT = OrderedDict(
     frac_quench_x0=11.860,
-    frac_quench_k=1.611,
-    frac_quench_ylo=-0.872,
-    frac_quench_yhi=2.139,
+    frac_quench_k=4.5,
+    frac_quench_ylo=0.05,
+    frac_quench_yhi=0.95,
 )
 DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT.update(DEFAULT_SFH_PDF_QUENCH_MS_BLOCK_PDICT)
 DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT.update(DEFAULT_SFH_PDF_QUENCH_Q_BLOCK_PDICT)
@@ -92,6 +93,34 @@ DEFAULT_SFH_PDF_QUENCH_BLOCK_PARAMS = QseqMassOnlyBlockParams(
 
 _UPNAMES = ["u_" + key for key in DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT.keys()]
 QseqMassOnlyBlockUParams = namedtuple("QseqMassOnlyBlockUParams", _UPNAMES)
+
+FRAC_Q_BOUNDS_PDICT = OrderedDict(
+    frac_quench_x0=(10.0, 15.0),
+    frac_quench_k=(1.0, 5.0),
+    frac_quench_ylo=(0.0, 1.0),
+    frac_quench_yhi=(0.0, 1.0),
+)
+FRAC_Q_PNAMES = list(FRAC_Q_BOUNDS_PDICT.keys())
+FracQParams = namedtuple("FracQParams", FRAC_Q_PNAMES)
+_FRAC_Q_UPNAMES = ["u_" + key for key in FRAC_Q_PNAMES]
+FracQUParams = namedtuple("FracQUParams", _FRAC_Q_UPNAMES)
+
+FRAC_Q_BOUNDS = FracQParams(**FRAC_Q_BOUNDS_PDICT)
+
+
+@jjit
+def _get_qseq_means_and_covs_scalar(params, lgm):
+    _res = _get_mean_u_params_qseq(params, lgm)
+    mu_ms = jnp.array(_res[:4])
+    mu_q = jnp.array(_res[4:])
+    cov_ms = _get_cov_qseq_ms_block(params, lgm)
+    cov_q = _get_cov_qseq_q_block(params, lgm)
+    frac_q = _frac_quench_vs_lgm0(params, lgm)
+    return mu_ms, cov_ms, mu_q, cov_q, frac_q
+
+
+_M = (None, 0)
+_get_qseq_means_and_covs_vmap = jjit(vmap(_get_qseq_means_and_covs_scalar, in_axes=_M))
 
 
 @jjit
@@ -111,14 +140,9 @@ def _fun_chol_diag(x, ymin, ymax):
 
 
 @jjit
-def _bound_fquench(x):
-    return _sigmoid(x, 0.5, 4.0, 0.0, 1.0)
-
-
-@jjit
 def _fun_fquench(x, x0, k, ymin, ymax):
-    _res = _sigmoid(x, x0, k, ymin, ymax)
-    return _bound_fquench(_res)
+    fquench = _sigmoid(x, x0, k, ymin, ymax)
+    return fquench
 
 
 @jjit
@@ -271,13 +295,49 @@ def _frac_quench_vs_lgm0(params, lgm0):
 
 
 @jjit
+def _get_bounded_fq_param(u_param, bound):
+    lo, hi = bound
+    mid = 0.5 * (lo + hi)
+    return _sigmoid(u_param, mid, BOUNDING_K, lo, hi)
+
+
+@jjit
+def _get_unbounded_fq_param(param, bound):
+    lo, hi = bound
+    mid = 0.5 * (lo + hi)
+    return _inverse_sigmoid(param, mid, BOUNDING_K, lo, hi)
+
+
+_C = (0, 0)
+_get_fq_params_kern = jjit(vmap(_get_bounded_fq_param, in_axes=_C))
+_get_fq_u_params_kern = jjit(vmap(_get_unbounded_fq_param, in_axes=_C))
+
+
+@jjit
 def get_bounded_qseq_massonly_params(u_params):
-    return QseqMassOnlyBlockParams(*u_params)
+    fq_u_params = jnp.array([getattr(u_params, u_pname) for u_pname in _FRAC_Q_UPNAMES])
+    fq_params = _get_fq_params_kern(fq_u_params, jnp.array(FRAC_Q_BOUNDS))
+    params = QseqMassOnlyBlockParams(*u_params)
+    params = params._replace(frac_quench_x0=fq_params[0])
+    params = params._replace(frac_quench_k=fq_params[1])
+    params = params._replace(frac_quench_ylo=fq_params[2])
+    params = params._replace(frac_quench_yhi=fq_params[3])
+    return params
 
 
 @jjit
 def get_unbounded_qseq_massonly_params(params):
-    return QseqMassOnlyBlockUParams(*params)
+    fq_params = jnp.array([getattr(params, pname) for pname in FRAC_Q_PNAMES])
+    fq_u_params = _get_fq_u_params_kern(fq_params, jnp.array(FRAC_Q_BOUNDS))
+
+    pnames = DEFAULT_SFH_PDF_QUENCH_BLOCK_PARAMS._fields
+    params = jnp.array([getattr(params, pname) for pname in pnames])
+    u_params = QseqMassOnlyBlockUParams(*params)
+    u_params = u_params._replace(u_frac_quench_x0=fq_u_params[0])
+    u_params = u_params._replace(u_frac_quench_k=fq_u_params[1])
+    u_params = u_params._replace(u_frac_quench_ylo=fq_u_params[2])
+    u_params = u_params._replace(u_frac_quench_yhi=fq_u_params[3])
+    return u_params
 
 
 DEFAULT_SFH_PDF_QUENCH_BLOCK_U_PARAMS = QseqMassOnlyBlockUParams(
