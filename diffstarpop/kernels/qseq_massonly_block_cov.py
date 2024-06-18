@@ -15,6 +15,63 @@ LGT0 = jnp.log10(TODAY)
 LGM_X0, LGM_K = 12.5, 1.0
 BOUNDING_K = 0.1
 
+SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
+    mean_ulgm_quench_ylo=11.540,
+    mean_ulgm_quench_yhi=12.080,
+    mean_ulgy_quench_ylo=0.481,
+    mean_ulgy_quench_yhi=-0.223,
+    mean_ul_quench_ylo=-1.274,
+    mean_ul_quench_yhi=1.766,
+    mean_utau_quench_ylo=55.480,
+    mean_utau_quench_yhi=-66.540,
+)
+
+SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT = OrderedDict(
+    std_ulgm_ulgm_quench_ylo=0.2,
+    std_ulgm_ulgm_quench_yhi=0.45,
+    std_ulgy_ulgy_quench_ylo=0.45,
+    std_ulgy_ulgy_quench_yhi=0.7,
+    std_ul_ul_quench_ylo=2.5,
+    std_ul_ul_quench_yhi=0.5,
+    std_utau_utau_quench_ylo=3.5,
+    std_utau_utau_quench_yhi=6,
+    rho_ulgy_ulgm_quench_ylo=0.0,
+    rho_ulgy_ulgm_quench_yhi=0.0,
+    rho_ul_ulgm_quench_ylo=0.0,
+    rho_ul_ulgm_quench_yhi=0.0,
+    rho_ul_ulgy_quench_ylo=0.0,
+    rho_ul_ulgy_quench_yhi=0.0,
+    rho_utau_ulgm_quench_ylo=0.0,
+    rho_utau_ulgm_quench_yhi=0.0,
+    rho_utau_ulgy_quench_ylo=0.0,
+    rho_utau_ulgy_quench_yhi=0.0,
+    rho_utau_ul_quench_ylo=0.0,
+    rho_utau_ul_quench_yhi=0.0,
+)
+
+SFH_PDF_QUENCH_COV_Q_BLOCK_PDICT = OrderedDict(
+    std_uqt_uqt_quench_ylo=0.275,
+    std_uqt_uqt_quench_yhi=0.1,
+    std_uqs_uqs_quench_ylo=0.45,
+    std_uqs_uqs_quench_yhi=0.65,
+    std_udrop_udrop_quench_ylo=0.5,
+    std_udrop_udrop_quench_yhi=0.5,
+    std_urej_urej_quench_ylo=0.3,
+    std_urej_urej_quench_yhi=0.75,
+    rho_uqs_uqt_quench_ylo=0.0,
+    rho_uqs_uqt_quench_yhi=0.0,
+    rho_udrop_uqt_quench_ylo=0.0,
+    rho_udrop_uqt_quench_yhi=0.0,
+    rho_udrop_uqs_quench_ylo=0.0,
+    rho_udrop_uqs_quench_yhi=0.0,
+    rho_urej_uqt_quench_ylo=0.0,
+    rho_urej_uqt_quench_yhi=0.0,
+    rho_urej_uqs_quench_ylo=0.0,
+    rho_urej_uqs_quench_yhi=0.0,
+    rho_urej_udrop_quench_ylo=0.0,
+    rho_urej_udrop_quench_yhi=0.0,
+)
+
 DEFAULT_SFH_PDF_QUENCH_MS_BLOCK_PDICT = OrderedDict(
     mean_ulgm_quench_ylo=11.540,
     mean_ulgm_quench_yhi=12.080,
@@ -181,6 +238,14 @@ def _get_mean_u_params_qseq_q_block(params, lgm):
     udrop = _fun(lgm, params.mean_udrop_quench_ylo, params.mean_udrop_quench_yhi)
     urej = _fun(lgm, params.mean_urej_quench_ylo, params.mean_urej_quench_yhi)
     return uqt, uqs, udrop, urej
+
+
+@jjit
+def _get_cov_entries_qseq_ms_block(params, lgm):
+    ulgm_ulgm = _fun_chol_diag(
+        lgm, params.chol_ulgm_ulgm_quench_ylo, params.chol_ulgm_ulgm_quench_yhi
+    )
+    pass
 
 
 @jjit
