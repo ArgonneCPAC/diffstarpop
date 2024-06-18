@@ -241,7 +241,7 @@ def test_get_chol_u_params_qseq_block():
 def test_get_mean_u_params_qseq_block():
     n_gals = 50
     lgmarr = np.linspace(10, 15, n_gals)
-    params = qseq.DEFAULT_SFH_PDF_QUENCH_BLOCK_PARAMS
+    params = qseq.SFH_PDF_QUENCH_PARAMS
     _mean_pars_ms_block = qseq._get_mean_u_params_qseq_ms_block(params, lgmarr)
     assert len(_mean_pars_ms_block) == 4
     for x in _mean_pars_ms_block:
@@ -251,4 +251,13 @@ def test_get_mean_u_params_qseq_block():
     assert len(_mean_pars_q_block) == 4
     for x in _mean_pars_q_block:
         assert x.shape == (n_gals,)
+        assert np.all(np.isfinite(x))
+
+
+def test_get_mean_u_params_qseq_ms_block():
+    lgm = 13.0
+    # assert False, qseq.SFH_PDF_QUENCH_PARAMS._fields
+    _res = qseq._get_mean_u_params_qseq_ms_block(qseq.SFH_PDF_QUENCH_PARAMS, lgm)
+    ulgm, ulgy, ul, utau = _res
+    for x in _res:
         assert np.all(np.isfinite(x))

@@ -27,6 +27,14 @@ SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
     mean_ul_quench_yhi=1.766,
     mean_utau_quench_ylo=55.480,
     mean_utau_quench_yhi=-66.540,
+    mean_uqt_quench_ylo=1.744,
+    mean_uqt_quench_yhi=0.042,
+    mean_uqs_quench_ylo=-2.979,
+    mean_uqs_quench_yhi=3.520,
+    mean_udrop_quench_ylo=-0.508,
+    mean_udrop_quench_yhi=-3.785,
+    mean_urej_quench_ylo=2.139,
+    mean_urej_quench_yhi=-3.043,
 )
 SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT = OrderedDict(
     std_ulgm_ulgm_quench_ylo=0.2,
