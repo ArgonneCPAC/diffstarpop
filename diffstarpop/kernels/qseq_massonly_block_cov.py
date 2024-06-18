@@ -1,6 +1,7 @@
 """Model of a quenched galaxy population calibrated to SMDPL halos."""
 
 from collections import OrderedDict, namedtuple
+from copy import deepcopy
 
 from diffmah.utils import get_cholesky_from_params
 from jax import jit as jjit
@@ -12,10 +13,12 @@ from ..utils import _inverse_sigmoid, _sigmoid
 TODAY = 13.8
 LGT0 = jnp.log10(TODAY)
 
+COV_LGM_K = 1.0
 LGM_X0, LGM_K = 12.5, 1.0
 BOUNDING_K = 0.1
 
 SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
+    mean_lgmhalo_x0=12.5,
     mean_ulgm_quench_ylo=11.540,
     mean_ulgm_quench_yhi=12.080,
     mean_ulgy_quench_ylo=0.481,
@@ -25,7 +28,6 @@ SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
     mean_utau_quench_ylo=55.480,
     mean_utau_quench_yhi=-66.540,
 )
-
 SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT = OrderedDict(
     std_ulgm_ulgm_quench_ylo=0.2,
     std_ulgm_ulgm_quench_yhi=0.45,
@@ -48,7 +50,6 @@ SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT = OrderedDict(
     rho_utau_ul_quench_ylo=0.0,
     rho_utau_ul_quench_yhi=0.0,
 )
-
 SFH_PDF_QUENCH_COV_Q_BLOCK_PDICT = OrderedDict(
     std_uqt_uqt_quench_ylo=0.275,
     std_uqt_uqt_quench_yhi=0.1,
@@ -71,6 +72,9 @@ SFH_PDF_QUENCH_COV_Q_BLOCK_PDICT = OrderedDict(
     rho_urej_udrop_quench_ylo=0.0,
     rho_urej_udrop_quench_yhi=0.0,
 )
+SFH_PDF_QUENCH_PDICT = SFH_PDF_QUENCH_MU_PDICT.copy()
+SFH_PDF_QUENCH_PDICT.update(SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT)
+SFH_PDF_QUENCH_PDICT.update(SFH_PDF_QUENCH_COV_Q_BLOCK_PDICT)
 
 DEFAULT_SFH_PDF_QUENCH_MS_BLOCK_PDICT = OrderedDict(
     mean_ulgm_quench_ylo=11.540,
@@ -150,6 +154,13 @@ DEFAULT_SFH_PDF_QUENCH_BLOCK_PARAMS = QseqMassOnlyBlockParams(
 
 _UPNAMES = ["u_" + key for key in DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT.keys()]
 QseqMassOnlyBlockUParams = namedtuple("QseqMassOnlyBlockUParams", _UPNAMES)
+
+
+QseqParams = namedtuple("QseqParams", list(SFH_PDF_QUENCH_PDICT.keys()))
+SFH_PDF_QUENCH_PARAMS = QseqParams(**SFH_PDF_QUENCH_PDICT)
+
+_UPNAMES = ["u_" + key for key in SFH_PDF_QUENCH_PDICT.keys()]
+QseqUParams = namedtuple("QseqUParams", _UPNAMES)
 
 FRAC_Q_BOUNDS_PDICT = OrderedDict(
     frac_quench_x0=(10.0, 15.0),
