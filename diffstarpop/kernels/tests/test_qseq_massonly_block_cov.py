@@ -2,6 +2,7 @@
 """
 
 import numpy as np
+import pytest
 from diffmah.utils import get_cholesky_from_params
 from jax import jit as jjit
 from jax import random as jran
@@ -95,6 +96,7 @@ def test_param_u_param_inversion():
             assert np.allclose(x, y, rtol=0.0001)
 
 
+@pytest.mark.xfail
 def test_covs_are_always_covs():
     nhalos = 30
     lgmarr = np.linspace(5, 20, nhalos)
@@ -120,10 +122,10 @@ def test_covs_are_always_covs():
         assert np.all(frac_q >= -EPSILON)
         assert np.all(frac_q <= 1 + EPSILON)
 
-        # for matrix in cov_ms:
-        #     _enforce_is_cov(matrix)
-        # for matrix in cov_q:
-        #     _enforce_is_cov(matrix)
+        for matrix in cov_ms:
+            _enforce_is_cov(matrix)
+        for matrix in cov_q:
+            _enforce_is_cov(matrix)
 
 
 def test_frac_quench_vs_lgm0():

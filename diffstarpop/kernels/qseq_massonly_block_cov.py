@@ -12,7 +12,7 @@ from ..utils import _inverse_sigmoid, _sigmoid
 TODAY = 13.8
 LGT0 = jnp.log10(TODAY)
 
-LGM_X0, LGM_K = 13.0, 0.5
+LGM_X0, LGM_K = 12.5, 1.0
 BOUNDING_K = 0.1
 
 DEFAULT_SFH_PDF_QUENCH_MS_BLOCK_PDICT = OrderedDict(
