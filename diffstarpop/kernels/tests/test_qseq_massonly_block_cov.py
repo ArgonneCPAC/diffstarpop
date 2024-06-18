@@ -268,3 +268,10 @@ def test_get_mean_u_params_qseq_q_block():
     uqt, uqs, udrop, urej = _res
     for x in _res:
         assert np.all(np.isfinite(x))
+
+
+def test_get_cov_params_qseq_ms_block():
+    lgm = 13.0
+    _res = qseq._get_cov_params_qseq_ms_block(qseq.SFH_PDF_QUENCH_PARAMS, lgm)
+    for x in _res:
+        assert np.all(np.isfinite(x))

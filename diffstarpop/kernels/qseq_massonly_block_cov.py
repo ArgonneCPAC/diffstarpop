@@ -37,14 +37,14 @@ SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
     mean_urej_quench_yhi=-3.043,
 )
 SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT = OrderedDict(
-    std_ulgm_ulgm_quench_ylo=0.2,
-    std_ulgm_ulgm_quench_yhi=0.45,
-    std_ulgy_ulgy_quench_ylo=0.45,
-    std_ulgy_ulgy_quench_yhi=0.7,
-    std_ul_ul_quench_ylo=2.5,
-    std_ul_ul_quench_yhi=0.5,
-    std_utau_utau_quench_ylo=3.5,
-    std_utau_utau_quench_yhi=6,
+    std_ulgm_quench_ylo=0.2,
+    std_ulgm_quench_yhi=0.45,
+    std_ulgy_quench_ylo=0.45,
+    std_ulgy_quench_yhi=0.7,
+    std_ul_quench_ylo=2.5,
+    std_ul_quench_yhi=0.5,
+    std_utau_quench_ylo=3.5,
+    std_utau_quench_yhi=6,
     rho_ulgy_ulgm_quench_ylo=0.0,
     rho_ulgy_ulgm_quench_yhi=0.0,
     rho_ul_ulgm_quench_ylo=0.0,
@@ -59,14 +59,14 @@ SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT = OrderedDict(
     rho_utau_ul_quench_yhi=0.0,
 )
 SFH_PDF_QUENCH_COV_Q_BLOCK_PDICT = OrderedDict(
-    std_uqt_uqt_quench_ylo=0.275,
-    std_uqt_uqt_quench_yhi=0.1,
-    std_uqs_uqs_quench_ylo=0.45,
-    std_uqs_uqs_quench_yhi=0.65,
-    std_udrop_udrop_quench_ylo=0.5,
-    std_udrop_udrop_quench_yhi=0.5,
-    std_urej_urej_quench_ylo=0.3,
-    std_urej_urej_quench_yhi=0.75,
+    std_uqt_quench_ylo=0.275,
+    std_uqt_quench_yhi=0.1,
+    std_uqs_quench_ylo=0.45,
+    std_uqs_quench_yhi=0.65,
+    std_udrop_quench_ylo=0.5,
+    std_udrop_quench_yhi=0.5,
+    std_urej_quench_ylo=0.3,
+    std_urej_quench_yhi=0.75,
     rho_uqs_uqt_quench_ylo=0.0,
     rho_uqs_uqt_quench_yhi=0.0,
     rho_udrop_uqt_quench_ylo=0.0,
@@ -309,11 +309,96 @@ def _get_mean_u_params_qseq_q_block(params, lgm):
 
 
 @jjit
-def _get_cov_entries_qseq_ms_block(params, lgm):
-    ulgm_ulgm = _fun_chol_diag(
-        lgm, params.chol_ulgm_ulgm_quench_ylo, params.chol_ulgm_ulgm_quench_yhi
+def _get_cov_params_qseq_ms_block(params, lgm):
+    std_ulgm = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_ulgm_quench_ylo,
+        params.std_ulgm_quench_yhi,
     )
-    pass
+    std_ulgy = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_ulgy_quench_ylo,
+        params.std_ulgy_quench_yhi,
+    )
+
+    std_ul = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_ul_quench_ylo,
+        params.std_ul_quench_yhi,
+    )
+    std_utau = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_utau_quench_ylo,
+        params.std_utau_quench_yhi,
+    )
+
+    rho_ulgy_ulgm = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_ulgy_ulgm_quench_ylo,
+        params.rho_ulgy_ulgm_quench_yhi,
+    )
+
+    rho_ul_ulgm = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_ul_ulgm_quench_ylo,
+        params.rho_ul_ulgm_quench_yhi,
+    )
+
+    rho_ul_ulgy = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_ul_ulgy_quench_ylo,
+        params.rho_ul_ulgy_quench_yhi,
+    )
+
+    rho_utau_ulgm = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_utau_ulgm_quench_ylo,
+        params.rho_utau_ulgm_quench_yhi,
+    )
+
+    rho_utau_ulgy = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_utau_ulgy_quench_ylo,
+        params.rho_utau_ulgy_quench_yhi,
+    )
+
+    rho_utau_ul = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_utau_ul_quench_ylo,
+        params.rho_utau_ul_quench_yhi,
+    )
+
+    diags = std_ulgm, std_ulgy, std_ul, std_utau
+    off_diags = (
+        rho_ulgy_ulgm,
+        rho_ul_ulgm,
+        rho_ul_ulgy,
+        rho_utau_ulgm,
+        rho_utau_ulgy,
+        rho_utau_ul,
+    )
+    cov_params = (*diags, *off_diags)
+    return cov_params
 
 
 @jjit
