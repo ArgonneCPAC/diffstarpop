@@ -271,15 +271,40 @@ def _get_mean_u_params_qseq_ms_block(params, lgm):
         params.mean_utau_quench_ylo,
         params.mean_utau_quench_yhi,
     )
+
     return (ulgm, ulgy, ul, utau)
 
 
 @jjit
 def _get_mean_u_params_qseq_q_block(params, lgm):
-    uqt = _fun(lgm, params.mean_uqt_quench_ylo, params.mean_uqt_quench_yhi)
-    uqs = _fun(lgm, params.mean_uqs_quench_ylo, params.mean_uqs_quench_yhi)
-    udrop = _fun(lgm, params.mean_udrop_quench_ylo, params.mean_udrop_quench_yhi)
-    urej = _fun(lgm, params.mean_urej_quench_ylo, params.mean_urej_quench_yhi)
+    uqt = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_uqt_quench_ylo,
+        params.mean_uqt_quench_yhi,
+    )
+    uqs = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_uqs_quench_ylo,
+        params.mean_uqs_quench_yhi,
+    )
+    udrop = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_udrop_quench_ylo,
+        params.mean_udrop_quench_yhi,
+    )
+    urej = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_urej_quench_ylo,
+        params.mean_urej_quench_yhi,
+    )
     return uqt, uqs, udrop, urej
 
 

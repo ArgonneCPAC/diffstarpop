@@ -256,8 +256,15 @@ def test_get_mean_u_params_qseq_block():
 
 def test_get_mean_u_params_qseq_ms_block():
     lgm = 13.0
-    # assert False, qseq.SFH_PDF_QUENCH_PARAMS._fields
     _res = qseq._get_mean_u_params_qseq_ms_block(qseq.SFH_PDF_QUENCH_PARAMS, lgm)
     ulgm, ulgy, ul, utau = _res
+    for x in _res:
+        assert np.all(np.isfinite(x))
+
+
+def test_get_mean_u_params_qseq_q_block():
+    lgm = 13.0
+    _res = qseq._get_mean_u_params_qseq_q_block(qseq.SFH_PDF_QUENCH_PARAMS, lgm)
+    uqt, uqs, udrop, urej = _res
     for x in _res:
         assert np.all(np.isfinite(x))
