@@ -397,8 +397,103 @@ def _get_cov_params_qseq_ms_block(params, lgm):
         rho_utau_ulgy,
         rho_utau_ul,
     )
-    cov_params = (*diags, *off_diags)
-    return cov_params
+    cov_params_ms_block = (*diags, *off_diags)
+    return cov_params_ms_block
+
+
+@jjit
+def _get_cov_params_qseq_q_block(params, lgm):
+    std_uqt = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_uqt_quench_ylo,
+        params.std_uqt_quench_yhi,
+    )
+
+    std_uqs = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_uqs_quench_ylo,
+        params.std_uqs_quench_yhi,
+    )
+
+    std_udrop = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_udrop_quench_ylo,
+        params.std_udrop_quench_yhi,
+    )
+
+    std_urej = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_urej_quench_ylo,
+        params.std_urej_quench_yhi,
+    )
+    diags = std_uqt, std_uqs, std_udrop, std_urej
+
+    rho_uqs_uqt = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_uqs_uqt_quench_ylo,
+        params.rho_uqs_uqt_quench_yhi,
+    )
+
+    rho_udrop_uqs = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_udrop_uqs_quench_ylo,
+        params.rho_udrop_uqs_quench_yhi,
+    )
+
+    rho_udrop_uqt = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_udrop_uqt_quench_ylo,
+        params.rho_udrop_uqt_quench_yhi,
+    )
+
+    rho_urej_uqt = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_urej_uqt_quench_ylo,
+        params.rho_urej_uqt_quench_yhi,
+    )
+
+    rho_urej_uqs = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_urej_uqs_quench_ylo,
+        params.rho_urej_uqs_quench_yhi,
+    )
+
+    rho_urej_udrop = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_urej_udrop_quench_ylo,
+        params.rho_urej_udrop_quench_yhi,
+    )
+    off_diags = (
+        rho_uqs_uqt,
+        rho_udrop_uqt,
+        rho_udrop_uqs,
+        rho_urej_uqt,
+        rho_urej_uqs,
+        rho_urej_udrop,
+    )
+
+    cov_params_q_block = (*diags, *off_diags)
+    return cov_params_q_block
 
 
 @jjit
