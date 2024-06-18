@@ -13,8 +13,8 @@ from ..utils import _inverse_sigmoid, _sigmoid
 TODAY = 13.8
 LGT0 = jnp.log10(TODAY)
 
-COV_LGM_K = 1.0
 LGM_X0, LGM_K = 12.5, 1.0
+LGMCRIT_K = 4.0
 BOUNDING_K = 0.1
 
 SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
@@ -198,7 +198,7 @@ def _fun(x, ymin, ymax):
 
 @jjit
 def _fun_Mcrit(x, ymin, ymax):
-    return _sigmoid(x, 12.0, 4.0, ymin, ymax)
+    return _sigmoid(x, 12.0, LGMCRIT_K, ymin, ymax)
 
 
 @jjit
@@ -235,10 +235,34 @@ def _get_mean_u_params_qseq(params, lgm):
 
 @jjit
 def _get_mean_u_params_qseq_ms_block(params, lgm):
-    ulgm = _fun_Mcrit(lgm, params.mean_ulgm_quench_ylo, params.mean_ulgm_quench_yhi)
-    ulgy = _fun(lgm, params.mean_ulgy_quench_ylo, params.mean_ulgy_quench_yhi)
-    ul = _fun(lgm, params.mean_ul_quench_ylo, params.mean_ul_quench_yhi)
-    utau = _fun(lgm, params.mean_utau_quench_ylo, params.mean_utau_quench_yhi)
+    ulgm = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGMCRIT_K,
+        params.mean_ulgm_quench_ylo,
+        params.mean_ulgm_quench_yhi,
+    )
+    ulgy = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_ulgy_quench_ylo,
+        params.mean_ulgy_quench_yhi,
+    )
+    ul = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_ul_quench_ylo,
+        params.mean_ul_quench_yhi,
+    )
+    utau = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_utau_quench_ylo,
+        params.mean_utau_quench_yhi,
+    )
     return (ulgm, ulgy, ul, utau)
 
 
