@@ -4,6 +4,8 @@
 from diffstar import calc_sfh_singlegal, get_bounded_diffstar_params
 from diffstar.defaults import FB, LGT0
 from jax import jit as jjit
+from jax import random as jran
+from jax import vmap
 
 from .kernels.diffstarpop_block_cov import mc_diffstar_u_params_singlegal_kernel
 
@@ -152,3 +154,30 @@ def mc_diffstar_params_singlegal(diffstarpop_params, mah_params, ran_key):
     diffstar_params_q = get_bounded_diffstar_params(u_params_qseq)
     diffstar_params_ms = get_bounded_diffstar_params(u_params_ms)
     return diffstar_params_q, diffstar_params_ms, frac_q, mc_is_q
+
+
+@jjit
+def mc_diffstar_u_params_singlegal(diffstarpop_params, mah_params, ran_key):
+    """"""
+
+    _res = mc_diffstar_u_params_singlegal_kernel(
+        diffstarpop_params.sfh_pdf_cens_params, mah_params, ran_key
+    )
+    u_params_ms, u_params_qseq, frac_q, mc_is_q = _res
+    return u_params_ms, u_params_qseq, frac_q, mc_is_q
+
+
+_POP = (None, 0, 0)
+mc_diffstar_u_params_galpop_kernel = jjit(
+    vmap(mc_diffstar_u_params_singlegal, in_axes=_POP)
+)
+
+
+@jjit
+def mc_diffstar_u_params_galpop(diffstarpop_params, mah_params, ran_key):
+    """"""
+    ngals = mah_params[0].size
+    ran_keys = jran.split(ran_key, ngals)
+    _res = mc_diffstar_u_params_galpop_kernel(diffstarpop_params, mah_params, ran_keys)
+    diffstar_u_params_q, diffstar_u_params_ms, frac_q, mc_is_q = _res
+    return diffstar_u_params_q, diffstar_u_params_ms, frac_q, mc_is_q

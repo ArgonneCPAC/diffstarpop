@@ -43,3 +43,14 @@ def test_mc_diffstar_sfh_singlegal_evaluates():
     assert np.all(np.isfinite(sfh_ms))
     assert np.all(sfh_ms > 0)
     assert np.all(sfh_q > 0)
+
+
+def test_mc_diffstar_u_params_galpop():
+    ngals = 50
+    zz = np.zeros(ngals)
+    ran_key = jran.key(0)
+    mah_params = DEFAULT_MAH_PARAMS._make([zz + p for p in DEFAULT_MAH_PARAMS])
+    _res = mcdsp.mc_diffstar_u_params_galpop(
+        DEFAULT_DIFFSTARPOP_PARAMS, mah_params, ran_key
+    )
+    diffstar_u_params_q, diffstar_u_params_ms, frac_q, mc_is_q = _res
