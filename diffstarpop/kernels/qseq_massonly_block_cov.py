@@ -1,7 +1,6 @@
 """Model of a quenched galaxy population calibrated to SMDPL halos."""
 
 from collections import OrderedDict, namedtuple
-from copy import deepcopy
 
 from diffmah.utils import get_cholesky_from_params
 from jax import jit as jjit
@@ -16,12 +15,13 @@ LGT0 = jnp.log10(TODAY)
 LGM_X0, LGM_K = 12.5, 1.0
 LGMCRIT_K = 4.0
 BOUNDING_K = 0.1
+RHO_BOUNDS = (-0.5, 0.5)
 
 SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
     mean_lgmhalo_x0=12.5,
     mean_ulgm_quench_ylo=11.540,
     mean_ulgm_quench_yhi=12.080,
-    mean_ulgy_quench_ylo=0.481,
+    mean_ulgy_quench_ylo=-0.481,
     mean_ulgy_quench_yhi=-0.223,
     mean_ul_quench_ylo=-1.274,
     mean_ul_quench_yhi=1.766,
@@ -36,6 +36,26 @@ SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
     mean_urej_quench_ylo=2.139,
     mean_urej_quench_yhi=-3.043,
 )
+SFH_PDF_QUENCH_MU_BOUNDS_PDICT = OrderedDict(
+    mean_lgmhalo_x0=(11.5, 13.5),
+    mean_ulgm_quench_ylo=(11.5, 13.0),
+    mean_ulgm_quench_yhi=(11.5, 13.0),
+    mean_ulgy_quench_ylo=(-1.0, 0.0),
+    mean_ulgy_quench_yhi=(-1.0, 0.0),
+    mean_ul_quench_ylo=(-0.5, 0.5),
+    mean_ul_quench_yhi=(-0.5, 0.5),
+    mean_utau_quench_ylo=(-5.0, 20.0),
+    mean_utau_quench_yhi=(-5.0, 20.0),
+    mean_uqt_quench_ylo=(2.0, 0.0),
+    mean_uqt_quench_yhi=(2.0, 0.0),
+    mean_uqs_quench_ylo=(-2.0, 2.0),
+    mean_uqs_quench_yhi=(-2.0, 2.0),
+    mean_udrop_quench_ylo=(-3.0, -1.0),
+    mean_udrop_quench_yhi=(-3.0, -1.0),
+    mean_urej_quench_ylo=(-3.0, 1.0),
+    mean_urej_quench_yhi=(-3.0, 1.0),
+)
+
 SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT = OrderedDict(
     std_ulgm_quench_ylo=0.2,
     std_ulgm_quench_yhi=0.45,
@@ -58,6 +78,29 @@ SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT = OrderedDict(
     rho_utau_ul_quench_ylo=0.0,
     rho_utau_ul_quench_yhi=0.0,
 )
+SFH_PDF_QUENCH_COV_MS_BLOCK_BOUNDS_PDICT = OrderedDict(
+    std_ulgm_quench_ylo=(0.1, 1.0),
+    std_ulgm_quench_yhi=(0.1, 1.0),
+    std_ulgy_quench_ylo=(0.1, 1.0),
+    std_ulgy_quench_yhi=(0.1, 1.0),
+    std_ul_quench_ylo=(0.5, 3.0),
+    std_ul_quench_yhi=(0.5, 3.0),
+    std_utau_quench_ylo=(1.0, 8.0),
+    std_utau_quench_yhi=(1.0, 8.0),
+    rho_ulgy_ulgm_quench_ylo=RHO_BOUNDS,
+    rho_ulgy_ulgm_quench_yhi=RHO_BOUNDS,
+    rho_ul_ulgm_quench_ylo=RHO_BOUNDS,
+    rho_ul_ulgm_quench_yhi=RHO_BOUNDS,
+    rho_ul_ulgy_quench_ylo=RHO_BOUNDS,
+    rho_ul_ulgy_quench_yhi=RHO_BOUNDS,
+    rho_utau_ulgm_quench_ylo=RHO_BOUNDS,
+    rho_utau_ulgm_quench_yhi=RHO_BOUNDS,
+    rho_utau_ulgy_quench_ylo=RHO_BOUNDS,
+    rho_utau_ulgy_quench_yhi=RHO_BOUNDS,
+    rho_utau_ul_quench_ylo=RHO_BOUNDS,
+    rho_utau_ul_quench_yhi=RHO_BOUNDS,
+)
+
 SFH_PDF_QUENCH_COV_Q_BLOCK_PDICT = OrderedDict(
     std_uqt_quench_ylo=0.275,
     std_uqt_quench_yhi=0.1,
@@ -80,10 +123,28 @@ SFH_PDF_QUENCH_COV_Q_BLOCK_PDICT = OrderedDict(
     rho_urej_udrop_quench_ylo=0.0,
     rho_urej_udrop_quench_yhi=0.0,
 )
-SFH_PDF_QUENCH_PDICT = SFH_PDF_QUENCH_MU_PDICT.copy()
-SFH_PDF_QUENCH_PDICT.update(SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT)
-SFH_PDF_QUENCH_PDICT.update(SFH_PDF_QUENCH_COV_Q_BLOCK_PDICT)
-
+SFH_PDF_QUENCH_COV_Q_BLOCK_BOUNDS_PDICT = OrderedDict(
+    std_uqt_quench_ylo=(0.1, 0.5),
+    std_uqt_quench_yhi=(0.1, 0.5),
+    std_uqs_quench_ylo=(0.1, 1.0),
+    std_uqs_quench_yhi=(0.1, 1.0),
+    std_udrop_quench_ylo=(0.1, 1.0),
+    std_udrop_quench_yhi=(0.1, 1.0),
+    std_urej_quench_ylo=(0.1, 1.0),
+    std_urej_quench_yhi=(0.1, 1.0),
+    rho_uqs_uqt_quench_ylo=RHO_BOUNDS,
+    rho_uqs_uqt_quench_yhi=RHO_BOUNDS,
+    rho_udrop_uqt_quench_ylo=RHO_BOUNDS,
+    rho_udrop_uqt_quench_yhi=RHO_BOUNDS,
+    rho_udrop_uqs_quench_ylo=RHO_BOUNDS,
+    rho_udrop_uqs_quench_yhi=RHO_BOUNDS,
+    rho_urej_uqt_quench_ylo=RHO_BOUNDS,
+    rho_urej_uqt_quench_yhi=RHO_BOUNDS,
+    rho_urej_uqs_quench_ylo=RHO_BOUNDS,
+    rho_urej_uqs_quench_yhi=RHO_BOUNDS,
+    rho_urej_udrop_quench_ylo=RHO_BOUNDS,
+    rho_urej_udrop_quench_yhi=RHO_BOUNDS,
+)
 DEFAULT_SFH_PDF_QUENCH_MS_BLOCK_PDICT = OrderedDict(
     mean_ulgm_quench_ylo=11.540,
     mean_ulgm_quench_yhi=12.080,
@@ -150,8 +211,31 @@ DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT = OrderedDict(
     frac_quench_ylo=0.05,
     frac_quench_yhi=0.95,
 )
+DEFAULT_SFH_PDF_FRAC_QUENCH_PDICT = OrderedDict(
+    frac_quench_x0=11.860,
+    frac_quench_k=4.5,
+    frac_quench_ylo=0.05,
+    frac_quench_yhi=0.95,
+)
+DEFAULT_SFH_PDF_FRAC_QUENCH_BOUNDS_PDICT = OrderedDict(
+    frac_quench_x0=(11.0, 13.0),
+    frac_quench_k=(1.0, 5.0),
+    frac_quench_ylo=(0.0, 0.5),
+    frac_quench_yhi=(0.25, 1.0),
+)
+
 DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT.update(DEFAULT_SFH_PDF_QUENCH_MS_BLOCK_PDICT)
 DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT.update(DEFAULT_SFH_PDF_QUENCH_Q_BLOCK_PDICT)
+
+SFH_PDF_QUENCH_PDICT = DEFAULT_SFH_PDF_FRAC_QUENCH_PDICT.copy()
+SFH_PDF_QUENCH_PDICT.update(SFH_PDF_QUENCH_MU_PDICT)
+SFH_PDF_QUENCH_PDICT.update(SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT)
+SFH_PDF_QUENCH_PDICT.update(SFH_PDF_QUENCH_COV_Q_BLOCK_PDICT)
+
+SFH_PDF_QUENCH_BOUNDS_PDICT = DEFAULT_SFH_PDF_FRAC_QUENCH_BOUNDS_PDICT.copy()
+SFH_PDF_QUENCH_BOUNDS_PDICT.update(SFH_PDF_QUENCH_MU_BOUNDS_PDICT)
+SFH_PDF_QUENCH_BOUNDS_PDICT.update(SFH_PDF_QUENCH_COV_MS_BLOCK_BOUNDS_PDICT)
+SFH_PDF_QUENCH_BOUNDS_PDICT.update(SFH_PDF_QUENCH_COV_Q_BLOCK_BOUNDS_PDICT)
 
 QseqMassOnlyBlockParams = namedtuple(
     "QseqMassOnlyBlockParams", list(DEFAULT_SFH_PDF_QUENCH_BLOCK_PDICT.keys())
