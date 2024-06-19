@@ -5,7 +5,7 @@ import numpy as np
 from jax import random as jran
 
 from ...tests.test_utils import _enforce_is_cov
-from .. import qseq_massonly_block_cov as qseq
+from .. import sfh_pdf_block_cov as qseq
 
 EPSILON = 1e-5
 

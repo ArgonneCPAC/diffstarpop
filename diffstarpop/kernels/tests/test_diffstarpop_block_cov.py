@@ -7,7 +7,7 @@ from jax import random as jran
 
 from .. import diffstarpop_block_cov as dsp
 from ..mainseq_massonly import DEFAULT_SFH_PDF_MAINSEQ_PARAMS
-from ..qseq_massonly_block_cov import SFH_PDF_QUENCH_PARAMS
+from ..sfh_pdf_block_cov import SFH_PDF_QUENCH_PARAMS
 
 
 def test_mc_diffstar_u_params_singlegal_kernel():
@@ -19,11 +19,15 @@ def test_mc_diffstar_u_params_singlegal_kernel():
         ran_key,
     )
     _res = dsp.mc_diffstar_u_params_singlegal_kernel(*args)
-    for _x in _res:
-        assert np.all(np.isfinite(_x))
     u_params_ms, u_params_qseq, frac_quench, mc_is_quenched_sequence = _res
-    assert len(u_params_ms) == 9
-    assert len(u_params_qseq) == 9
+    assert len(u_params_ms.u_ms_params) == 5
+    assert len(u_params_ms.u_q_params) == 4
+    assert len(u_params_qseq.u_ms_params) == 5
+    assert len(u_params_qseq.u_q_params) == 4
+    for _u_p in u_params_ms:
+        assert np.all(np.isfinite(_u_p))
+    for _u_p in u_params_qseq:
+        assert np.all(np.isfinite(_u_p))
     assert frac_quench.shape == ()
     assert mc_is_quenched_sequence.shape == ()
 
