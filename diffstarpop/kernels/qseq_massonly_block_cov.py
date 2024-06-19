@@ -7,7 +7,7 @@ from jax import jit as jjit
 from jax import numpy as jnp
 from jax import vmap
 
-from ..utils import _inverse_sigmoid, _sigmoid
+from ..utils import _inverse_sigmoid, _sigmoid, covariance_from_correlation
 
 TODAY = 13.8
 LGT0 = jnp.log10(TODAY)
@@ -482,8 +482,7 @@ def _get_cov_params_qseq_ms_block(params, lgm):
         rho_utau_ulgy,
         rho_utau_ul,
     )
-    cov_params_ms_block = (*diags, *off_diags)
-    return cov_params_ms_block
+    return diags, off_diags
 
 
 @jjit
@@ -577,8 +576,27 @@ def _get_cov_params_qseq_q_block(params, lgm):
         rho_urej_udrop,
     )
 
-    cov_params_q_block = (*diags, *off_diags)
-    return cov_params_q_block
+    return diags, off_diags
+
+
+@jjit
+def _get_covariance_qseq_q_block(params, lgm):
+    diags, off_diags = _get_cov_params_qseq_q_block(params, lgm)
+    ones = jnp.ones(len(diags))
+    x = jnp.array((*ones, off_diags))
+    corr_matrix = get_cholesky_from_params(x)
+    cov_qseq_q_block = covariance_from_correlation(corr_matrix, jnp.array(diags))
+    return cov_qseq_q_block
+
+
+@jjit
+def _get_covariance_qseq_ms_block(params, lgm):
+    diags, off_diags = _get_cov_params_qseq_ms_block(params, lgm)
+    ones = jnp.ones(len(diags))
+    x = jnp.array((*ones, off_diags))
+    corr_matrix = get_cholesky_from_params(x)
+    cov_qseq_ms_block = covariance_from_correlation(corr_matrix, jnp.array(diags))
+    return cov_qseq_ms_block
 
 
 @jjit

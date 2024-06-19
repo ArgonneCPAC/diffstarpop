@@ -8,6 +8,7 @@ from jax import jit as jjit
 from jax import random as jran
 from jax import vmap
 
+from ...tests.test_utils import _enforce_is_cov
 from .. import qseq_massonly_block_cov as qseq
 
 get_cholesky_from_params_vmap = jjit(vmap(get_cholesky_from_params, in_axes=(0,)))
@@ -15,17 +16,6 @@ _get_cov_qseq_ms_vmap = jjit(vmap(qseq._get_cov_qseq_ms_block, in_axes=(None, 0)
 _get_cov_qseq_q_vmap = jjit(vmap(qseq._get_cov_qseq_q_block, in_axes=(None, 0)))
 
 EPSILON = 1e-5
-
-
-def _enforce_is_cov(matrix):
-    det = np.linalg.det(matrix)
-    assert det.shape == ()
-    assert det > 0
-    covinv = np.linalg.inv(matrix)
-    assert np.all(np.isfinite(covinv))
-    assert np.allclose(matrix, matrix.T)
-    evals, evecs = np.linalg.eigh(matrix)
-    assert np.all(evals > 0)
 
 
 def test_param_u_param_names_propagate_properly():
@@ -266,18 +256,24 @@ def test_get_mean_u_params_qseq_q_block():
 def test_get_cov_params_qseq_ms_block():
     lgm = 13.0
     _res = qseq._get_cov_params_qseq_ms_block(qseq.SFH_PDF_QUENCH_PARAMS, lgm)
+    diags, off_diags = _res
     ndim = 4
-    npars_correct = ndim * (ndim + 1) / 2
-    assert len(_res) == npars_correct
-    for x in _res:
+    assert len(diags) == ndim
+    assert len(off_diags) == ndim * (ndim + 1) / 2 - ndim
+    for x in diags:
+        assert np.all(np.isfinite(x))
+    for x in off_diags:
         assert np.all(np.isfinite(x))
 
 
 def test_get_cov_params_qseq_q_block():
     lgm = 13.0
     _res = qseq._get_cov_params_qseq_q_block(qseq.SFH_PDF_QUENCH_PARAMS, lgm)
+    diags, off_diags = _res
     ndim = 4
-    npars_correct = ndim * (ndim + 1) / 2
-    assert len(_res) == npars_correct
-    for x in _res:
+    assert len(diags) == ndim
+    assert len(off_diags) == ndim * (ndim + 1) / 2 - ndim
+    for x in diags:
+        assert np.all(np.isfinite(x))
+    for x in off_diags:
         assert np.all(np.isfinite(x))
