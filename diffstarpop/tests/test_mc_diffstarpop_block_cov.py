@@ -5,8 +5,8 @@ import numpy as np
 from diffmah.defaults import DEFAULT_MAH_PARAMS
 from jax import random as jran
 
-from ..kernels.param_bounding_blockcov import DEFAULT_DIFFSTARPOP_PARAMS
-from ..mc_diffstarpop_blockcov import mc_diffstar_params_singlegal
+from ..kernels.defaults_block_cov import DEFAULT_DIFFSTARPOP_PARAMS
+from ..mc_diffstarpop_block_cov import mc_diffstar_params_singlegal
 
 
 def test_mc_diffstar_params_singlegal_evaluates():
