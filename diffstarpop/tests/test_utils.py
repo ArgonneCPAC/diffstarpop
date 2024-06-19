@@ -18,6 +18,7 @@ def _enforce_is_cov(matrix):
     assert det > 0
     covinv = np.linalg.inv(matrix)
     assert np.all(np.isfinite(covinv))
+    assert np.all(np.isreal(covinv))
     assert np.allclose(matrix, matrix.T)
     evals, evecs = np.linalg.eigh(matrix)
     assert np.all(evals > 0)

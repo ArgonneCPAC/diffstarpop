@@ -277,3 +277,43 @@ def test_get_cov_params_qseq_q_block():
         assert np.all(np.isfinite(x))
     for x in off_diags:
         assert np.all(np.isfinite(x))
+
+
+def test_get_covariance_qseq_q_block_default_params():
+    for lgm in np.linspace(10, 15, 20):
+        cov_qseq_q_block = qseq._get_covariance_qseq_q_block(
+            qseq.SFH_PDF_QUENCH_PARAMS, lgm
+        )
+        assert cov_qseq_q_block.shape == (4, 4)
+        _enforce_is_cov(cov_qseq_q_block)
+
+
+def test_get_covariance_qseq_ms_block_default_params():
+    lgmarr = np.linspace(10, 15, 20)
+    for lgm in lgmarr:
+        cov_qseq_ms_block = qseq._get_covariance_qseq_ms_block(
+            qseq.SFH_PDF_QUENCH_PARAMS, lgm
+        )
+        assert cov_qseq_ms_block.shape == (4, 4)
+        _enforce_is_cov(cov_qseq_ms_block)
+
+
+def test_get_covariance_qseq_random_params():
+    lgmarr = np.linspace(10, 15, 20)
+    ran_key = jran.key(0)
+    npars = len(qseq.SFH_PDF_QUENCH_PARAMS)
+    ntests = 200
+    for __ in range(ntests):
+        ran_key, test_key = jran.split(ran_key, 2)
+        u_p = jran.uniform(test_key, minval=-1000, maxval=1000, shape=(npars,))
+        u_params = qseq.QseqUParams(*u_p)
+        params = qseq.get_bounded_qseq_params(u_params)
+
+        for lgm in lgmarr:
+            cov_qseq_ms_block = qseq._get_covariance_qseq_ms_block(params, lgm)
+            assert cov_qseq_ms_block.shape == (4, 4)
+            _enforce_is_cov(cov_qseq_ms_block)
+
+            cov_qseq_q_block = qseq._get_covariance_qseq_q_block(params, lgm)
+            assert cov_qseq_q_block.shape == (4, 4)
+            _enforce_is_cov(cov_qseq_q_block)

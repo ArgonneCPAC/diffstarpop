@@ -15,7 +15,7 @@ LGT0 = jnp.log10(TODAY)
 LGM_X0, LGM_K = 12.5, 1.0
 LGMCRIT_K = 4.0
 BOUNDING_K = 0.1
-RHO_BOUNDS = (-0.5, 0.5)
+RHO_BOUNDS = (-0.3, 0.3)
 
 SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
     mean_lgmhalo_x0=12.5,
@@ -583,8 +583,9 @@ def _get_cov_params_qseq_q_block(params, lgm):
 def _get_covariance_qseq_q_block(params, lgm):
     diags, off_diags = _get_cov_params_qseq_q_block(params, lgm)
     ones = jnp.ones(len(diags))
-    x = jnp.array((*ones, off_diags))
-    corr_matrix = get_cholesky_from_params(x)
+    x = jnp.array((*ones, *off_diags))
+    M = get_cholesky_from_params(x)
+    corr_matrix = jnp.where(M == 0, M.T, M)
     cov_qseq_q_block = covariance_from_correlation(corr_matrix, jnp.array(diags))
     return cov_qseq_q_block
 
@@ -593,8 +594,9 @@ def _get_covariance_qseq_q_block(params, lgm):
 def _get_covariance_qseq_ms_block(params, lgm):
     diags, off_diags = _get_cov_params_qseq_ms_block(params, lgm)
     ones = jnp.ones(len(diags))
-    x = jnp.array((*ones, off_diags))
-    corr_matrix = get_cholesky_from_params(x)
+    x = jnp.array((*ones, *off_diags))
+    M = get_cholesky_from_params(x)
+    corr_matrix = jnp.where(M == 0, M.T, M)
     cov_qseq_ms_block = covariance_from_correlation(corr_matrix, jnp.array(diags))
     return cov_qseq_ms_block
 
