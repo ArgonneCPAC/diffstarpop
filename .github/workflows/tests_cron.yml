@@ -46,7 +46,8 @@ jobs:
             setuptools \
             "setuptools_scm>=7,<8" \
             python-build \
-            halotools
+            halotools \
+            scipy
           pip uninstall diffmah --yes
           pip uninstall diffstar --yes
           pip uninstall dsps --yes
