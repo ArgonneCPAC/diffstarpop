@@ -29,43 +29,36 @@ def _enforce_is_cov(matrix):
 
 
 def test_param_u_param_names_propagate_properly():
-    gen = zip(
-        qseq.DEFAULT_SFH_PDF_QUENCH_BLOCK_U_PARAMS._fields,
-        qseq.DEFAULT_SFH_PDF_QUENCH_BLOCK_PARAMS._fields,
-    )
+    gen = zip(qseq.SFH_PDF_QUENCH_U_PARAMS._fields, qseq.SFH_PDF_QUENCH_PARAMS._fields)
     for u_key, key in gen:
         assert u_key[:2] == "u_"
         assert u_key[2:] == key
 
-    inferred_default_params = qseq.get_bounded_qseq_massonly_params(
-        qseq.DEFAULT_SFH_PDF_QUENCH_BLOCK_U_PARAMS
-    )
+    inferred_default_params = qseq.get_bounded_qseq_params(qseq.SFH_PDF_QUENCH_U_PARAMS)
     assert set(inferred_default_params._fields) == set(
-        qseq.DEFAULT_SFH_PDF_QUENCH_BLOCK_PARAMS._fields
+        qseq.SFH_PDF_QUENCH_PARAMS._fields
     )
 
-    inferred_default_u_params = qseq.get_unbounded_qseq_massonly_params(
-        qseq.DEFAULT_SFH_PDF_QUENCH_BLOCK_PARAMS
+    inferred_default_u_params = qseq.get_unbounded_qseq_params(
+        qseq.SFH_PDF_QUENCH_PARAMS
     )
     assert set(inferred_default_u_params._fields) == set(
-        qseq.DEFAULT_SFH_PDF_QUENCH_BLOCK_U_PARAMS._fields
+        qseq.SFH_PDF_QUENCH_U_PARAMS._fields
     )
 
 
 def test_get_bounded_params_fails_when_passing_params():
     try:
-        qseq.get_bounded_qseq_massonly_params(qseq.DEFAULT_SFH_PDF_QUENCH_BLOCK_PARAMS)
-        raise NameError("get_bounded_qseq_massonly_params should not accept u_params")
+        qseq.get_bounded_qseq_params(qseq.SFH_PDF_QUENCH_PARAMS)
+        raise NameError("get_bounded_qseq_params should not accept u_params")
     except AttributeError:
         pass
 
 
 def test_get_unbounded_params_fails_when_passing_u_params():
     try:
-        qseq.get_unbounded_qseq_massonly_params(
-            qseq.DEFAULT_SFH_PDF_QUENCH_BLOCK_U_PARAMS
-        )
-        raise NameError("get_unbounded_qseq_massonly_params should not accept u_params")
+        qseq.get_unbounded_qseq_params(qseq.SFH_PDF_QUENCH_U_PARAMS)
+        raise NameError("get_unbounded_qseq_params should not accept u_params")
     except AttributeError:
         pass
 
