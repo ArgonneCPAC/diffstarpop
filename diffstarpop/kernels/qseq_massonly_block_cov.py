@@ -250,8 +250,9 @@ QseqMassOnlyBlockUParams = namedtuple("QseqMassOnlyBlockUParams", _UPNAMES)
 
 QseqParams = namedtuple("QseqParams", list(SFH_PDF_QUENCH_PDICT.keys()))
 SFH_PDF_QUENCH_PARAMS = QseqParams(**SFH_PDF_QUENCH_PDICT)
+SFH_PDF_QUENCH_PBOUNDS = QseqParams(**SFH_PDF_QUENCH_BOUNDS_PDICT)
 
-_UPNAMES = ["u_" + key for key in SFH_PDF_QUENCH_PDICT.keys()]
+_UPNAMES = ["u_" + key for key in QseqParams._fields]
 QseqUParams = namedtuple("QseqUParams", _UPNAMES)
 
 FRAC_Q_BOUNDS_PDICT = OrderedDict(
@@ -712,6 +713,25 @@ _get_u_p_from_p_vmap = jjit(vmap(_get_u_p_from_p_scalar, in_axes=(0, 0)))
 
 
 @jjit
+def get_bounded_qseq_params(u_params):
+    u_params = jnp.array(
+        [getattr(u_params, u_pname) for u_pname in QseqUParams._fields]
+    )
+    params = _get_p_from_u_p_vmap(
+        jnp.array(u_params), jnp.array(SFH_PDF_QUENCH_PBOUNDS)
+    )
+    return QseqParams(*params)
+
+
+def get_unbounded_qseq_params(params):
+    params = jnp.array([getattr(params, pname) for pname in QseqParams._fields])
+    u_params = _get_u_p_from_p_vmap(
+        jnp.array(params), jnp.array(SFH_PDF_QUENCH_PBOUNDS)
+    )
+    return QseqUParams(*u_params)
+
+
+@jjit
 def get_bounded_qseq_massonly_params(u_params):
     fq_u_params = jnp.array([getattr(u_params, u_pname) for u_pname in _FRAC_Q_UPNAMES])
     fq_params = _get_p_from_u_p_vmap(fq_u_params, jnp.array(FRAC_Q_BOUNDS))
@@ -741,3 +761,5 @@ def get_unbounded_qseq_massonly_params(params):
 DEFAULT_SFH_PDF_QUENCH_BLOCK_U_PARAMS = QseqMassOnlyBlockUParams(
     *get_unbounded_qseq_massonly_params(DEFAULT_SFH_PDF_QUENCH_BLOCK_PARAMS)
 )
+
+SFH_PDF_QUENCH_U_PARAMS = QseqUParams(*get_unbounded_qseq_params(SFH_PDF_QUENCH_PARAMS))
