@@ -692,28 +692,29 @@ def _frac_quench_vs_lgm0(params, lgm0):
 
 
 @jjit
-def _get_bounded_fq_param(u_param, bound):
-    lo, hi = bound
-    mid = 0.5 * (lo + hi)
-    return _sigmoid(u_param, mid, BOUNDING_K, lo, hi)
+def _get_p_from_u_p_scalar(u_p, bounds):
+    lo, hi = bounds
+    p0 = 0.5 * (lo + hi)
+    p = _sigmoid(u_p, p0, BOUNDING_K, lo, hi)
+    return p
 
 
 @jjit
-def _get_unbounded_fq_param(param, bound):
-    lo, hi = bound
-    mid = 0.5 * (lo + hi)
-    return _inverse_sigmoid(param, mid, BOUNDING_K, lo, hi)
+def _get_u_p_from_p_scalar(p, bounds):
+    lo, hi = bounds
+    p0 = 0.5 * (lo + hi)
+    u_p = _inverse_sigmoid(p, p0, BOUNDING_K, lo, hi)
+    return u_p
 
 
-_C = (0, 0)
-_get_fq_params_kern = jjit(vmap(_get_bounded_fq_param, in_axes=_C))
-_get_fq_u_params_kern = jjit(vmap(_get_unbounded_fq_param, in_axes=_C))
+_get_p_from_u_p_vmap = jjit(vmap(_get_p_from_u_p_scalar, in_axes=(0, 0)))
+_get_u_p_from_p_vmap = jjit(vmap(_get_u_p_from_p_scalar, in_axes=(0, 0)))
 
 
 @jjit
 def get_bounded_qseq_massonly_params(u_params):
     fq_u_params = jnp.array([getattr(u_params, u_pname) for u_pname in _FRAC_Q_UPNAMES])
-    fq_params = _get_fq_params_kern(fq_u_params, jnp.array(FRAC_Q_BOUNDS))
+    fq_params = _get_p_from_u_p_vmap(fq_u_params, jnp.array(FRAC_Q_BOUNDS))
     params = QseqMassOnlyBlockParams(*u_params)
     params = params._replace(frac_quench_x0=fq_params[0])
     params = params._replace(frac_quench_k=fq_params[1])
@@ -725,7 +726,7 @@ def get_bounded_qseq_massonly_params(u_params):
 @jjit
 def get_unbounded_qseq_massonly_params(params):
     fq_params = jnp.array([getattr(params, pname) for pname in FRAC_Q_PNAMES])
-    fq_u_params = _get_fq_u_params_kern(fq_params, jnp.array(FRAC_Q_BOUNDS))
+    fq_u_params = _get_u_p_from_p_vmap(fq_params, jnp.array(FRAC_Q_BOUNDS))
 
     pnames = DEFAULT_SFH_PDF_QUENCH_BLOCK_PARAMS._fields
     params = jnp.array([getattr(params, pname) for pname in pnames])
