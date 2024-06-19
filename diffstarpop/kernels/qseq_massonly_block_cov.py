@@ -178,6 +178,25 @@ QseqUParams = namedtuple("QseqUParams", _UPNAMES)
 
 
 @jjit
+def _qseq_pdf_scalar_kernel(qseq_params, lgm):
+    frac_quench = _frac_quench_vs_lgm0(qseq_params, lgm)
+
+    mu_qseq_ms_block = _get_mean_u_params_qseq_ms_block(qseq_params, lgm)
+    cov_qseq_ms_block = _get_covariance_qseq_ms_block(qseq_params, lgm)
+
+    mu_qseq_q_block = _get_mean_u_params_qseq_q_block(qseq_params, lgm)
+    cov_qseq_q_block = _get_covariance_qseq_q_block(qseq_params, lgm)
+
+    return (
+        frac_quench,
+        mu_qseq_ms_block,
+        cov_qseq_ms_block,
+        mu_qseq_q_block,
+        cov_qseq_q_block,
+    )
+
+
+@jjit
 def _get_mean_u_params_qseq_ms_block(params, lgm):
     ulgm = _sigmoid(
         lgm,

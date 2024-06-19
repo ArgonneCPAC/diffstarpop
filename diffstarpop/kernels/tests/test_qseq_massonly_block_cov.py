@@ -2,8 +2,6 @@
 """
 
 import numpy as np
-import pytest
-from diffmah.utils import get_cholesky_from_params
 from jax import random as jran
 
 from ...tests.test_utils import _enforce_is_cov
@@ -198,3 +196,22 @@ def test_get_cov_params_qseq_q_block():
         assert np.all(np.isfinite(x))
     for x in off_diags:
         assert np.all(np.isfinite(x))
+
+
+def test_qseq_pdf_scalar_kernel():
+    n_gals = 50
+    lgmarr = np.linspace(10, 15, n_gals)
+
+    for lgm in lgmarr:
+        _res = qseq._qseq_pdf_scalar_kernel(qseq.SFH_PDF_QUENCH_PARAMS, lgm)
+        for _x in _res:
+            assert np.all(np.isfinite(_x))
+        frac_quench = _res[0]
+        assert np.all(frac_quench >= 0)
+        assert np.all(frac_quench <= 1)
+        mu_qseq_ms, cov_qseq_ms = _res[1:3]
+        mu_qseq_q, cov_qseq_q = _res[3:]
+        _enforce_is_cov(cov_qseq_ms)
+        _enforce_is_cov(cov_qseq_q)
+        assert np.all(np.isfinite(mu_qseq_ms))
+        assert np.all(np.isfinite(mu_qseq_q))
