@@ -144,7 +144,7 @@ def mc_diffstar_params_singlegal(diffstarpop_params, mah_params, ran_key):
 
     """
     _res = mc_diffstar_u_params_singlegal_kernel(
-        diffstarpop_params.sfh_pdf_mainseq_params,
+        diffstarpop_params.sfh_pdf_cens_params,
         diffstarpop_params.sfh_pdf_quench_params,
         mah_params,
         ran_key,
