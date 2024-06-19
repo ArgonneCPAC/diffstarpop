@@ -77,16 +77,18 @@ def mc_diffstar_sfh_singlegal(
     sfh_ms : ndarray, shape (nt, )
         Star formation rate in units of Msun/yr for main sequence galaxy
 
-    frac_q : float
-        Quenched fraction.
+    frac_q : scalar, float
+        Quenched fraction
+
+    mc_is_q : scalar, bool
+        True for a quenched galaxy and False for unquenched
 
     """
-    diffstar_params_q, diffstar_params_ms, frac_q = mc_diffstar_params_singlegal(
-        diffstarpop_params, mah_params, ran_key
-    )
+    _res = mc_diffstar_params_singlegal(diffstarpop_params, mah_params, ran_key)
+    diffstar_params_q, diffstar_params_ms, frac_q, mc_is_q = _res
     sfh_q = calc_sfh_singlegal(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
     sfh_ms = calc_sfh_singlegal(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
-    return diffstar_params_q, diffstar_params_ms, sfh_q, sfh_ms, frac_q
+    return diffstar_params_q, diffstar_params_ms, sfh_q, sfh_ms, frac_q, mc_is_q
 
 
 @jjit
