@@ -87,10 +87,10 @@ def mc_diffstar_sfh_singlegal(
 
     """
     _res = mc_diffstar_params_singlegal(diffstarpop_params, mah_params, ran_key)
-    diffstar_params_q, diffstar_params_ms, frac_q, mc_is_q = _res
-    sfh_q = calc_sfh_singlegal(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
+    diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
     sfh_ms = calc_sfh_singlegal(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
-    return diffstar_params_q, diffstar_params_ms, sfh_q, sfh_ms, frac_q, mc_is_q
+    sfh_q = calc_sfh_singlegal(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
+    return diffstar_params_ms, diffstar_params_q, sfh_ms, sfh_q, frac_q, mc_is_q
 
 
 @jjit
@@ -153,7 +153,7 @@ def mc_diffstar_params_singlegal(diffstarpop_params, mah_params, ran_key):
     u_params_ms, u_params_qseq, frac_q, mc_is_q = _res
     diffstar_params_q = get_bounded_diffstar_params(u_params_qseq)
     diffstar_params_ms = get_bounded_diffstar_params(u_params_ms)
-    return diffstar_params_q, diffstar_params_ms, frac_q, mc_is_q
+    return diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q
 
 
 @jjit
@@ -179,8 +179,8 @@ def mc_diffstar_u_params_galpop(diffstarpop_params, mah_params, ran_key):
     ngals = mah_params[0].size
     ran_keys = jran.split(ran_key, ngals)
     _res = mc_diffstar_u_params_galpop_kernel(diffstarpop_params, mah_params, ran_keys)
-    diffstar_u_params_q, diffstar_u_params_ms, frac_q, mc_is_q = _res
-    return diffstar_u_params_q, diffstar_u_params_ms, frac_q, mc_is_q
+    diffstar_u_params_ms, diffstar_u_params_q, frac_q, mc_is_q = _res
+    return diffstar_u_params_ms, diffstar_u_params_q, frac_q, mc_is_q
 
 
 get_bounded_diffstar_params_galpop = jjit(vmap(get_bounded_diffstar_params, in_axes=0))
@@ -239,10 +239,10 @@ def mc_diffstar_params_galpop(diffstarpop_params, mah_params, ran_key):
 
     """
     _res = mc_diffstar_u_params_galpop(diffstarpop_params, mah_params, ran_key)
-    diffstar_u_params_q, diffstar_u_params_ms, frac_q, mc_is_q = _res
-    diffstar_params_q = get_bounded_diffstar_params_galpop(diffstar_u_params_q)
+    diffstar_u_params_ms, diffstar_u_params_q, frac_q, mc_is_q = _res
     diffstar_params_ms = get_bounded_diffstar_params_galpop(diffstar_u_params_ms)
-    return diffstar_params_q, diffstar_params_ms, frac_q, mc_is_q
+    diffstar_params_q = get_bounded_diffstar_params_galpop(diffstar_u_params_q)
+    return diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q
 
 
 @jjit
@@ -319,7 +319,7 @@ def mc_diffstar_sfh_galpop(
 
     """
     _res = mc_diffstar_params_galpop(diffstarpop_params, mah_params, ran_key)
-    diffstar_params_q, diffstar_params_ms, frac_q, mc_is_q = _res
-    sfh_q = calc_sfh_galpop(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
+    diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
     sfh_ms = calc_sfh_galpop(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
-    return diffstar_params_q, diffstar_params_ms, sfh_q, sfh_ms, frac_q, mc_is_q
+    sfh_q = calc_sfh_galpop(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
+    return diffstar_params_ms, diffstar_params_q, sfh_ms, sfh_q, frac_q, mc_is_q

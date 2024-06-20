@@ -29,7 +29,7 @@ def test_mc_diffstar_sfh_singlegal_evaluates():
     tarr = np.linspace(0.1, 13.8, n_times)
     args = (DEFAULT_DIFFSTARPOP_PARAMS, DEFAULT_MAH_PARAMS, ran_key, tarr)
     _res = mcdsp.mc_diffstar_sfh_singlegal(*args)
-    params_q, params_ms, sfh_q, sfh_ms, frac_q, mc_is_q = _res
+    params_ms, params_q, sfh_ms, sfh_q, frac_q, mc_is_q = _res
     assert np.all(frac_q >= 0)
     assert np.all(frac_q <= 1)
     assert np.all(np.isfinite(params_ms.ms_params))
@@ -53,7 +53,7 @@ def test_mc_diffstar_u_params_galpop():
     _res = mcdsp.mc_diffstar_u_params_galpop(
         DEFAULT_DIFFSTARPOP_PARAMS, mah_params, ran_key
     )
-    diffstar_u_params_q, diffstar_u_params_ms, frac_q, mc_is_q = _res
+    diffstar_u_params_ms, diffstar_u_params_q, frac_q, mc_is_q = _res
 
 
 def test_mc_diffstar_params_galpop():
@@ -64,7 +64,7 @@ def test_mc_diffstar_params_galpop():
     _res = mcdsp.mc_diffstar_params_galpop(
         DEFAULT_DIFFSTARPOP_PARAMS, mah_params, ran_key
     )
-    diffstar_params_q, diffstar_params_ms, frac_q, mc_is_q = _res
+    diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
 
 
 def test_mc_diffstar_sfh_galpop():
@@ -77,4 +77,4 @@ def test_mc_diffstar_sfh_galpop():
     _res = mcdsp.mc_diffstar_sfh_galpop(
         DEFAULT_DIFFSTARPOP_PARAMS, mah_params, ran_key, tarr
     )
-    diffstar_params_q, diffstar_params_ms, sfh_q, sfh_ms, frac_q, mc_is_q = _res
+    diffstar_params_ms, diffstar_params_q, sfh_q, sfh_ms, frac_q, mc_is_q = _res
