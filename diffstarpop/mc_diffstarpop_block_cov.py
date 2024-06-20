@@ -67,25 +67,27 @@ def mc_diffstar_sfh_singlegal(
 
     Returns
     -------
-    diffstar_params_q : namedtuple
-        Diffstar params for quenched galaxy
+    diffstar_params_ms : namedtuple, length 5
+        ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
+
         DiffstarParams = ms_params, q_params
             ms_params and q_params are tuples of floats
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
-    diffstar_params_ms : namedtuple
-        Diffstar params for main sequence galaxy
+    diffstar_params_q : namedtuple, length 4
+        diffstar_params_q = lg_qt, qlglgdt, lg_drop, lg_rejuv
+
         DiffstarParams = ms_params, q_params
             ms_params and q_params are tuples of floats
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
-
-    sfh_q : ndarray, shape (nt, )
-        Star formation rate in units of Msun/yr for quenched galaxy
 
     sfh_ms : ndarray, shape (nt, )
         Star formation rate in units of Msun/yr for main sequence galaxy
+
+    sfh_q : ndarray, shape (nt, )
+        Star formation rate in units of Msun/yr for quenched galaxy
 
     frac_q : scalar, float
         Quenched fraction
@@ -128,10 +130,6 @@ def mc_diffstar_params_singlegal(
         mah_params is a tuple of floats
         DiffmahParams = logmp, logtc, early_index, late_index
 
-    p50 : float
-        Prob(<t_50% | logm0), the CDF of the distribution of halo
-        formation times t_50% conditioned on mass logm0
-
     lgmu_infall : float
         Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
         Set to 0.0 for centrals
@@ -149,22 +147,27 @@ def mc_diffstar_params_singlegal(
 
     Returns
     -------
-    diffstar_params_q : namedtuple
-        Diffstar params for quenched galaxy
+    diffstar_params_ms : namedtuple, length 5
+        ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
+
         DiffstarParams = ms_params, q_params
             ms_params and q_params are tuples of floats
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
-    diffstar_params_ms : namedtuple
-        Diffstar params for main sequence galaxy
+    diffstar_params_q : namedtuple, length 4
+        diffstar_params_q = lg_qt, qlglgdt, lg_drop, lg_rejuv
+
         DiffstarParams = ms_params, q_params
             ms_params and q_params are tuples of floats
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
-    frac_q : float
-        Quenched fraction.
+    frac_q : scalar, float
+        Quenched fraction
+
+    mc_is_q : scalar, bool
+        True for a quenched galaxy and False for unquenched
 
     """
     _res = mc_diffstar_u_params_singlegal_kernel(
@@ -257,10 +260,6 @@ def mc_diffstar_params_galpop(
         mah_params is a tuple of ndarrays of shape (ngals, )
         DiffmahParams = logmp, logtc, early_index, late_index
 
-    p50 : ndarray of shape (ngals, )
-        Prob(<t_50% | logm0), the CDF of the distribution of halo
-        formation times t_50% conditioned on mass logm0
-
     lgmu_infall : ndarray of shape (ngals, )
         Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
         Set to 0.0 for centrals
@@ -278,22 +277,28 @@ def mc_diffstar_params_galpop(
 
     Returns
     -------
-    diffstar_params_q : namedtuple
-    Diffstar params for quenched galaxy
+    diffstar_params_ms : namedtuple, length 5
+        ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
+
         DiffstarParams = ms_params, q_params
             ms_params and q_params are tuples of ndarrays of shape (ngals, )
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
-    diffstar_params_ms : namedtuple
-        Diffstar params for main sequence galaxy
+    diffstar_params_q : namedtuple, length 4
+        diffstar_params_q = lg_qt, qlglgdt, lg_drop, lg_rejuv
+
         DiffstarParams = ms_params, q_params
             ms_params and q_params are tuples of ndarrays of shape (ngals, )
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
     frac_q : ndarray of shape (ngals, )
-        Quenched fraction.
+        Quenched fraction
+
+    mc_is_q : ndarray of shape (ngals, )
+        Boolean is True for galaxies determined quenched by
+        the result of a stochastic Monte Carlo realization
 
     """
     _res = mc_diffstar_u_params_galpop(
@@ -334,10 +339,6 @@ def mc_diffstar_sfh_galpop(
         mah_params is a tuple of ndarrays of shape (ngals, )
         DiffmahParams = logmp, logtc, early_index, late_index
 
-    p50 : ndarray of shape (ngals, )
-        Prob(<t_50% | logm0), the CDF of the distribution of halo
-        formation times t_50% conditioned on mass logm0
-
     lgmu_infall : ndarray of shape (ngals, )
         Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
         Set to 0.0 for centrals
@@ -367,28 +368,34 @@ def mc_diffstar_sfh_galpop(
 
     Returns
     -------
-    diffstar_params_q : namedtuple
-    Diffstar params for quenched galaxy
+    diffstar_params_ms : namedtuple, length 5
+        ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
+
         DiffstarParams = ms_params, q_params
             ms_params and q_params are tuples of ndarrays of shape (ngals, )
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
 
-    diffstar_params_ms : namedtuple
-        Diffstar params for main sequence galaxy
+    diffstar_params_q : namedtuple, length 4
+        diffstar_params_q = lg_qt, qlglgdt, lg_drop, lg_rejuv
+
         DiffstarParams = ms_params, q_params
             ms_params and q_params are tuples of ndarrays of shape (ngals, )
             diffstar_params.ms_params = lgmcrit, lgy_at_mcrit, indx_lo, indx_hi, tau_dep
             diffstar_params.q_params = lg_qt, qlglgdt, lg_drop, lg_rejuv
-
-    sfh_q : ndarray, shape (ngals, nt)
-        Star formation rate in units of Msun/yr for quenched galaxy
 
     sfh_ms : ndarray, shape (ngals, nt)
         Star formation rate in units of Msun/yr for main sequence galaxy
 
+    sfh_q : ndarray, shape (ngals, nt)
+        Star formation rate in units of Msun/yr for quenched galaxy
+
     frac_q : ndarray of shape (ngals, )
-        Quenched fraction.
+        Quenched fraction
+
+    mc_is_q : ndarray of shape (ngals, )
+        Boolean is True for galaxies determined quenched by
+        the result of a stochastic Monte Carlo realization
 
     """
     _res = mc_diffstar_params_galpop(
