@@ -7,20 +7,34 @@ from jax import jit as jjit
 from jax import numpy as jnp
 from jax import random as jran
 
+from .satquenchpop_model import get_qprob_sat
 from .sfh_pdf_block_cov import _sfh_pdf_scalar_kernel
 
 
 @jjit
-def mc_diffstar_u_params_singlegal_kernel(sfh_pdf_params, mah_params, ran_key):
-    qseq_means_covs = _diffstarpop_means_covs(sfh_pdf_params, mah_params)
+def mc_diffstar_u_params_singlegal_kernel(
+    diffstarpop_params,
+    mah_params,
+    lgmu_infall,
+    logmhost_infall,
+    gyr_since_infall,
+    ran_key,
+):
+    means_covs = _diffstarpop_means_covs(
+        diffstarpop_params,
+        mah_params,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
+    )
 
     u_indx_hi = DEFAULT_DIFFSTAR_U_PARAMS.u_ms_params.u_indx_hi
 
-    frac_quench = qseq_means_covs[0]
-    mu_mseq = qseq_means_covs[1]
+    frac_quench = means_covs[0]
+    mu_mseq = means_covs[1]
     q_key_ms_block, q_key_q_block, frac_q_key = jran.split(ran_key, 3)
-    mu_qseq_ms_block, cov_qseq_ms_block = qseq_means_covs[2:4]
-    mu_qseq_q_block, cov_qseq_q_block = qseq_means_covs[4:]
+    mu_qseq_ms_block, cov_qseq_ms_block = means_covs[2:4]
+    mu_qseq_q_block, cov_qseq_q_block = means_covs[4:]
 
     u_params_qseq_ms_block = jran.multivariate_normal(
         q_key_ms_block, jnp.array(mu_qseq_ms_block), cov_qseq_ms_block, shape=()
@@ -61,13 +75,24 @@ def mc_diffstar_u_params_singlegal_kernel(sfh_pdf_params, mah_params, ran_key):
 
 
 @jjit
-def _diffstarpop_means_covs(qseq_params, mah_params):
-    qseq_means_covs = _qseq_pdf_scalar_kernel_wrapper(qseq_params, mah_params)
-    return qseq_means_covs
-
-
-@jjit
-def _qseq_pdf_scalar_kernel_wrapper(qseq_params, mah_params):
+def _diffstarpop_means_covs(
+    diffstarpop_params,
+    mah_params,
+    lgmu_infall,
+    logmhost_infall,
+    gyr_since_infall,
+):
     lgm0 = mah_params[0]
-    qseq_means_covs = _sfh_pdf_scalar_kernel(qseq_params, lgm0)
-    return qseq_means_covs
+    means_covs = _sfh_pdf_scalar_kernel(diffstarpop_params.sfh_pdf_cens_params, lgm0)
+
+    # Modify frac_q for satellites
+    frac_q = means_covs[0]
+    frac_q = get_qprob_sat(
+        diffstarpop_params.satquench_params,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
+        frac_q,
+    )
+    means_covs = (frac_q, *means_covs[1:])
+    return means_covs

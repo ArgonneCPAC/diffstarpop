@@ -6,12 +6,22 @@ from diffmah.defaults import DEFAULT_MAH_PARAMS
 from jax import random as jran
 
 from .. import diffstarpop_block_cov as dsp
-from ..sfh_pdf_block_cov import SFH_PDF_QUENCH_PARAMS
+from ..defaults_block_cov import DEFAULT_DIFFSTARPOP_PARAMS
 
 
 def test_mc_diffstar_u_params_singlegal_kernel():
     ran_key = jran.key(0)
-    args = (SFH_PDF_QUENCH_PARAMS, DEFAULT_MAH_PARAMS, ran_key)
+    lgmu_infall = -1.0
+    logmhost_infall = 13.0
+    gyr_since_infall = 2.0
+    args = (
+        DEFAULT_DIFFSTARPOP_PARAMS,
+        DEFAULT_MAH_PARAMS,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
+        ran_key,
+    )
     _res = dsp.mc_diffstar_u_params_singlegal_kernel(*args)
     u_params_ms, u_params_qseq, frac_quench, mc_is_quenched_sequence = _res
     assert len(u_params_ms.u_ms_params) == 5
@@ -27,7 +37,16 @@ def test_mc_diffstar_u_params_singlegal_kernel():
 
 
 def test_diffstarpop_means_covs():
-    means_covs = dsp._diffstarpop_means_covs(SFH_PDF_QUENCH_PARAMS, DEFAULT_MAH_PARAMS)
+    lgmu_infall = -1.0
+    logmhost_infall = 13.0
+    gyr_since_infall = 2.0
+    means_covs = dsp._diffstarpop_means_covs(
+        DEFAULT_DIFFSTARPOP_PARAMS,
+        DEFAULT_MAH_PARAMS,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
+    )
     #
     frac_quench = means_covs[0]
     assert np.all(frac_quench >= 0)
