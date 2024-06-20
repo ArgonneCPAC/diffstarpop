@@ -65,3 +65,16 @@ def test_mc_diffstar_params_galpop():
         DEFAULT_DIFFSTARPOP_PARAMS, mah_params, ran_key
     )
     diffstar_params_q, diffstar_params_ms, frac_q, mc_is_q = _res
+
+
+def test_mc_diffstar_sfh_galpop():
+    ngals = 50
+    zz = np.zeros(ngals)
+    ran_key = jran.key(0)
+    mah_params = DEFAULT_MAH_PARAMS._make([zz + p for p in DEFAULT_MAH_PARAMS])
+    n_times = 100
+    tarr = np.linspace(0.1, 13.8, n_times)
+    _res = mcdsp.mc_diffstar_sfh_galpop(
+        DEFAULT_DIFFSTARPOP_PARAMS, mah_params, ran_key, tarr
+    )
+    diffstar_params_q, diffstar_params_ms, sfh_q, sfh_ms, frac_q, mc_is_q = _res
