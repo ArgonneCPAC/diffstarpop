@@ -19,6 +19,14 @@ RHO_BOUNDS = (-0.3, 0.3)
 
 SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
     mean_lgmhalo_x0=12.5,
+    mean_ulgm_ms_ylo=11.540,
+    mean_ulgm_ms_yhi=12.080,
+    mean_ulgy_ms_ylo=-0.481,
+    mean_ulgy_ms_yhi=-0.223,
+    mean_ul_ms_ylo=-0.75,
+    mean_ul_ms_yhi=0.75,
+    mean_utau_ms_ylo=20.0,
+    mean_utau_ms_yhi=-10.0,
     mean_ulgm_quench_ylo=11.540,
     mean_ulgm_quench_yhi=12.080,
     mean_ulgy_quench_ylo=-0.481,
@@ -38,6 +46,14 @@ SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
 )
 SFH_PDF_QUENCH_MU_BOUNDS_PDICT = OrderedDict(
     mean_lgmhalo_x0=(11.5, 13.5),
+    mean_ulgm_ms_ylo=(11.5, 13.0),
+    mean_ulgm_ms_yhi=(11.5, 13.0),
+    mean_ulgy_ms_ylo=(-1.0, 0.0),
+    mean_ulgy_ms_yhi=(-1.0, 0.0),
+    mean_ul_ms_ylo=(-1.0, 1.0),
+    mean_ul_ms_yhi=(-1.0, 1.0),
+    mean_utau_ms_ylo=(-25.0, 50.0),
+    mean_utau_ms_yhi=(-25.0, 50.0),
     mean_ulgm_quench_ylo=(11.5, 13.0),
     mean_ulgm_quench_yhi=(11.5, 13.0),
     mean_ulgy_quench_ylo=(-1.0, 0.0),
@@ -178,22 +194,59 @@ QseqUParams = namedtuple("QseqUParams", _UPNAMES)
 
 
 @jjit
-def _qseq_pdf_scalar_kernel(qseq_params, lgm):
-    frac_quench = _frac_quench_vs_lgm0(qseq_params, lgm)
+def _sfh_pdf_scalar_kernel(params, lgm):
+    frac_quench = _frac_quench_vs_lgm0(params, lgm)
 
-    mu_qseq_ms_block = _get_mean_u_params_qseq_ms_block(qseq_params, lgm)
-    cov_qseq_ms_block = _get_covariance_qseq_ms_block(qseq_params, lgm)
+    mu_mseq = _get_mean_u_params_mseq(params, lgm)
 
-    mu_qseq_q_block = _get_mean_u_params_qseq_q_block(qseq_params, lgm)
-    cov_qseq_q_block = _get_covariance_qseq_q_block(qseq_params, lgm)
+    mu_qseq_ms_block = _get_mean_u_params_qseq_ms_block(params, lgm)
+    cov_qseq_ms_block = _get_covariance_qseq_ms_block(params, lgm)
+
+    mu_qseq_q_block = _get_mean_u_params_qseq_q_block(params, lgm)
+    cov_qseq_q_block = _get_covariance_qseq_q_block(params, lgm)
 
     return (
         frac_quench,
+        mu_mseq,
         mu_qseq_ms_block,
         cov_qseq_ms_block,
         mu_qseq_q_block,
         cov_qseq_q_block,
     )
+
+
+@jjit
+def _get_mean_u_params_mseq(params, lgm):
+    ulgm = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGMCRIT_K,
+        params.mean_ulgm_ms_ylo,
+        params.mean_ulgm_ms_yhi,
+    )
+    ulgy = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_ulgy_ms_ylo,
+        params.mean_ulgy_ms_yhi,
+    )
+    ul = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_ul_ms_ylo,
+        params.mean_ul_ms_yhi,
+    )
+    utau = _sigmoid(
+        lgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_utau_ms_ylo,
+        params.mean_utau_ms_yhi,
+    )
+
+    return (ulgm, ulgy, ul, utau)
 
 
 @jjit
@@ -503,7 +556,7 @@ _get_u_p_from_p_vmap = jjit(vmap(_get_u_p_from_p_scalar, in_axes=(0, 0)))
 
 
 @jjit
-def get_bounded_qseq_params(u_params):
+def get_bounded_sfh_pdf_params(u_params):
     u_params = jnp.array(
         [getattr(u_params, u_pname) for u_pname in QseqUParams._fields]
     )
@@ -513,7 +566,7 @@ def get_bounded_qseq_params(u_params):
     return QseqParams(*params)
 
 
-def get_unbounded_qseq_params(params):
+def get_unbounded_sfh_pdf_params(params):
     params = jnp.array([getattr(params, pname) for pname in QseqParams._fields])
     u_params = _get_u_p_from_p_vmap(
         jnp.array(params), jnp.array(SFH_PDF_QUENCH_PBOUNDS)
@@ -521,4 +574,6 @@ def get_unbounded_qseq_params(params):
     return QseqUParams(*u_params)
 
 
-SFH_PDF_QUENCH_U_PARAMS = QseqUParams(*get_unbounded_qseq_params(SFH_PDF_QUENCH_PARAMS))
+SFH_PDF_QUENCH_U_PARAMS = QseqUParams(
+    *get_unbounded_sfh_pdf_params(SFH_PDF_QUENCH_PARAMS)
+)

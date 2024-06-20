@@ -28,13 +28,14 @@ def test_mc_diffstar_u_params_singlegal_kernel():
 
 def test_diffstarpop_means_covs():
     means_covs = dsp._diffstarpop_means_covs(SFH_PDF_QUENCH_PARAMS, DEFAULT_MAH_PARAMS)
-    qseq_means_covs = means_covs
-
-    frac_quench = qseq_means_covs[0]
+    #
+    frac_quench = means_covs[0]
     assert np.all(frac_quench >= 0)
     assert np.all(frac_quench <= 1)
-    mu_qseq_ms_block, cov_qseq_ms_block = qseq_means_covs[1:3]
-    mu_qseq_q_block, cov_qseq_q_block = qseq_means_covs[3:]
+    mu_mseq = means_covs[1]
+    assert np.all(np.isfinite(mu_mseq))
+    mu_qseq_ms_block, cov_qseq_ms_block = means_covs[2:4]
+    mu_qseq_q_block, cov_qseq_q_block = means_covs[4:]
     assert np.all(np.isfinite(mu_qseq_ms_block))
     assert np.all(np.isfinite(cov_qseq_ms_block))
     assert np.all(np.isfinite(mu_qseq_q_block))

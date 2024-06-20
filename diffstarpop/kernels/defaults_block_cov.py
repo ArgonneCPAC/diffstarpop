@@ -9,8 +9,8 @@ from jax import numpy as jnp
 
 from .sfh_pdf_block_cov import (
     SFH_PDF_QUENCH_PARAMS,
-    get_bounded_qseq_params,
-    get_unbounded_qseq_params,
+    get_bounded_sfh_pdf_params,
+    get_unbounded_sfh_pdf_params,
 )
 
 
@@ -27,7 +27,7 @@ DiffstarPopUParams = namedtuple("DiffstarPopUParams", _U_PNAMES)
 
 @jjit
 def get_bounded_diffstarpop_params(diffstarpop_u_params):
-    sfh_pdf_cens_params = get_bounded_qseq_params(
+    sfh_pdf_cens_params = get_bounded_sfh_pdf_params(
         diffstarpop_u_params.u_sfh_pdf_cens_params
     )
     return DiffstarPopParams(sfh_pdf_cens_params)
@@ -35,7 +35,9 @@ def get_bounded_diffstarpop_params(diffstarpop_u_params):
 
 @jjit
 def get_unbounded_diffstarpop_params(diffstarpop_params):
-    u_sfh_pdf_params = get_unbounded_qseq_params(diffstarpop_params.sfh_pdf_cens_params)
+    u_sfh_pdf_params = get_unbounded_sfh_pdf_params(
+        diffstarpop_params.sfh_pdf_cens_params
+    )
     return DiffstarPopUParams(u_sfh_pdf_params)
 
 

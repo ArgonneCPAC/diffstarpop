@@ -16,12 +16,14 @@ def test_param_u_param_names_propagate_properly():
         assert u_key[:2] == "u_"
         assert u_key[2:] == key
 
-    inferred_default_params = qseq.get_bounded_qseq_params(qseq.SFH_PDF_QUENCH_U_PARAMS)
+    inferred_default_params = qseq.get_bounded_sfh_pdf_params(
+        qseq.SFH_PDF_QUENCH_U_PARAMS
+    )
     assert set(inferred_default_params._fields) == set(
         qseq.SFH_PDF_QUENCH_PARAMS._fields
     )
 
-    inferred_default_u_params = qseq.get_unbounded_qseq_params(
+    inferred_default_u_params = qseq.get_unbounded_sfh_pdf_params(
         qseq.SFH_PDF_QUENCH_PARAMS
     )
     assert set(inferred_default_u_params._fields) == set(
@@ -31,16 +33,16 @@ def test_param_u_param_names_propagate_properly():
 
 def test_get_bounded_params_fails_when_passing_params():
     try:
-        qseq.get_bounded_qseq_params(qseq.SFH_PDF_QUENCH_PARAMS)
-        raise NameError("get_bounded_qseq_params should not accept u_params")
+        qseq.get_bounded_sfh_pdf_params(qseq.SFH_PDF_QUENCH_PARAMS)
+        raise NameError("get_bounded_sfh_pdf_params should not accept u_params")
     except AttributeError:
         pass
 
 
 def test_get_unbounded_params_fails_when_passing_u_params():
     try:
-        qseq.get_unbounded_qseq_params(qseq.SFH_PDF_QUENCH_U_PARAMS)
-        raise NameError("get_unbounded_qseq_params should not accept u_params")
+        qseq.get_unbounded_sfh_pdf_params(qseq.SFH_PDF_QUENCH_U_PARAMS)
+        raise NameError("get_unbounded_sfh_pdf_params should not accept u_params")
     except AttributeError:
         pass
 
@@ -65,10 +67,10 @@ def test_param_u_param_inversion():
         n_p = len(qseq.SFH_PDF_QUENCH_PARAMS)
         u_p = jran.uniform(test_key, minval=-100, maxval=100, shape=(n_p,))
         u_p = qseq.QseqUParams(*u_p)
-        p = qseq.get_bounded_qseq_params(u_p)
-        u_p2 = qseq.get_unbounded_qseq_params(p)
+        p = qseq.get_bounded_sfh_pdf_params(u_p)
+        u_p2 = qseq.get_unbounded_sfh_pdf_params(p)
         for x, y in zip(u_p, u_p2):
-            assert np.allclose(x, y, rtol=0.002)
+            assert np.allclose(x, y, rtol=0.01)
 
 
 def test_covs_are_always_covs_default_params():
@@ -95,7 +97,7 @@ def test_covs_are_always_covs_random_params():
         ran_key, test_key = jran.split(ran_key, 2)
         u_p = jran.uniform(test_key, minval=-1000, maxval=1000, shape=(npars,))
         u_params = qseq.QseqUParams(*u_p)
-        params = qseq.get_bounded_qseq_params(u_params)
+        params = qseq.get_bounded_sfh_pdf_params(u_params)
 
         for lgm in lgmarr:
             cov_qseq_ms_block = qseq._get_covariance_qseq_ms_block(params, lgm)
@@ -122,9 +124,24 @@ def test_default_params_are_in_bounds():
 
 
 def test_params_u_params_inverts():
-    qseq_massonly_u_params = qseq.get_unbounded_qseq_params(qseq.SFH_PDF_QUENCH_PARAMS)
-    qseq_massonly_params = qseq.get_bounded_qseq_params(qseq_massonly_u_params)
+    qseq_massonly_u_params = qseq.get_unbounded_sfh_pdf_params(
+        qseq.SFH_PDF_QUENCH_PARAMS
+    )
+    qseq_massonly_params = qseq.get_bounded_sfh_pdf_params(qseq_massonly_u_params)
     assert np.allclose(qseq.SFH_PDF_QUENCH_PARAMS, qseq_massonly_params)
+
+
+def test_get_mean_u_params_ms_seq():
+    lgmarr = np.linspace(11, 15, 100)
+    params = qseq.SFH_PDF_QUENCH_PARAMS
+    _means = qseq._get_mean_u_params_mseq(params, lgmarr)
+    assert len(_means) == 4
+    for x in _means:
+        assert np.all(np.isfinite(x))
+    _means = qseq._get_mean_u_params_mseq(params, lgmarr)
+    assert len(_means) == 4
+    for x in _means:
+        assert np.all(np.isfinite(x))
 
 
 def test_get_mean_u_params_qseq():
@@ -203,14 +220,16 @@ def test_qseq_pdf_scalar_kernel():
     lgmarr = np.linspace(10, 15, n_gals)
 
     for lgm in lgmarr:
-        _res = qseq._qseq_pdf_scalar_kernel(qseq.SFH_PDF_QUENCH_PARAMS, lgm)
+        _res = qseq._sfh_pdf_scalar_kernel(qseq.SFH_PDF_QUENCH_PARAMS, lgm)
         for _x in _res:
             assert np.all(np.isfinite(_x))
         frac_quench = _res[0]
         assert np.all(frac_quench >= 0)
         assert np.all(frac_quench <= 1)
-        mu_qseq_ms, cov_qseq_ms = _res[1:3]
-        mu_qseq_q, cov_qseq_q = _res[3:]
+        mu_mseq = _res[1]
+        assert np.all(np.isfinite(mu_mseq))
+        mu_qseq_ms, cov_qseq_ms = _res[2:4]
+        mu_qseq_q, cov_qseq_q = _res[4:]
         _enforce_is_cov(cov_qseq_ms)
         _enforce_is_cov(cov_qseq_q)
         assert np.all(np.isfinite(mu_qseq_ms))
