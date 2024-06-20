@@ -12,7 +12,15 @@ from .kernels.diffstarpop_block_cov import mc_diffstar_u_params_singlegal_kernel
 
 @jjit
 def mc_diffstar_sfh_singlegal(
-    diffstarpop_params, mah_params, ran_key, tarr, lgt0=LGT0, fb=FB
+    diffstarpop_params,
+    mah_params,
+    lgmu_infall,
+    logmhost_infall,
+    gyr_since_infall,
+    ran_key,
+    tarr,
+    lgt0=LGT0,
+    fb=FB,
 ):
     """Monte Carlo realization of a single point in Diffstar parameter space,
     along with the computation of SFH for this point.
@@ -86,7 +94,14 @@ def mc_diffstar_sfh_singlegal(
         True for a quenched galaxy and False for unquenched
 
     """
-    _res = mc_diffstar_params_singlegal(diffstarpop_params, mah_params, ran_key)
+    _res = mc_diffstar_params_singlegal(
+        diffstarpop_params,
+        mah_params,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
+        ran_key,
+    )
     diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
     sfh_ms = calc_sfh_singlegal(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
     sfh_q = calc_sfh_singlegal(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
@@ -94,7 +109,14 @@ def mc_diffstar_sfh_singlegal(
 
 
 @jjit
-def mc_diffstar_params_singlegal(diffstarpop_params, mah_params, ran_key):
+def mc_diffstar_params_singlegal(
+    diffstarpop_params,
+    mah_params,
+    lgmu_infall,
+    logmhost_infall,
+    gyr_since_infall,
+    ran_key,
+):
     """Monte Carlo realization of a single point in Diffstar parameter space.
 
     Parameters
@@ -146,8 +168,11 @@ def mc_diffstar_params_singlegal(diffstarpop_params, mah_params, ran_key):
 
     """
     _res = mc_diffstar_u_params_singlegal_kernel(
-        diffstarpop_params.sfh_pdf_cens_params,
+        diffstarpop_params,
         mah_params,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
         ran_key,
     )
     u_params_ms, u_params_qseq, frac_q, mc_is_q = _res
@@ -157,28 +182,54 @@ def mc_diffstar_params_singlegal(diffstarpop_params, mah_params, ran_key):
 
 
 @jjit
-def mc_diffstar_u_params_singlegal(diffstarpop_params, mah_params, ran_key):
+def mc_diffstar_u_params_singlegal(
+    diffstarpop_params,
+    mah_params,
+    lgmu_infall,
+    logmhost_infall,
+    gyr_since_infall,
+    ran_key,
+):
     """"""
 
     _res = mc_diffstar_u_params_singlegal_kernel(
-        diffstarpop_params.sfh_pdf_cens_params, mah_params, ran_key
+        diffstarpop_params,
+        mah_params,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
+        ran_key,
     )
     u_params_ms, u_params_qseq, frac_q, mc_is_q = _res
     return u_params_ms, u_params_qseq, frac_q, mc_is_q
 
 
-_POP = (None, 0, 0)
+_POP = (None, 0, 0, 0, 0, 0)
 mc_diffstar_u_params_galpop_kernel = jjit(
     vmap(mc_diffstar_u_params_singlegal, in_axes=_POP)
 )
 
 
 @jjit
-def mc_diffstar_u_params_galpop(diffstarpop_params, mah_params, ran_key):
+def mc_diffstar_u_params_galpop(
+    diffstarpop_params,
+    mah_params,
+    lgmu_infall,
+    logmhost_infall,
+    gyr_since_infall,
+    ran_key,
+):
     """"""
     ngals = mah_params[0].size
     ran_keys = jran.split(ran_key, ngals)
-    _res = mc_diffstar_u_params_galpop_kernel(diffstarpop_params, mah_params, ran_keys)
+    _res = mc_diffstar_u_params_galpop_kernel(
+        diffstarpop_params,
+        mah_params,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
+        ran_keys,
+    )
     diffstar_u_params_ms, diffstar_u_params_q, frac_q, mc_is_q = _res
     return diffstar_u_params_ms, diffstar_u_params_q, frac_q, mc_is_q
 
@@ -187,7 +238,14 @@ get_bounded_diffstar_params_galpop = jjit(vmap(get_bounded_diffstar_params, in_a
 
 
 @jjit
-def mc_diffstar_params_galpop(diffstarpop_params, mah_params, ran_key):
+def mc_diffstar_params_galpop(
+    diffstarpop_params,
+    mah_params,
+    lgmu_infall,
+    logmhost_infall,
+    gyr_since_infall,
+    ran_key,
+):
     """Monte Carlo realization of a population of points in Diffstar parameter space.
 
     Parameters
@@ -238,7 +296,14 @@ def mc_diffstar_params_galpop(diffstarpop_params, mah_params, ran_key):
         Quenched fraction.
 
     """
-    _res = mc_diffstar_u_params_galpop(diffstarpop_params, mah_params, ran_key)
+    _res = mc_diffstar_u_params_galpop(
+        diffstarpop_params,
+        mah_params,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
+        ran_key,
+    )
     diffstar_u_params_ms, diffstar_u_params_q, frac_q, mc_is_q = _res
     diffstar_params_ms = get_bounded_diffstar_params_galpop(diffstar_u_params_ms)
     diffstar_params_q = get_bounded_diffstar_params_galpop(diffstar_u_params_q)
@@ -247,7 +312,15 @@ def mc_diffstar_params_galpop(diffstarpop_params, mah_params, ran_key):
 
 @jjit
 def mc_diffstar_sfh_galpop(
-    diffstarpop_params, mah_params, ran_key, tarr, lgt0=LGT0, fb=FB
+    diffstarpop_params,
+    mah_params,
+    lgmu_infall,
+    logmhost_infall,
+    gyr_since_infall,
+    ran_key,
+    tarr,
+    lgt0=LGT0,
+    fb=FB,
 ):
     """Monte Carlo realization of a single point in Diffstar parameter space,
     along with the computation of SFH for this point.
@@ -318,7 +391,14 @@ def mc_diffstar_sfh_galpop(
         Quenched fraction.
 
     """
-    _res = mc_diffstar_params_galpop(diffstarpop_params, mah_params, ran_key)
+    _res = mc_diffstar_params_galpop(
+        diffstarpop_params,
+        mah_params,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
+        ran_key,
+    )
     diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
     sfh_ms = calc_sfh_galpop(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
     sfh_q = calc_sfh_galpop(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
