@@ -22,7 +22,7 @@ jobs:
 
       - uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: 3.9
+          python-version: 3.11
           channels: conda-forge,defaults
           channel-priority: strict
           show-channel-urls: true
@@ -46,7 +46,8 @@ jobs:
             setuptools \
             "setuptools_scm>=7,<8" \
             python-build \
-            halotools
+            halotools \
+            scipy
           pip uninstall diffmah --yes
           pip uninstall diffstar --yes
           pip uninstall dsps --yes
