@@ -12,29 +12,29 @@ from ..utils import _inverse_sigmoid, _sigmoid, covariance_from_correlation
 TODAY = 13.8
 LGT0 = jnp.log10(TODAY)
 
-LGM_X0, LGM_K = 12.5, 1.0
+LGM_X0, LGM_K = 12.5, 2.0
 LGMCRIT_K = 4.0
 BOUNDING_K = 0.1
 RHO_BOUNDS = (-0.3, 0.3)
 
 SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
-    mean_lgmhalo_x0=12.5,
-    mean_ulgm_ms_ylo=11.540,
-    mean_ulgm_ms_yhi=12.080,
-    mean_ulgy_ms_ylo=-0.481,
-    mean_ulgy_ms_yhi=-0.223,
-    mean_ul_ms_ylo=-0.75,
-    mean_ul_ms_yhi=0.75,
-    mean_utau_ms_ylo=20.0,
-    mean_utau_ms_yhi=-10.0,
-    mean_ulgm_quench_ylo=11.540,
-    mean_ulgm_quench_yhi=12.080,
-    mean_ulgy_quench_ylo=-0.481,
-    mean_ulgy_quench_yhi=-0.223,
-    mean_ul_quench_ylo=-0.75,
-    mean_ul_quench_yhi=0.75,
-    mean_utau_quench_ylo=20.0,
-    mean_utau_quench_yhi=-10.0,
+    mean_lgmhalo_x0=13.16,
+    mean_ulgm_ms_ylo=11.92,
+    mean_ulgm_ms_yhi=11.40,
+    mean_ulgy_ms_ylo=-0.37,
+    mean_ulgy_ms_yhi=1.87,
+    mean_ul_ms_ylo=-1.86,
+    mean_ul_ms_yhi=-3.77,
+    mean_utau_ms_ylo=11.40,
+    mean_utau_ms_yhi=-4.30,
+    mean_ulgm_quench_ylo=12.06,
+    mean_ulgm_quench_yhi=12.23,
+    mean_ulgy_quench_ylo=4.09,
+    mean_ulgy_quench_yhi=-1.41,
+    mean_ul_quench_ylo=0.03,
+    mean_ul_quench_yhi=-6.87,
+    mean_utau_quench_ylo=16.78,
+    mean_utau_quench_yhi=-5.58,
     mean_uqt_quench_ylo=1.3,
     mean_uqt_quench_yhi=0.5,
     mean_uqs_quench_ylo=-0.5,
@@ -46,20 +46,20 @@ SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
 )
 SFH_PDF_QUENCH_MU_BOUNDS_PDICT = OrderedDict(
     mean_lgmhalo_x0=(11.5, 13.5),
-    mean_ulgm_ms_ylo=(11.5, 13.0),
-    mean_ulgm_ms_yhi=(11.5, 13.0),
-    mean_ulgy_ms_ylo=(-1.0, 0.0),
-    mean_ulgy_ms_yhi=(-1.0, 0.0),
-    mean_ul_ms_ylo=(-1.0, 1.0),
-    mean_ul_ms_yhi=(-1.0, 1.0),
+    mean_ulgm_ms_ylo=(11.0, 13.0),
+    mean_ulgm_ms_yhi=(11.0, 13.0),
+    mean_ulgy_ms_ylo=(-1.0, 1.5),
+    mean_ulgy_ms_yhi=(-1.0, 2.5),
+    mean_ul_ms_ylo=(-3.0, 5.0),
+    mean_ul_ms_yhi=(-5.0, 2.5),
     mean_utau_ms_ylo=(-25.0, 50.0),
     mean_utau_ms_yhi=(-25.0, 50.0),
     mean_ulgm_quench_ylo=(11.5, 13.0),
     mean_ulgm_quench_yhi=(11.5, 13.0),
-    mean_ulgy_quench_ylo=(-1.0, 0.0),
-    mean_ulgy_quench_yhi=(-1.0, 0.0),
-    mean_ul_quench_ylo=(-1.0, 1.0),
-    mean_ul_quench_yhi=(-1.0, 1.0),
+    mean_ulgy_quench_ylo=(0.0, 5.5),
+    mean_ulgy_quench_yhi=(-2.0, 0.5),
+    mean_ul_quench_ylo=(-1.0, 3.0),
+    mean_ul_quench_yhi=(-10.0, 3.0),
     mean_utau_quench_ylo=(-25.0, 50.0),
     mean_utau_quench_yhi=(-25.0, 50.0),
     mean_uqt_quench_ylo=(0.0, 2.0),
@@ -162,16 +162,16 @@ SFH_PDF_QUENCH_COV_Q_BLOCK_BOUNDS_PDICT = OrderedDict(
     rho_urej_udrop_quench_yhi=RHO_BOUNDS,
 )
 SFH_PDF_FRAC_QUENCH_PDICT = OrderedDict(
-    frac_quench_x0=11.860,
-    frac_quench_k=4.5,
-    frac_quench_ylo=0.05,
-    frac_quench_yhi=0.95,
+    frac_quench_x0=12.01,
+    frac_quench_k=1.75,
+    frac_quench_ylo=-0.63,
+    frac_quench_yhi=0.99,
 )
 SFH_PDF_FRAC_QUENCH_BOUNDS_PDICT = OrderedDict(
     frac_quench_x0=(11.0, 13.0),
     frac_quench_k=(1.0, 5.0),
-    frac_quench_ylo=(0.0, 0.5),
-    frac_quench_yhi=(0.25, 1.0),
+    frac_quench_ylo=(-1.0, 0.5),
+    frac_quench_yhi=(0.5, 1.5),
 )
 
 SFH_PDF_QUENCH_PDICT = SFH_PDF_FRAC_QUENCH_PDICT.copy()
@@ -526,13 +526,15 @@ def _get_covariance_qseq_ms_block(params, lgm):
 
 @jjit
 def _frac_quench_vs_lgm0(params, lgm0):
-    return _sigmoid(
+    frac_q = _sigmoid(
         lgm0,
         params.frac_quench_x0,
         params.frac_quench_k,
         params.frac_quench_ylo,
         params.frac_quench_yhi,
     )
+    frac_q = jnp.clip(frac_q, a_min=0.0, a_max=1.0)
+    return frac_q
 
 
 @jjit
