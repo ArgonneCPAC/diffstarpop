@@ -42,6 +42,7 @@ from diffstarpop.lightcone_colors import (
 )
 
 from fit_adam_helpers import jax_adam_wrapper
+from jax.example_libraries import optimizers as jax_opt
 
 
 # DSPS_data_path = "/Users/alarcon/Documents/DSPS_data/"
