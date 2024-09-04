@@ -101,6 +101,7 @@ def mc_diffstar_sfh_singlegal(
     _res = mc_diffstar_params_singlegal(
         diffstarpop_params,
         mah_params,
+        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -120,6 +121,7 @@ def mc_diffstar_sfh_singlegal(
 def mc_diffstar_params_singlegal(
     diffstarpop_params,
     mah_params,
+    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -179,6 +181,7 @@ def mc_diffstar_params_singlegal(
     _res = mc_diffstar_u_params_singlegal_kernel(
         diffstarpop_params,
         mah_params,
+        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -194,6 +197,7 @@ def mc_diffstar_params_singlegal(
 def mc_diffstar_u_params_singlegal(
     diffstarpop_params,
     mah_params,
+    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -204,6 +208,7 @@ def mc_diffstar_u_params_singlegal(
     _res = mc_diffstar_u_params_singlegal_kernel(
         diffstarpop_params,
         mah_params,
+        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -213,7 +218,7 @@ def mc_diffstar_u_params_singlegal(
     return u_params_ms, u_params_qseq, frac_q, mc_is_q
 
 
-_POP = (None, 0, 0, 0, 0, 0)
+_POP = (None, 0, 0, 0, 0, 0, 0)
 mc_diffstar_u_params_galpop_kernel = jjit(
     vmap(mc_diffstar_u_params_singlegal, in_axes=_POP)
 )
@@ -223,6 +228,7 @@ mc_diffstar_u_params_galpop_kernel = jjit(
 def mc_diffstar_u_params_galpop(
     diffstarpop_params,
     mah_params,
+    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -234,6 +240,7 @@ def mc_diffstar_u_params_galpop(
     _res = mc_diffstar_u_params_galpop_kernel(
         diffstarpop_params,
         mah_params,
+        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -250,6 +257,7 @@ get_bounded_diffstar_params_galpop = jjit(vmap(get_bounded_diffstar_params, in_a
 def mc_diffstar_params_galpop(
     diffstarpop_params,
     mah_params,
+    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -310,6 +318,7 @@ def mc_diffstar_params_galpop(
     _res = mc_diffstar_u_params_galpop(
         diffstarpop_params,
         mah_params,
+        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -408,6 +417,7 @@ def mc_diffstar_sfh_galpop(
     _res = mc_diffstar_params_galpop(
         diffstarpop_params,
         mah_params,
+        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
