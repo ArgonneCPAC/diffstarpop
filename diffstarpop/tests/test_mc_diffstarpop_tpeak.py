@@ -40,9 +40,11 @@ def test_mc_diffstar_sfh_singlegal_evaluates():
     gyr_since_infall = 2.0
     n_times = 30
     tarr = np.linspace(0.1, 13.8, n_times)
+    t_peak = 12.4
     args = (
         DEFAULT_DIFFSTARPOP_PARAMS,
         DEFAULT_MAH_PARAMS,
+        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -112,11 +114,13 @@ def test_mc_diffstar_sfh_galpop():
     gyr_since_infall = 2.0 + zz
     ran_key = jran.key(0)
     mah_params = DEFAULT_MAH_PARAMS._make([zz + p for p in DEFAULT_MAH_PARAMS])
+    t_peak = zz + 12.1
     n_times = 100
     tarr = np.linspace(0.1, 13.8, n_times)
     _res = mcdsp.mc_diffstar_sfh_galpop(
         DEFAULT_DIFFSTARPOP_PARAMS,
         mah_params,
+        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,

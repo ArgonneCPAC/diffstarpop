@@ -1,8 +1,9 @@
 """This module implements kernels for Monte Carlo generating Diffstar SFHs
 """
 
-from diffstar import calc_sfh_galpop, calc_sfh_singlegal, get_bounded_diffstar_params
+from diffstar import get_bounded_diffstar_params
 from diffstar.defaults import FB, LGT0
+from diffstar.sfh_model_tpeak import calc_sfh_galpop, calc_sfh_singlegal
 from jax import jit as jjit
 from jax import random as jran
 from jax import vmap
@@ -14,6 +15,7 @@ from .kernels.diffstarpop_tpeak import mc_diffstar_u_params_singlegal_kernel
 def mc_diffstar_sfh_singlegal(
     diffstarpop_params,
     mah_params,
+    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -105,8 +107,12 @@ def mc_diffstar_sfh_singlegal(
         ran_key,
     )
     diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
-    sfh_ms = calc_sfh_singlegal(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
-    sfh_q = calc_sfh_singlegal(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
+    sfh_ms = calc_sfh_singlegal(
+        diffstar_params_ms, mah_params, t_peak, tarr, lgt0=lgt0, fb=fb
+    )
+    sfh_q = calc_sfh_singlegal(
+        diffstar_params_q, mah_params, t_peak, tarr, lgt0=lgt0, fb=fb
+    )
     return diffstar_params_ms, diffstar_params_q, sfh_ms, sfh_q, frac_q, mc_is_q
 
 
@@ -319,6 +325,7 @@ def mc_diffstar_params_galpop(
 def mc_diffstar_sfh_galpop(
     diffstarpop_params,
     mah_params,
+    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -407,6 +414,10 @@ def mc_diffstar_sfh_galpop(
         ran_key,
     )
     diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
-    sfh_ms = calc_sfh_galpop(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
-    sfh_q = calc_sfh_galpop(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
+    sfh_ms = calc_sfh_galpop(
+        diffstar_params_ms, mah_params, t_peak, tarr, lgt0=lgt0, fb=fb
+    )
+    sfh_q = calc_sfh_galpop(
+        diffstar_params_q, mah_params, t_peak, tarr, lgt0=lgt0, fb=fb
+    )
     return diffstar_params_ms, diffstar_params_q, sfh_ms, sfh_q, frac_q, mc_is_q
