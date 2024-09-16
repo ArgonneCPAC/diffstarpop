@@ -35,6 +35,7 @@ if __name__ == "__main__":
         type=str,
         default=smhm_utils.LCRC_DIFFSTAR_DRN,
     )
+    
     parser.add_argument("-outdrn", help="output directory", type=str, default="")
     args = parser.parse_args()
     istart = args.istart
@@ -44,8 +45,14 @@ if __name__ == "__main__":
     diffmah_drn = args.diffmah_drn
     diffstar_drn = args.diffstar_drn
 
-    wcounts = np.zeros(smhm_utils.LOGMH_BINS.size - 1)
+    redshift_targets = np.concatenate((np.arange(0,1,0.1), np.arange(1, 2.1, 0.5)))
+
+    nz, nm = len(redshift_targets), smhm_utils.LOGMH_BINS.size - 1
+
+    wcounts = np.zeros(nz, nm)
     whist = np.zeros_like(wcounts)
+    counts = np.zeros_like(wcounts)
+    hist = np.zeros_like(wcounts)
 
     subvol_used = np.zeros(n_subvol_max).astype(int)
 
@@ -53,11 +60,18 @@ if __name__ == "__main__":
     start = time()
     for i in range(istart, iend):
         try:
-            wcounts_i, whist_i = smhm_utils.compute_weighted_histograms_z0(
-                i, diffmah_drn=diffmah_drn, diffstar_drn=diffstar_drn
+            _res = smhm_utils.compute_weighted_histograms(
+                i, 
+                redshift_targets, 
+                diffmah_drn=diffmah_drn, 
+                diffstar_drn=diffstar_drn
             )
+            wcounts_i, whist_i, counts_i, hist_i, age_targets = _res
+
             wcounts = wcounts + wcounts_i
             whist = whist + whist_i
+            counts = counts + counts_i
+            hist = hist + hist_i
             subvol_used[i] = 1
             print(f"...computed sumstat counts for subvolume {i}")
         except FileNotFoundError:
@@ -66,13 +80,18 @@ if __name__ == "__main__":
     end = time()
     runtime = end - start
 
-    fnout = os.path.join(outdrn, "smdpl_smhm_z0.h5")
+    fnout = os.path.join(outdrn, "smdpl_smhm.h5")
     with h5py.File(fnout, "w") as hdfout:
-        hdfout["wcounts"] = wcounts
-        hdfout["whist"] = whist
-        hdfout["smhm"] = whist / wcounts
+        hdfout["counts_diff"] = wcounts
+        hdfout["hist_diff"] = whist
+        hdfout["counts"] = counts
+        hdfout["hist"] = hist
+        hdfout["smhm_diff"] = whist / wcounts
+        hdfout["smhm"] = hist / counts
         hdfout["logmh_bins"] = smhm_utils.LOGMH_BINS
         hdfout["subvol_used"] = subvol_used
-
+        hdfout["redshift_targets"] = redshift_targets
+        hdfout["age_targets"] = age_targets
+        
     n_used = subvol_used.sum()
     print(f"Total runtime to loop over {n_used} subvolumes = {runtime:.1f} seconds")
