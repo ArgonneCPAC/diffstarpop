@@ -20,7 +20,16 @@ LCRC_DIFFMAH_DRN = (
 )
 TASSO_DIFFSTAR_DRN = "/Users/aphearin/work/DATA/diffstar_data/SMDPL"
 N_SUBVOL_SMDPL = 576
-LOGMH_BINS = np.linspace(11, 14.75, 40)
+
+LGMH_MIN, LGMH_MAX = 11, 14.75
+N_LGM_BINS = 12
+LOGMH_BINS = np.linspace(LGMH_MIN, LGMH_MAX , N_LGM_BINS)
+Z_BINS = [0.0, 0.5, 1.0, 1.5, 2.0]
+
+T0_SMDPL = 13.7976158
+
+N_HALOS_MAX = 20_000
+N_HALOS_PER_SUBVOL = N_HALOS_MAX // N_SUBVOL_SMDPL
 
 
 def _load_flat_hdf5(fn):
@@ -90,7 +99,17 @@ def load_diffstar_sfh_tables(
     log_smh_table = np.log10(smh_table)
     log_ssfrh_table = log_sfh_table - log_smh_table
 
-    return t_table, log_mah_table, log_smh_table, log_ssfrh_table
+    out = (
+        t_table, 
+        log_mah_table, 
+        log_smh_table, 
+        log_ssfrh_table,
+        mah_params,
+        ms_params,
+        q_params,
+    )
+
+    return out
 
 
 def compute_weighted_histograms_z0(
@@ -108,7 +127,7 @@ def compute_weighted_histograms_z0(
         diffstar_drn=diffstar_drn,
         lgt0=lgt0,
     )
-    t_table, log_mah_table, log_smh_table, log_ssfrh_table = _res
+    t_table, log_mah_table, log_smh_table, log_ssfrh_table = _res[:4]
 
     n_halos = log_smh_table.shape[0]
 
@@ -173,11 +192,50 @@ def return_target_redshfit_index(t_table, redshift_targets):
     z_table = get_redshift_from_age(t_table)
     return np.digitize(redshift_targets, z_table)
 
+def sample_halos(    
+    logmh_bins, 
+    log_mah, 
+    log_smh,
+    mah_params,
+    ms_params,
+    q_params
+):
+    ndbins_lo = logmh_bins[:-1]
+    ndbins_hi = logmh_bins[1:]
+    arange_arr = np.arange(len(log_mah))
+    logmh_id = []
+    logmh_val = []
+    mah_params_samp = []
+    ms_params_samp = []
+    q_params_samp = []
+    
+    for i in range(len(ndbins_lo)):
+        sel = (log_mah >= ndbins_lo[i]) & (log_mah < ndbins_hi[i])
+        sel_num = min(N_HALOS_PER_SUBVOL, sel.sum()).astype(int)
+        sel = np.random.choice(arange_arr[sel], sel_num, replace=False)
+        logmh_id.append(np.ones_like(sel)*i)
+        logmh_val.append(np.ones_like(sel)*((ndbins_lo[i]+ndbins_hi[i])/2.0))
+        mah_params_samp.append(mah_params[sel])
+        ms_params_samp.append(ms_params[sel])
+        q_params_samp.append(q_params[sel])
 
+    logmh_id = np.concatenate(logmh_id)
+    logmh_val = np.concatenate(logmh_val)
+    mah_params_samp = np.concatenate(mah_params_samp)
+    ms_params_samp = np.concatenate(ms_params_samp)
+    q_params_samp = np.concatenate(q_params_samp)
+    out = (
+        logmh_id,
+        logmh_val,
+        mah_params_samp,
+        ms_params_samp,
+        q_params_samp,
+    )
+    return out
 
-def compute_weighted_histograms(
+def create_target_data(
     subvol,
-    redshift_targets,
+    redshift_targets=Z_BINS,
     n_subvol_tot=N_SUBVOL_SMDPL,
     diffmah_drn=LCRC_DIFFMAH_DRN,
     diffstar_drn=LCRC_DIFFSTAR_DRN,
@@ -192,7 +250,15 @@ def compute_weighted_histograms(
         diffstar_drn=diffstar_drn,
         lgt0=lgt0,
     )
-    t_table, log_mah_table, log_smh_table, log_ssfrh_table = _res
+    (
+        t_table, 
+        log_mah_table, 
+        log_smh_table, 
+        log_ssfrh_table, 
+        mah_params,
+        ms_params,
+        q_params
+    ) = _res
 
     tids = return_target_redshfit_index(t_table, redshift_targets)
 
@@ -211,10 +277,78 @@ def compute_weighted_histograms(
         _res = compute_histograms_atz(logmh_bins, log_mah_table[:,tid], log_smh_table[:,tid])
         counts_zid[i] = _res[0]
         hist_zid[i] = _res[1]
+
+
+    logmh_id = []
+    logmh_val = []
+    redshift_val = []
+    tobs_id = []
+    tobs_val = []
+    mah_params_samp = []
+    ms_params_samp = []
+    q_params_samp = []
+
+    data = []
+
+    for i, tid in enumerate(tids):
+        _res = sample_halos(    
+            logmh_bins, 
+            log_mah_table[:,tid], 
+            log_smh_table[:,tid],
+            mah_params,
+            ms_params,
+            q_params
+        )
+        data.append((
+            *_res,
+            np.ones_like(_res[0])*i,
+            np.ones_like(_res[0])*tid,
+            np.ones_like(_res[0])*redshift_targets[i]
+        ))
+
+    haloes = concatenate_samples_haloes(data)
     
-    return wcounts_zid, whist_zid, counts_zid, hist_zid, t_table[tids]
+    return wcounts_zid, whist_zid, counts_zid, hist_zid, t_table[tids], haloes
 
 
+def concatenate_samples_haloes(data):
+    logmh_id = []
+    logmh_val = []
+    redshift_val = []
+    tobs_id = []
+    tobs_val = []
+    mah_params_samp = []
+    ms_params_samp = []
+    q_params_samp = []
 
+    N_loops = len(data)
+    for i in range(N_loops):
+        logmh_id.append(data[0])
+        logmh_val.append(data[1])
+        mah_params_samp.append(data[2])
+        ms_params_samp.append(data[3])
+        q_params_samp.append(data[4])
+        tobs_id.append(data[5])
+        tobs_val.append(data[6])
+        redshift_val.append(data[7])
 
-    
+    logmh_id = np.concatenate(logmh_id)
+    logmh_val = np.concatenate(logmh_val)
+    mah_params_samp = np.concatenate(mah_params_samp)
+    ms_params_samp = np.concatenate(ms_params_samp)
+    q_params_samp = np.concatenate(q_params_samp)
+    tobs_id = np.concatenate(tobs_id)
+    tobs_val = np.concatenate(tobs_val)
+    redshift_val = np.concatenate(redshift_val)
+
+    haloes = (
+        logmh_id,
+        logmh_val,
+        mah_params_samp,
+        ms_params_samp,
+        q_params_samp,
+        tobs_id,
+        tobs_val,
+        redshift_val,
+    )
+    return haloes

@@ -55,28 +55,31 @@ if __name__ == "__main__":
     hist = np.zeros_like(wcounts)
 
     subvol_used = np.zeros(n_subvol_max).astype(int)
-
+    haloes_data = []
     print("Beginning loop over subvolumes...\n")
     start = time()
     for i in range(istart, iend):
         try:
-            _res = smhm_utils.compute_weighted_histograms(
+            _res = smhm_utils.create_target_data(
                 i, 
                 redshift_targets, 
                 diffmah_drn=diffmah_drn, 
                 diffstar_drn=diffstar_drn
             )
-            wcounts_i, whist_i, counts_i, hist_i, age_targets = _res
+            wcounts_i, whist_i, counts_i, hist_i, age_targets, haloes = _res
 
             wcounts = wcounts + wcounts_i
             whist = whist + whist_i
             counts = counts + counts_i
             hist = hist + hist_i
             subvol_used[i] = 1
+            haloes_data.append(haloes)
             print(f"...computed sumstat counts for subvolume {i}")
         except FileNotFoundError:
             print(f"...NO sumstat counts for subvolume {i}")
             pass
+
+    sampled_haloes = smhm_utils.concatenate_samples_haloes(haloes_data)
     end = time()
     runtime = end - start
 
@@ -92,6 +95,30 @@ if __name__ == "__main__":
         hdfout["subvol_used"] = subvol_used
         hdfout["redshift_targets"] = redshift_targets
         hdfout["age_targets"] = age_targets
+
+
+    (
+        logmh_id,
+        logmh_val,
+        mah_params_samp,
+        ms_params_samp,
+        q_params_samp,
+        tobs_id,
+        tobs_val,
+        redshift_val,
+    ) = sampled_haloes
+
+    fnout = os.path.join(outdrn, "smdpl_smhm_samples_haloes.h5")
+    with h5py.File(fnout, "w") as hdfout:
+        hdfout["logmh_id"] = logmh_id
+        hdfout["logmh_val"] = logmh_val
+        hdfout["mah_params_samp"] = mah_params_samp
+        hdfout["ms_params_samp"] = ms_params_samp
+        hdfout["q_params_samp"] = q_params_samp
+        hdfout["tobs_id"] = tobs_id
+        hdfout["tobs_val"] = tobs_val
+        hdfout["redshift_val"] = redshift_val
+
         
     n_used = subvol_used.sum()
     print(f"Total runtime to loop over {n_used} subvolumes = {runtime:.1f} seconds")
