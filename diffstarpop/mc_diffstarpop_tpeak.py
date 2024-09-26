@@ -235,7 +235,7 @@ def mc_diffstar_u_params_galpop(
     ran_key,
 ):
     """"""
-    ngals = mah_params[0].size
+    ngals = t_peak.size
     ran_keys = jran.split(ran_key, ngals)
     _res = mc_diffstar_u_params_galpop_kernel(
         diffstarpop_params,
