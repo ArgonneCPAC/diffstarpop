@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     nz, nm = len(redshift_targets), smhm_utils.LOGMH_BINS.size - 1
 
-    wcounts = np.zeros(nz, nm)
+    wcounts = np.zeros((nz, nm))
     whist = np.zeros_like(wcounts)
     counts = np.zeros_like(wcounts)
     hist = np.zeros_like(wcounts)
