@@ -45,10 +45,10 @@ if __name__ == "__main__":
     diffmah_drn = args.diffmah_drn
     diffstar_drn = args.diffstar_drn
 
-    redshift_targets = np.concatenate((np.arange(0,1,0.1), np.arange(1, 2.1, 0.5)))
-
+     #redshift_targets = np.concatenate((np.arange(0,1,0.1), np.arange(1, 2.1, 0.5)))
+    redshift_targets = smhm_utils.Z_BINS
     nz, nm = len(redshift_targets), smhm_utils.LOGMH_BINS.size - 1
-
+    
     wcounts = np.zeros((nz, nm))
     whist = np.zeros_like(wcounts)
     counts = np.zeros_like(wcounts)
