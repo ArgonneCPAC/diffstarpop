@@ -199,7 +199,8 @@ def sample_halos(
     log_smh,
     mah_params,
     ms_params,
-    q_params
+    q_params,
+    t_peak,
 ):
     ndbins_lo = logmh_bins[:-1]
     ndbins_hi = logmh_bins[1:]
@@ -209,6 +210,7 @@ def sample_halos(
     mah_params_samp = []
     ms_params_samp = []
     q_params_samp = []
+    t_peak_samp = []
 
 
     mah_params = np.array(mah_params).T
@@ -224,12 +226,14 @@ def sample_halos(
         mah_params_samp.append(mah_params[sel])
         ms_params_samp.append(ms_params[sel])
         q_params_samp.append(q_params[sel])
+        t_peak_samp.append(t_peak[sel])
 
     logmh_id = np.concatenate(logmh_id)
     logmh_val = np.concatenate(logmh_val)
     mah_params_samp = np.concatenate(mah_params_samp)
     ms_params_samp = np.concatenate(ms_params_samp)
     q_params_samp = np.concatenate(q_params_samp)
+    t_peak_samp = np.concatenate(t_peak_samp)
 
     mah_params_samp = DEFAULT_MAH_PARAMS._make(mah_params_samp.T)
     ms_params_samp = DEFAULT_DIFFSTAR_PARAMS.ms_params._make(ms_params_samp.T)
@@ -240,6 +244,7 @@ def sample_halos(
         mah_params_samp,
         ms_params_samp,
         q_params_samp,
+        t_peak_samp,
     )
     return out
 
@@ -267,7 +272,8 @@ def create_target_data(
         log_ssfrh_table, 
         mah_params,
         ms_params,
-        q_params
+        q_params,
+        t_peak
     ) = _res
 
     tids = return_target_redshfit_index(t_table, redshift_targets)
@@ -307,7 +313,8 @@ def create_target_data(
             log_smh_table[:,tid],
             mah_params,
             ms_params,
-            q_params
+            q_params,
+            t_peak,
         )
         data.append((
             *_res,
@@ -330,6 +337,7 @@ def concatenate_samples_haloes(data):
     mah_params_samp = []
     ms_params_samp = []
     q_params_samp = []
+    t_peak_samp = []
 
     for subdata in data:
 
@@ -338,15 +346,17 @@ def concatenate_samples_haloes(data):
         mah_params_samp.append(np.array(subdata[2]).T)
         ms_params_samp.append(np.array(subdata[3]).T)
         q_params_samp.append(np.array(subdata[4]).T)
-        tobs_id.append(subdata[5])
-        tobs_val.append(subdata[6])
-        redshift_val.append(subdata[7])
+        t_peak_samp.append(subdata[5])
+        tobs_id.append(subdata[6])
+        tobs_val.append(subdata[7])
+        redshift_val.append(subdata[8])
         
     logmh_id = np.concatenate(logmh_id)
     logmh_val = np.concatenate(logmh_val)
     mah_params_samp = np.concatenate(mah_params_samp)
     ms_params_samp = np.concatenate(ms_params_samp)
     q_params_samp = np.concatenate(q_params_samp)
+    t_peak_samp = np.concatenate(t_peak_samp)
     tobs_id = np.concatenate(tobs_id)
     tobs_val = np.concatenate(tobs_val)
     redshift_val = np.concatenate(redshift_val)
@@ -361,6 +371,7 @@ def concatenate_samples_haloes(data):
         mah_params_samp,
         ms_params_samp,
         q_params_samp,
+        t_peak_samp,
         tobs_id,
         tobs_val,
         redshift_val,

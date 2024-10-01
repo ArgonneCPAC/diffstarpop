@@ -103,6 +103,7 @@ if __name__ == "__main__":
         mah_params_samp,
         ms_params_samp,
         q_params_samp,
+        t_peak_samp,
         tobs_id,
         tobs_val,
         redshift_val,
@@ -115,6 +116,7 @@ if __name__ == "__main__":
         hdfout["mah_params_samp"] = mah_params_samp
         hdfout["ms_params_samp"] = ms_params_samp
         hdfout["q_params_samp"] = q_params_samp
+        hdfout["t_peak_samp"] = t_peak_samp
         hdfout["tobs_id"] = tobs_id
         hdfout["tobs_val"] = tobs_val
         hdfout["redshift_val"] = redshift_val
