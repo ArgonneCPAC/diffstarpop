@@ -208,10 +208,15 @@ def sample_halos(
     mah_params_samp = []
     ms_params_samp = []
     q_params_samp = []
+
+
+    mah_params = np.array(mah_params).T
+    ms_params = np.array(ms_params).T
+    q_params = np.array(q_params).T
     
     for i in range(len(ndbins_lo)):
         sel = (log_mah >= ndbins_lo[i]) & (log_mah < ndbins_hi[i])
-        sel_num = min(N_HALOS_PER_SUBVOL, sel.sum()).astype(int)
+        sel_num = int(min(N_HALOS_PER_SUBVOL, sel.sum()))
         sel = np.random.choice(arange_arr[sel], sel_num, replace=False)
         logmh_id.append(np.ones_like(sel)*i)
         logmh_val.append(np.ones_like(sel)*((ndbins_lo[i]+ndbins_hi[i])/2.0))
@@ -224,6 +229,10 @@ def sample_halos(
     mah_params_samp = np.concatenate(mah_params_samp)
     ms_params_samp = np.concatenate(ms_params_samp)
     q_params_samp = np.concatenate(q_params_samp)
+
+    mah_params_samp = DEFAULT_MAH_PARAMS._make(mah_params_samp.T)
+    ms_params_samp = DEFAULT_DIFFSTAR_PARAMS.ms_params._make(ms_params_samp.T)
+    q_params_samp = DEFAULT_DIFFSTAR_PARAMS.q_params._make(q_params_samp.T)
     out = (
         logmh_id,
         logmh_val,
@@ -321,17 +330,17 @@ def concatenate_samples_haloes(data):
     ms_params_samp = []
     q_params_samp = []
 
-    N_loops = len(data)
-    for i in range(N_loops):
-        logmh_id.append(data[0])
-        logmh_val.append(data[1])
-        mah_params_samp.append(data[2])
-        ms_params_samp.append(data[3])
-        q_params_samp.append(data[4])
-        tobs_id.append(data[5])
-        tobs_val.append(data[6])
-        redshift_val.append(data[7])
+    for subdata in data:
 
+        logmh_id.append(subdata[0])
+        logmh_val.append(subdata[1])
+        mah_params_samp.append(np.array(subdata[2]).T)
+        ms_params_samp.append(np.array(subdata[3]).T)
+        q_params_samp.append(np.array(subdata[4]).T)
+        tobs_id.append(subdata[5])
+        tobs_val.append(subdata[6])
+        redshift_val.append(subdata[7])
+        
     logmh_id = np.concatenate(logmh_id)
     logmh_val = np.concatenate(logmh_val)
     mah_params_samp = np.concatenate(mah_params_samp)
@@ -341,6 +350,10 @@ def concatenate_samples_haloes(data):
     tobs_val = np.concatenate(tobs_val)
     redshift_val = np.concatenate(redshift_val)
 
+    mah_params_samp = DEFAULT_MAH_PARAMS._make(mah_params_samp.T)
+    ms_params_samp = DEFAULT_DIFFSTAR_PARAMS.ms_params._make(ms_params_samp.T)
+    q_params_samp = DEFAULT_DIFFSTAR_PARAMS.q_params._make(q_params_samp.T)
+    
     haloes = (
         logmh_id,
         logmh_val,
