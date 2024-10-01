@@ -107,6 +107,7 @@ def load_diffstar_sfh_tables(
         mah_params,
         ms_params,
         q_params,
+        t_peak,
     )
 
     return out
@@ -311,7 +312,7 @@ def create_target_data(
         data.append((
             *_res,
             np.ones_like(_res[0])*i,
-            np.ones_like(_res[0])*tid,
+            np.ones_like(_res[0])*t_table[tid],
             np.ones_like(_res[0])*redshift_targets[i]
         ))
 
