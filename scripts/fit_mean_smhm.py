@@ -38,7 +38,7 @@ if __name__ == "__main__":
         "-indir", help="input drn", type=str, default=BEBOP_SMHM_MEAN_DATA
     )
     parser.add_argument(
-        "-outdir", help="input drn", type=str, default=''
+        "-outdir", help="output drn", type=str, default=BEBOP_SMHM_MEAN_DATA
     )
     parser.add_argument(
         "-make_plot", help="whether to make plot", type=bool, default=False
@@ -174,6 +174,16 @@ if __name__ == "__main__":
     runtime = end - start
     print(f"Total runtime to fit = {runtime:.1f} seconds")
 
+
+    def return_params_from_result(bestfit):
+            bestfit_u_tuple = array_to_tuple_new_diffstarpop(bestfit, UnboundParams)
+            diffstarpop_params = get_bounded_diffstarpop_params(bestfit_u_tuple.diffstarpop_u_params)
+            return diffstarpop_params
+    
+    best_result = return_params_from_result(result.x)
+    best_result = tuple_to_array(best_result)
+    np.save(outdir+"bestfit_diffstarpop_params.npy", best_result)
+
     # Make plot ---------------------------------------------
     if make_plot:
         print("Making plot...")
@@ -183,12 +193,6 @@ if __name__ == "__main__":
         from diffmah import DiffmahParams
         import matplotlib.pyplot as plt
         import matplotlib as mpl
-
-
-        def return_params_from_result(bestfit):
-            bestfit_u_tuple = array_to_tuple_new_diffstarpop(bestfit, UnboundParams)
-            diffstarpop_params = get_bounded_diffstarpop_params(bestfit_u_tuple.diffstarpop_u_params)
-            return diffstarpop_params
 
         mstar_plot = np.zeros((len(age_targets), len(logmh_binsc)))
         mstar_plot_grad = np.zeros((len(age_targets), len(logmh_binsc)))
