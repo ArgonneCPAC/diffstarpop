@@ -124,7 +124,7 @@ _U = (None, *[0]*7)
 mc_diffstar_sfh_galpop_vmap = jjit(vmap(_mc_diffstar_sfh_galpop_vmap_kern, in_axes=_U))
 
 @jjit
-def mean_smhm_loss_kern_tobs(u_params, loss_data):
+def mean_smhm_kern_tobs(u_params, loss_data):
     (
         mah_params,
         t_peak,
@@ -157,7 +157,15 @@ def mean_smhm_loss_kern_tobs(u_params, loss_data):
 
     mean_logsm_pred = jnp.mean(logsm, axis=1)
 
+    return mean_logsm_pred
+
+@jjit
+def mean_smhm_loss_kern_tobs(u_params, loss_data):
+    mean_logsm_target = loss_data[-1]
+    mean_logsm_pred  = mean_smhm_kern_tobs(u_params, loss_data)
+
     return _mse(mean_logsm_pred, mean_logsm_target)
+
 
 mean_smhm_loss_kern_tobs_grad_kern = jjit(value_and_grad(mean_smhm_loss_kern_tobs, argnums=(0,)))
 
