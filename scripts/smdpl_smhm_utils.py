@@ -11,6 +11,7 @@ from diffstar.defaults import DEFAULT_DIFFSTAR_PARAMS, LGT0, T_TABLE_MIN
 from diffstar.sfh_model_tpeak import calc_sfh_galpop
 from scipy.stats import binned_statistic
 from astropy.cosmology import Planck13
+from umachine_pyio.load_mock import load_mock_from_binaries
 
 LCRC_DIFFSTAR_DRN = (
     "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/diffstar_tpeak_fits"
@@ -18,12 +19,18 @@ LCRC_DIFFSTAR_DRN = (
 LCRC_DIFFMAH_DRN = (
     "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/diffmah_tpeak_fits"
 )
+LCRC_BINARIES_DRN = (
+    "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/sfh_binary_catalogs/a_1.000000/"
+)
 TASSO_DIFFSTAR_DRN = "/Users/aphearin/work/DATA/diffstar_data/SMDPL"
 N_SUBVOL_SMDPL = 576
 
 LGMH_MIN, LGMH_MAX = 11, 14.75
 N_LGM_BINS = 12
 LOGMH_BINS = np.linspace(LGMH_MIN, LGMH_MAX , N_LGM_BINS)
+LOGMSTAR_BINS_PDF = np.linspace(7, 12, 26)
+LOGSSFR_BINS_PDF = np.linspace(-13, -8, 30)
+
 Z_BINS = [0.0, 0.5, 1.0, 1.5, 2.0]
 
 T0_SMDPL = 13.7976158
@@ -201,6 +208,7 @@ def sample_halos(
     ms_params,
     q_params,
     t_peak,
+    upid,
 ):
     ndbins_lo = logmh_bins[:-1]
     ndbins_hi = logmh_bins[1:]
@@ -211,6 +219,7 @@ def sample_halos(
     ms_params_samp = []
     q_params_samp = []
     t_peak_samp = []
+    upid_samp = []
 
 
     mah_params = np.array(mah_params).T
@@ -227,6 +236,7 @@ def sample_halos(
         ms_params_samp.append(ms_params[sel])
         q_params_samp.append(q_params[sel])
         t_peak_samp.append(t_peak[sel])
+        upid_samp.append(upid[sel])
 
     logmh_id = np.concatenate(logmh_id)
     logmh_val = np.concatenate(logmh_val)
@@ -234,6 +244,7 @@ def sample_halos(
     ms_params_samp = np.concatenate(ms_params_samp)
     q_params_samp = np.concatenate(q_params_samp)
     t_peak_samp = np.concatenate(t_peak_samp)
+    upid_samp = np.concatenate(upid_samp)
 
     mah_params_samp = DEFAULT_MAH_PARAMS._make(mah_params_samp.T)
     ms_params_samp = DEFAULT_DIFFSTAR_PARAMS.ms_params._make(ms_params_samp.T)
@@ -245,6 +256,7 @@ def sample_halos(
         ms_params_samp,
         q_params_samp,
         t_peak_samp,
+        upid_samp,
     )
     return out
 
@@ -276,6 +288,10 @@ def create_target_data(
         t_peak
     ) = _res
 
+    galprops = ["halo_id", "upid"]
+    halos = load_mock_from_binaries(np.atleast_1d(subvol), root_dirname=LCRC_BINARIES_DRN, galprops=galprops)
+    upid = np.array(halos["upid"])
+
     tids = return_target_redshfit_index(t_table, redshift_targets)
 
     nz, nm = len(redshift_targets), len(logmh_bins)-1
@@ -295,15 +311,6 @@ def create_target_data(
         hist_zid[i] = _res[1]
 
 
-    logmh_id = []
-    logmh_val = []
-    redshift_val = []
-    tobs_id = []
-    tobs_val = []
-    mah_params_samp = []
-    ms_params_samp = []
-    q_params_samp = []
-
     data = []
 
     for i, tid in enumerate(tids):
@@ -315,6 +322,7 @@ def create_target_data(
             ms_params,
             q_params,
             t_peak,
+            upid,
         )
         data.append((
             *_res,
@@ -338,6 +346,7 @@ def concatenate_samples_haloes(data):
     ms_params_samp = []
     q_params_samp = []
     t_peak_samp = []
+    upid_samp = []
 
     for subdata in data:
 
@@ -347,9 +356,10 @@ def concatenate_samples_haloes(data):
         ms_params_samp.append(np.array(subdata[3]).T)
         q_params_samp.append(np.array(subdata[4]).T)
         t_peak_samp.append(subdata[5])
-        tobs_id.append(subdata[6])
-        tobs_val.append(subdata[7])
-        redshift_val.append(subdata[8])
+        upid_samp.append(subdata[6])
+        tobs_id.append(subdata[7])
+        tobs_val.append(subdata[8])
+        redshift_val.append(subdata[9])
         
     logmh_id = np.concatenate(logmh_id)
     logmh_val = np.concatenate(logmh_val)
@@ -357,6 +367,7 @@ def concatenate_samples_haloes(data):
     ms_params_samp = np.concatenate(ms_params_samp)
     q_params_samp = np.concatenate(q_params_samp)
     t_peak_samp = np.concatenate(t_peak_samp)
+    upid_samp = np.concatenate(upid_samp)
     tobs_id = np.concatenate(tobs_id)
     tobs_val = np.concatenate(tobs_val)
     redshift_val = np.concatenate(redshift_val)
@@ -372,8 +383,158 @@ def concatenate_samples_haloes(data):
         ms_params_samp,
         q_params_samp,
         t_peak_samp,
+        upid_samp,
         tobs_id,
         tobs_val,
         redshift_val,
     )
     return haloes
+
+def compute_diff_histograms_mstar_atmobs_z(
+    logmstar_bins,
+    log_smh_table,
+):
+
+    n_halos = log_smh_table.shape[0]
+
+    nddata = log_smh_table.reshape((-1, 1))
+
+    sigma = np.mean(np.diff(logmstar_bins)) + np.zeros(n_halos)
+    ndsig = sigma.reshape((-1, 1))
+
+    ydata = log_smh_table.reshape((-1, 1))
+    _ones = np.ones_like(ydata)
+
+    ndbins_lo = logmstar_bins[:-1].reshape((-1, 1))
+    ndbins_hi = logmstar_bins[1:].reshape((-1, 1))
+
+    wcounts = tw_ndhist_weighted(nddata, ndsig, _ones, ndbins_lo, ndbins_hi)
+
+    counts = np.histogram(ydata, logmstar_bins)[0]
+
+    return wcounts, counts
+
+
+def compute_diff_histograms_mstar_ssfr_atz(
+    log_smh_table, 
+    log_ssfr_table, 
+    ndbins_lo,
+    ndbins_hi,
+    logmstar_bins,
+    logssfr_bins,
+):
+    n_halos = log_smh_table.shape[0]
+
+    sigma_mstar = np.mean(np.diff(logmstar_bins)) + np.zeros(n_halos)
+    sigma_ssfr = np.mean(np.diff(logssfr_bins)) + np.zeros(n_halos)
+
+    ndsig = np.ones((n_halos, 2))
+    ndsig[:, 0] = sigma_mstar
+    ndsig[:, 1] = sigma_ssfr
+
+    nddata = np.array([log_smh_table, log_ssfr_table]).T
+
+    _ones = np.ones(n_halos)
+
+    wcounts = tw_ndhist_weighted(nddata, ndsig, _ones, ndbins_lo, ndbins_hi)
+
+    return wcounts
+
+def create_pdf_target_data(
+    subvol,
+    redshift_targets=Z_BINS,
+    n_subvol_tot=N_SUBVOL_SMDPL,
+    diffmah_drn=LCRC_DIFFMAH_DRN,
+    diffstar_drn=LCRC_DIFFSTAR_DRN,
+    lgt0=LGT0,
+    logmh_bins=LOGMH_BINS,
+    logmstar_bins_pdf=LOGMSTAR_BINS_PDF,
+    logssfr_bins_pdf=LOGSSFR_BINS_PDF,
+    
+):
+    _res = load_diffstar_sfh_tables(
+        subvol,
+        n_subvol_tot=n_subvol_tot,
+        diffmah_drn=diffmah_drn,
+        diffstar_drn=diffstar_drn,
+        lgt0=lgt0,
+    )
+    (
+        t_table, 
+        log_mah_table, 
+        log_smh_table, 
+        log_ssfrh_table, 
+        mah_params,
+        ms_params,
+        q_params,
+        t_peak
+    ) = _res
+
+    log_ssfrh_table = np.clip(log_ssfrh_table, -12.0, None)
+
+    galprops = ["halo_id", "upid"]
+    halos = load_mock_from_binaries(np.atleast_1d(subvol), root_dirname=LCRC_BINARIES_DRN, galprops=galprops)
+    upid = np.array(halos["upid"])
+    is_central = (upid == -1)
+
+    tids = return_target_redshfit_index(t_table, redshift_targets)
+
+    nz, nm = len(redshift_targets), len(logmh_bins)-1
+    nmstar = len(logmstar_bins_pdf)-1
+    nssfr = len(logssfr_bins_pdf)-1
+
+    ndbins_lo = []
+    ndbins_hi = []
+    for i in range(len(logmstar_bins_pdf)-1):
+        for j in range(len(logssfr_bins_pdf)-1):
+            ndbins_lo.append([logmstar_bins_pdf[i], logssfr_bins_pdf[j]])
+            ndbins_hi.append([logmstar_bins_pdf[i+1], logssfr_bins_pdf[j+1]])
+    ndbins_lo = np.array(ndbins_lo)
+    ndbins_hi = np.array(ndbins_hi)
+
+    mstar_wcounts = np.zeros((nz, nm, nmstar))
+    mstar_counts = np.zeros((nz, nm, nmstar))
+
+    mstar_ssfr_wcounts_cent = np.zeros((nz, nm, nmstar, nssfr))
+    mstar_ssfr_wcounts_sat = np.zeros((nz, nm, nmstar, nssfr))
+
+    for i, tid in enumerate(tids):
+        for j in range(nm):
+            mobs_sel = (log_mah_table[:,tid] > logmh_bins[j]) & (log_mah_table[:,tid] < logmh_bins[j+1])
+            _res = compute_diff_histograms_mstar_atmobs_z(
+                logmstar_bins_pdf,
+                log_smh_table[mobs_sel][:,tid],
+            )
+            mstar_wcounts[i,j] = _res[0]
+            mstar_counts[i,j] = _res[1]
+
+            mobs_sel_cent = mobs_sel & is_central
+            _res = compute_diff_histograms_mstar_ssfr_atz(
+                log_smh_table[mobs_sel_cent][:,tid],
+                log_ssfrh_table[mobs_sel_cent][:,tid],
+                ndbins_lo,
+                ndbins_hi,
+                logmstar_bins_pdf,
+                logssfr_bins_pdf,
+            )
+            mstar_ssfr_wcounts_cent[i,j] = _res.reshape((nmstar, nssfr))
+
+            mobs_sel_sat = mobs_sel & (~is_central)
+            _res = compute_diff_histograms_mstar_ssfr_atz(
+                log_smh_table[mobs_sel_sat][:,tid],
+                log_ssfrh_table[mobs_sel_sat][:,tid],
+                ndbins_lo,
+                ndbins_hi,
+                logmstar_bins_pdf,
+                logssfr_bins_pdf,
+            )
+            mstar_ssfr_wcounts_sat[i,j] = _res.reshape((nmstar, nssfr))
+
+    out = (
+        mstar_wcounts,
+        mstar_counts,
+        mstar_ssfr_wcounts_cent,
+        mstar_ssfr_wcounts_sat,
+    )
+
+    return out

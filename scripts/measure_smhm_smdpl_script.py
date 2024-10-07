@@ -48,11 +48,19 @@ if __name__ == "__main__":
      #redshift_targets = np.concatenate((np.arange(0,1,0.1), np.arange(1, 2.1, 0.5)))
     redshift_targets = smhm_utils.Z_BINS
     nz, nm = len(redshift_targets), smhm_utils.LOGMH_BINS.size - 1
+    nmstar = len(smhm_utils.LOGMSTAR_BINS_PDF)-1
+    nssfr = len(smhm_utils.LOGSSFR_BINS_PDF)-1
     
     wcounts = np.zeros((nz, nm))
     whist = np.zeros_like(wcounts)
     counts = np.zeros_like(wcounts)
     hist = np.zeros_like(wcounts)
+
+    mstar_wcounts = np.zeros((nz, nm, nmstar))
+    mstar_counts = np.zeros((nz, nm, nmstar))
+
+    mstar_ssfr_wcounts_cent = np.zeros((nz, nm, nmstar, nssfr))
+    mstar_ssfr_wcounts_sat = np.zeros((nz, nm, nmstar, nssfr))
 
     subvol_used = np.zeros(n_subvol_max).astype(int)
     haloes_data = []
@@ -74,6 +82,19 @@ if __name__ == "__main__":
             hist = hist + hist_i
             subvol_used[i] = 1
             haloes_data.append(haloes)
+
+            _res = smhm_utils.create_pdf_target_data(
+                i, 
+                redshift_targets, 
+                diffmah_drn=diffmah_drn, 
+                diffstar_drn=diffstar_drn
+            )
+            mstar_wcounts += _res[0]
+            mstar_counts += _res[1]
+            mstar_ssfr_wcounts_cent += _res[2]
+            mstar_ssfr_wcounts_sat += _res[3]
+
+
             print(f"...computed sumstat counts for subvolume {i}")
         except FileNotFoundError:
             print(f"...NO sumstat counts for subvolume {i}")
@@ -120,6 +141,18 @@ if __name__ == "__main__":
         hdfout["tobs_id"] = tobs_id
         hdfout["tobs_val"] = tobs_val
         hdfout["redshift_val"] = redshift_val
+
+    fnout = os.path.join(outdrn, "smdpl_mstar_ssfr.h5")
+    with h5py.File(fnout, "w") as hdfout:
+        hdfout["mstar_wcounts"] = mstar_wcounts
+        hdfout["mstar_counts"] = mstar_counts
+        hdfout["mstar_ssfr_wcounts_cent"] = mstar_ssfr_wcounts_cent
+        hdfout["mstar_ssfr_wcounts_sat"] = mstar_ssfr_wcounts_sat
+        hdfout["logmh_bins"] = smhm_utils.LOGMH_BINS
+        hdfout["logmstar_bins_pdf"] = smhm_utils.LOGMSTAR_BINS_PDF
+        hdfout["logssfr_bins_pdf"] = smhm_utils.LOGSSFR_BINS_PDF
+        hdfout["redshift_targets"] = redshift_targets
+        hdfout["age_targets"] = age_targets
 
         
     n_used = subvol_used.sum()
