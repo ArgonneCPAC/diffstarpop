@@ -352,7 +352,7 @@ def create_target_data(
         counts_zid_sat
     )
     
-    return 
+    return out
 
 
 def concatenate_samples_haloes(data):
