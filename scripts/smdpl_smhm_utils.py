@@ -301,6 +301,10 @@ def create_target_data(
     counts_zid = np.zeros((nz, nm))
     hist_zid = np.zeros((nz, nm))
 
+    counts_zid_cen = np.zeros((nz, nm))
+    counts_zid_sat = np.zeros((nz, nm))
+
+
     for i, tid in enumerate(tids):
         _res = compute_diff_histograms_atz(logmh_bins, log_mah_table[:,tid], log_smh_table[:,tid])
         wcounts_zid[i] = _res[0]
@@ -309,6 +313,10 @@ def create_target_data(
         _res = compute_histograms_atz(logmh_bins, log_mah_table[:,tid], log_smh_table[:,tid])
         counts_zid[i] = _res[0]
         hist_zid[i] = _res[1]
+
+        is_central = upid== -1
+        counts_zid_cen[i] = compute_histograms_atz(logmh_bins, log_mah_table[:,tid][is_central], log_smh_table[:,tid][is_central])[0]
+        counts_zid_sat[i] = compute_histograms_atz(logmh_bins, log_mah_table[:,tid][~is_central], log_smh_table[:,tid][~is_central])[0]
 
 
     data = []
@@ -332,8 +340,19 @@ def create_target_data(
         ))
 
     haloes = concatenate_samples_haloes(data)
+
+    out = (
+        wcounts_zid, 
+        whist_zid, 
+        counts_zid, 
+        hist_zid, 
+        t_table[tids], 
+        haloes,
+        counts_zid_cen,
+        counts_zid_sat
+    )
     
-    return wcounts_zid, whist_zid, counts_zid, hist_zid, t_table[tids], haloes
+    return 
 
 
 def concatenate_samples_haloes(data):

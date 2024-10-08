@@ -55,6 +55,8 @@ if __name__ == "__main__":
     whist = np.zeros_like(wcounts)
     counts = np.zeros_like(wcounts)
     hist = np.zeros_like(wcounts)
+    counts_cen = np.zeros_like(wcounts)
+    counts_sat = np.zeros_like(wcounts)
 
     mstar_wcounts = np.zeros((nz, nm, nmstar))
     mstar_counts = np.zeros((nz, nm, nmstar))
@@ -74,12 +76,23 @@ if __name__ == "__main__":
                 diffmah_drn=diffmah_drn, 
                 diffstar_drn=diffstar_drn
             )
-            wcounts_i, whist_i, counts_i, hist_i, age_targets, haloes = _res
+            (
+                wcounts_i, 
+                whist_i, 
+                counts_i, 
+                hist_i, 
+                age_targets, 
+                haloes, 
+                counts_cen_i, 
+                counts_sat_i,
+            ) = _res
 
             wcounts = wcounts + wcounts_i
             whist = whist + whist_i
             counts = counts + counts_i
             hist = hist + hist_i
+            counts_cen = counts_cen + counts_cen_i
+            counts_sat = counts_sat + counts_sat_i
             subvol_used[i] = 1
             haloes_data.append(haloes)
 
@@ -110,6 +123,8 @@ if __name__ == "__main__":
         hdfout["hist_diff"] = whist
         hdfout["counts"] = counts
         hdfout["hist"] = hist
+        hdfout["counts_cen"] = counts_cen
+        hdfout["counts_sat"] = counts_sat
         hdfout["smhm_diff"] = whist / wcounts
         hdfout["smhm"] = hist / counts
         hdfout["logmh_bins"] = smhm_utils.LOGMH_BINS
