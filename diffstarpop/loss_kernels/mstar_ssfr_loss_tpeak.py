@@ -57,6 +57,7 @@ calculate_obs_data = jjit(vmap(_calculate_obs_data_kern, in_axes=(0,0,0)))
 def _mc_diffstar_sfh_galpop_vmap_kern(
     diffstarpop_params,
     mah_params,
+    logm0,
     t_peak,
     lgmu_infall,
     logmhost_infall,
@@ -69,6 +70,7 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
     res = mc_diffstar_sfh_galpop(
         diffstarpop_params,
         mah_params,
+        logm0,
         t_peak,
         lgmu_infall,
         logmhost_infall,
@@ -113,6 +115,7 @@ compute_diff_histograms_mstar_atmobs_z_vmap = jjit(vmap(compute_diff_histograms_
 def mstar_ssfr_kern_tobs(u_params, loss_data):
     (
         mah_params,
+        logm0,
         t_peak,
         lgmu_infall,
         logmhost_infall,
@@ -128,6 +131,7 @@ def mstar_ssfr_kern_tobs(u_params, loss_data):
     _res = mc_diffstar_sfh_galpop_vmap(
         diffstarpop_params,
         mah_params,
+        logm0,
         t_peak,
         lgmu_infall,
         logmhost_infall,

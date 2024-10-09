@@ -14,7 +14,7 @@ from .sfh_pdf_tpeak_block_cov import _sfh_pdf_scalar_kernel
 @jjit
 def mc_diffstar_u_params_singlegal_kernel(
     diffstarpop_params,
-    mah_params,
+    logm0,
     t_peak,
     lgmu_infall,
     logmhost_infall,
@@ -23,7 +23,7 @@ def mc_diffstar_u_params_singlegal_kernel(
 ):
     means_covs = _diffstarpop_means_covs(
         diffstarpop_params,
-        mah_params,
+        logm0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -78,12 +78,13 @@ def mc_diffstar_u_params_singlegal_kernel(
 @jjit
 def _diffstarpop_means_covs(
     diffstarpop_params,
-    mah_params,
+    lgm0,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
 ):
-    lgm0 = mah_params[0]
+    # with tpeak lgm0 diffmah parameter is no longer Mhalo(t0).
+    # lgm0 = mah_params[0]
     means_covs = _sfh_pdf_scalar_kernel(diffstarpop_params.sfh_pdf_cens_params, lgm0)
 
     # Modify frac_q for satellites

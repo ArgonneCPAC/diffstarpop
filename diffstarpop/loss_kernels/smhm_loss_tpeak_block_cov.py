@@ -64,6 +64,7 @@ def _mse(pred, target):
 def mean_smhm_loss_kern(diffstarpop_params, loss_data):
     (
         mah_params,
+        logm0,
         t_peak,
         lgmu_infall,
         logmhost_infall,
@@ -76,6 +77,7 @@ def mean_smhm_loss_kern(diffstarpop_params, loss_data):
     _res = mc_diffstar_sfh_galpop(
         diffstarpop_params,
         mah_params,
+        logm0,
         t_peak,
         lgmu_infall,
         logmhost_infall,
@@ -98,6 +100,7 @@ def mean_smhm_loss_kern(diffstarpop_params, loss_data):
 def _mc_diffstar_sfh_galpop_vmap_kern(
     diffstarpop_params,
     mah_params,
+    logm0,
     t_peak,
     lgmu_infall,
     logmhost_infall,
@@ -110,6 +113,7 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
     res = mc_diffstar_sfh_galpop(
         diffstarpop_params,
         mah_params,
+        logm0,
         t_peak,
         lgmu_infall,
         logmhost_infall,
@@ -127,6 +131,7 @@ mc_diffstar_sfh_galpop_vmap = jjit(vmap(_mc_diffstar_sfh_galpop_vmap_kern, in_ax
 def mean_smhm_kern_tobs(u_params, loss_data):
     (
         mah_params,
+        logm0,
         t_peak,
         lgmu_infall,
         logmhost_infall,
@@ -141,6 +146,7 @@ def mean_smhm_kern_tobs(u_params, loss_data):
     _res = mc_diffstar_sfh_galpop_vmap(
         diffstarpop_params,
         mah_params,
+        logm0,
         t_peak,
         lgmu_infall,
         logmhost_infall,
