@@ -81,7 +81,7 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
     return res
 
 
-_U = (None, *[0]*7)
+_U = (None, *[0]*8)
 mc_diffstar_sfh_galpop_vmap = jjit(vmap(_mc_diffstar_sfh_galpop_vmap_kern, in_axes=_U))
 
 @jjit
@@ -109,10 +109,11 @@ def compute_diff_histograms_mstar_atmobs_z(
 
     return wcounts
 
-compute_diff_histograms_mstar_atmobs_z_vmap = jjit(vmap(compute_diff_histograms_mstar_atmobs_z, in_axes=(None, 0, 0)))
+_A = (None, 0, 0)
+compute_diff_histograms_mstar_atmobs_z_vmap = jjit(vmap(compute_diff_histograms_mstar_atmobs_z, in_axes=_A))
 
 @jjit
-def mstar_ssfr_kern_tobs(u_params, loss_data):
+def mstar_kern_tobs(u_params, loss_data):
     (
         mah_params,
         logm0,
@@ -167,26 +168,26 @@ def mstar_ssfr_kern_tobs(u_params, loss_data):
     return pred_mstar_pdf 
 
 @jjit
-def loss_mstar_ssfr_kern_tobs(u_params, loss_data):
+def loss_mstar_kern_tobs(u_params, loss_data):
     target_mstar_pdf = loss_data[-1]
-    pred_mstar_pdf  = mstar_ssfr_kern_tobs(u_params, loss_data)
+    pred_mstar_pdf  = mstar_kern_tobs(u_params, loss_data)
 
-    return _mse(pred_mstar_pdf, target_mstar_pdf)
+    return _mse(pred_mstar_pdf, target_mstar_pdf) * 1000
 
-loss_mstar_ssfr_kern_tobs_grad_kern = jjit(value_and_grad(loss_mstar_ssfr_kern_tobs, argnums=(0,)))
+loss_mstar_kern_tobs_grad_kern = jjit(value_and_grad(loss_mstar_kern_tobs, argnums=(0,)))
 
 
-def loss_mstar_ssfr_kern_tobs_grad_wrapper(flat_uparams, loss_data):
+def loss_mstar_kern_tobs_grad_wrapper(flat_uparams, loss_data):
         
     namedtuple_uparams = array_to_tuple_new_diffstarpop(flat_uparams, UnboundParams)
-    loss, grads = loss_mstar_ssfr_kern_tobs_grad_kern(namedtuple_uparams, loss_data)
+    loss, grads = loss_mstar_kern_tobs_grad_kern(namedtuple_uparams, loss_data)
     grads = tuple_to_jax_array(grads)
 
     return loss, grads
 
-def get_pred_data_wrapper(flat_uparams, loss_data):
+def get_pred_mstar_data_wrapper(flat_uparams, loss_data):
         
     namedtuple_uparams = array_to_tuple_new_diffstarpop(flat_uparams, UnboundParams)
-    pred_mstar_pdf  = mstar_ssfr_kern_tobs(namedtuple_uparams, loss_data)
+    pred_mstar_pdf  = mstar_kern_tobs(namedtuple_uparams, loss_data)
 
     return pred_mstar_pdf
