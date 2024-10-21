@@ -124,7 +124,7 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
     return res
 
 
-_U = (None, *[0]*7)
+_U = (None, *[0]*8)
 mc_diffstar_sfh_galpop_vmap = jjit(vmap(_mc_diffstar_sfh_galpop_vmap_kern, in_axes=_U))
 
 @jjit
