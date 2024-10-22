@@ -24,7 +24,6 @@ def _mse(pred, target):
 def _in_situ_smhm_loss_kern(diffstarpop_params, loss_data):
     (
         mah_params,
-        t_peak,
         ran_key,
         t_table,
         lgt0,
@@ -55,7 +54,7 @@ def _in_situ_smhm_loss_kern(diffstarpop_params, loss_data):
 
     logsm_z0 = jnp.log10(frac_q * smh_q[:, -1] + (1 - frac_q) * smh_ms[:, -1])
 
-    __, log_mah_table = mah_halopop(mah_params, t_table, t_peak, lgt0)
+    __, log_mah_table = mah_halopop(mah_params, t_table, lgt0)
 
     n_halos = logsm_z0.shape[0]
     sigma = jnp.zeros(n_halos) + sigma_sumstat

@@ -1,8 +1,8 @@
 """This module implements kernels for Monte Carlo generating Diffstar SFHs
 """
 
-from diffstar import calc_sfh_galpop, calc_sfh_singlegal, get_bounded_diffstar_params
-from diffstar.defaults import FB, LGT0
+from diffstar.defaults import FB, LGT0, get_bounded_diffstar_params
+from diffstar.sfh_model_tpeak import calc_sfh_galpop, calc_sfh_singlegal
 from jax import jit as jjit
 from jax import random as jran
 from jax import vmap
