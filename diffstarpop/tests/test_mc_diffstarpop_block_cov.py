@@ -2,7 +2,7 @@
 """
 
 import numpy as np
-from diffmah.defaults import DEFAULT_MAH_PARAMS
+from diffmah.diffmah_kernels import DEFAULT_MAH_PARAMS
 from jax import random as jran
 
 from .. import mc_diffstarpop_block_cov as mcdsp
