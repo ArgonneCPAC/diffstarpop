@@ -20,6 +20,7 @@ BOUNDING_K = 0.1
 RHO_BOUNDS = (-0.3, 0.3)
 
 SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
+    mean_ulgm_ms_x0=12.0,
     mean_ulgm_ms_ylo=11.92,
     mean_ulgm_ms_yhi=11.40,
     mean_ulgy_ms_ylo=-0.37,
@@ -28,6 +29,7 @@ SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
     mean_ul_ms_yhi=-3.77,
     mean_utau_ms_ylo=11.40,
     mean_utau_ms_yhi=-4.30,
+    mean_ulgm_quench_x0=12.0,
     mean_ulgm_quench_ylo=12.06,
     mean_ulgm_quench_yhi=12.23,
     mean_ulgy_quench_ylo=4.09,
@@ -46,6 +48,7 @@ SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
     mean_urej_quench_yhi=-2.5,
 )
 SFH_PDF_QUENCH_MU_BOUNDS_PDICT = OrderedDict(
+    mean_ulgm_ms_x0=(11.0, 13.0),
     mean_ulgm_ms_ylo=(11.0, 13.0),
     mean_ulgm_ms_yhi=(11.0, 13.0),
     mean_ulgy_ms_ylo=(-1.0, 1.5),
@@ -54,6 +57,7 @@ SFH_PDF_QUENCH_MU_BOUNDS_PDICT = OrderedDict(
     mean_ul_ms_yhi=(-5.0, 2.5),
     mean_utau_ms_ylo=(-25.0, 50.0),
     mean_utau_ms_yhi=(-25.0, 50.0),
+    mean_ulgm_quench_x0=(11.0, 13.0),
     mean_ulgm_quench_ylo=(11.5, 13.0),
     mean_ulgm_quench_yhi=(11.5, 13.0),
     mean_ulgy_quench_ylo=(0.0, 5.5),
@@ -219,7 +223,7 @@ def _sfh_pdf_scalar_kernel(params, lgm):
 def _get_mean_u_params_mseq(params, lgm):
     ulgm = _sigmoid(
         lgm,
-        X0,
+        params.mean_ulgm_ms_x0,
         LGMCRIT_K,
         params.mean_ulgm_ms_ylo,
         params.mean_ulgm_ms_yhi,
@@ -253,7 +257,7 @@ def _get_mean_u_params_mseq(params, lgm):
 def _get_mean_u_params_qseq_ms_block(params, lgm):
     ulgm = _sigmoid(
         lgm,
-        X0,
+        params.mean_ulgm_quench_x0,
         LGMCRIT_K,
         params.mean_ulgm_quench_ylo,
         params.mean_ulgm_quench_yhi,
