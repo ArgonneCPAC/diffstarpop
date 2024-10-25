@@ -15,7 +15,6 @@ def test_smhm_loss_is_finite():
     ZZ = np.zeros(n_halos)
     t0 = 13.8
     lgt0 = np.log10(t0)
-    t_peak = np.zeros(n_halos) + t0
     ran_key = jran.key(0)
     t_table = np.linspace(0.1, t0, 100)
     fb = 0.16
@@ -30,7 +29,6 @@ def test_smhm_loss_is_finite():
 
     loss_data = (
         mah_params,
-        t_peak,
         loss_key,
         t_table,
         lgt0,

@@ -15,7 +15,6 @@ from .sfh_pdf_tpeak import _sfh_pdf_scalar_kernel
 def mc_diffstar_u_params_singlegal_kernel(
     diffstarpop_params,
     mah_params,
-    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,

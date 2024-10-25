@@ -15,7 +15,6 @@ from .kernels.diffstarpop_tpeak import mc_diffstar_u_params_singlegal_kernel
 def mc_diffstar_sfh_singlegal(
     diffstarpop_params,
     mah_params,
-    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -101,19 +100,14 @@ def mc_diffstar_sfh_singlegal(
     _res = mc_diffstar_params_singlegal(
         diffstarpop_params,
         mah_params,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
         ran_key,
     )
     diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
-    sfh_ms = calc_sfh_singlegal(
-        diffstar_params_ms, mah_params, t_peak, tarr, lgt0=lgt0, fb=fb
-    )
-    sfh_q = calc_sfh_singlegal(
-        diffstar_params_q, mah_params, t_peak, tarr, lgt0=lgt0, fb=fb
-    )
+    sfh_ms = calc_sfh_singlegal(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
+    sfh_q = calc_sfh_singlegal(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
     return diffstar_params_ms, diffstar_params_q, sfh_ms, sfh_q, frac_q, mc_is_q
 
 
@@ -121,7 +115,6 @@ def mc_diffstar_sfh_singlegal(
 def mc_diffstar_params_singlegal(
     diffstarpop_params,
     mah_params,
-    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -181,7 +174,6 @@ def mc_diffstar_params_singlegal(
     _res = mc_diffstar_u_params_singlegal_kernel(
         diffstarpop_params,
         mah_params,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -197,7 +189,6 @@ def mc_diffstar_params_singlegal(
 def mc_diffstar_u_params_singlegal(
     diffstarpop_params,
     mah_params,
-    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -208,7 +199,6 @@ def mc_diffstar_u_params_singlegal(
     _res = mc_diffstar_u_params_singlegal_kernel(
         diffstarpop_params,
         mah_params,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -218,7 +208,7 @@ def mc_diffstar_u_params_singlegal(
     return u_params_ms, u_params_qseq, frac_q, mc_is_q
 
 
-_POP = (None, 0, 0, 0, 0, 0, 0)
+_POP = (None, 0, 0, 0, 0, 0)
 mc_diffstar_u_params_galpop_kernel = jjit(
     vmap(mc_diffstar_u_params_singlegal, in_axes=_POP)
 )
@@ -228,7 +218,6 @@ mc_diffstar_u_params_galpop_kernel = jjit(
 def mc_diffstar_u_params_galpop(
     diffstarpop_params,
     mah_params,
-    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -240,7 +229,6 @@ def mc_diffstar_u_params_galpop(
     _res = mc_diffstar_u_params_galpop_kernel(
         diffstarpop_params,
         mah_params,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -257,7 +245,6 @@ get_bounded_diffstar_params_galpop = jjit(vmap(get_bounded_diffstar_params, in_a
 def mc_diffstar_params_galpop(
     diffstarpop_params,
     mah_params,
-    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -270,9 +257,9 @@ def mc_diffstar_params_galpop(
     diffstarpop_params : namedtuple
         See defaults.DEFAULT_DIFFSTARPOP_PARAMS for an example
 
-    mah_params : namedtuple, length 4
+    mah_params : namedtuple, length 5
         mah_params is a tuple of ndarrays of shape (ngals, )
-        DiffmahParams = logmp, logtc, early_index, late_index
+        DiffmahParams = logmp, logtc, early_index, late_index, t_peak
 
     lgmu_infall : ndarray of shape (ngals, )
         Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
@@ -318,7 +305,6 @@ def mc_diffstar_params_galpop(
     _res = mc_diffstar_u_params_galpop(
         diffstarpop_params,
         mah_params,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -334,7 +320,6 @@ def mc_diffstar_params_galpop(
 def mc_diffstar_sfh_galpop(
     diffstarpop_params,
     mah_params,
-    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -351,9 +336,9 @@ def mc_diffstar_sfh_galpop(
     diffstarpop_params : namedtuple
         See defaults.DEFAULT_DIFFSTARPOP_PARAMS for an example
 
-    mah_params : namedtuple, length 4
+    mah_params : namedtuple, length 5
         mah_params is a tuple of ndarrays of shape (ngals, )
-        DiffmahParams = logmp, logtc, early_index, late_index
+        DiffmahParams = logmp, logtc, early_index, late_index, t_peak
 
     lgmu_infall : ndarray of shape (ngals, )
         Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
@@ -417,17 +402,12 @@ def mc_diffstar_sfh_galpop(
     _res = mc_diffstar_params_galpop(
         diffstarpop_params,
         mah_params,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
         ran_key,
     )
     diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
-    sfh_ms = calc_sfh_galpop(
-        diffstar_params_ms, mah_params, t_peak, tarr, lgt0=lgt0, fb=fb
-    )
-    sfh_q = calc_sfh_galpop(
-        diffstar_params_q, mah_params, t_peak, tarr, lgt0=lgt0, fb=fb
-    )
+    sfh_ms = calc_sfh_galpop(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
+    sfh_q = calc_sfh_galpop(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
     return diffstar_params_ms, diffstar_params_q, sfh_ms, sfh_q, frac_q, mc_is_q

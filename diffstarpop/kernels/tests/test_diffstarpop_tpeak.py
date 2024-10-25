@@ -2,7 +2,7 @@
 """
 
 import numpy as np
-from diffmah.defaults import DEFAULT_MAH_PARAMS
+from diffmah.diffmah_kernels import DEFAULT_MAH_PARAMS
 from jax import random as jran
 
 from .. import diffstarpop_tpeak as dsp
@@ -11,14 +11,12 @@ from ..defaults_tpeak import DEFAULT_DIFFSTARPOP_PARAMS
 
 def test_mc_diffstar_u_params_singlegal_kernel():
     ran_key = jran.key(0)
-    t_peak = 12.0
     lgmu_infall = -1.0
     logmhost_infall = 13.0
     gyr_since_infall = 2.0
     args = (
         DEFAULT_DIFFSTARPOP_PARAMS,
         DEFAULT_MAH_PARAMS,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
