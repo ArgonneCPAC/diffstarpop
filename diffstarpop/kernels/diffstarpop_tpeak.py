@@ -14,7 +14,7 @@ from .sfh_pdf_tpeak import _sfh_pdf_scalar_kernel
 @jjit
 def mc_diffstar_u_params_singlegal_kernel(
     diffstarpop_params,
-    mah_params,
+    logm0,
     t_peak,
     lgmu_infall,
     logmhost_infall,
@@ -23,7 +23,7 @@ def mc_diffstar_u_params_singlegal_kernel(
 ):
     means_covs = _diffstarpop_means_covs(
         diffstarpop_params,
-        mah_params,
+        logm0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -31,12 +31,16 @@ def mc_diffstar_u_params_singlegal_kernel(
 
     u_indx_hi = DEFAULT_DIFFSTAR_U_PARAMS.u_ms_params.u_indx_hi
 
-    frac_quench = means_covs[0]
-    mu_mseq = means_covs[1]
-    q_key_ms_block, q_key_q_block, frac_q_key = jran.split(ran_key, 3)
-    mu_qseq_ms_block, cov_qseq_ms_block = means_covs[2:4]
-    mu_qseq_q_block, cov_qseq_q_block = means_covs[4:]
+    ms_key, q_key_ms_block, q_key_q_block, frac_q_key = jran.split(ran_key, 4)
 
+    frac_quench = means_covs[0]
+    mu_mseq, cov_mseq = means_covs[1:3]
+    mu_qseq_ms_block, cov_qseq_ms_block = means_covs[3:5]
+    mu_qseq_q_block, cov_qseq_q_block = means_covs[5:]
+
+    u_params_ms_ms_block = jran.multivariate_normal(
+        ms_key, jnp.array(ms_key), cov_mseq, shape=()
+    )
     u_params_qseq_ms_block = jran.multivariate_normal(
         q_key_ms_block, jnp.array(mu_qseq_ms_block), cov_qseq_ms_block, shape=()
     )
@@ -53,10 +57,6 @@ def mc_diffstar_u_params_singlegal_kernel(
     )
     u_params_q = DiffstarUParams(MSUParams(*u_params_q[:5]), QUParams(*u_params_q[5:]))
 
-    # Do not use a new MC realization for the main sequence
-    # Instead, shift the MC draws of the quenched sequence to reduce noise
-    delta_mu_mseq = jnp.array([x - y for x, y in zip(mu_mseq, mu_qseq_ms_block)])
-    u_params_ms_ms_block = u_params_qseq_ms_block + delta_mu_mseq
     u_params_ms = jnp.array(
         (
             *u_params_ms_ms_block[:3],
@@ -78,12 +78,13 @@ def mc_diffstar_u_params_singlegal_kernel(
 @jjit
 def _diffstarpop_means_covs(
     diffstarpop_params,
-    mah_params,
+    lgm0,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
 ):
-    lgm0 = mah_params[0]
+    # with tpeak lgm0 diffmah parameter is no longer Mhalo(t0).
+    # lgm0 = mah_params[0]
     means_covs = _sfh_pdf_scalar_kernel(diffstarpop_params.sfh_pdf_cens_params, lgm0)
 
     # Modify frac_q for satellites
@@ -97,3 +98,4 @@ def _diffstarpop_means_covs(
     )
     means_covs = (frac_q, *means_covs[1:])
     return means_covs
+
