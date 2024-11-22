@@ -10,13 +10,14 @@ from ..kernels.defaults_tpeak import DEFAULT_DIFFSTARPOP_PARAMS
 
 
 def test_mc_diffstar_params_singlegal_evaluates():
+    logm0 = 13.0
     ran_key = jran.PRNGKey(0)
     lgmu_infall = -1.0
     logmhost_infall = 13.0
     gyr_since_infall = 2.0
     args = (
         DEFAULT_DIFFSTARPOP_PARAMS,
-        DEFAULT_MAH_PARAMS,
+        logm0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -34,6 +35,7 @@ def test_mc_diffstar_params_singlegal_evaluates():
 
 
 def test_mc_diffstar_sfh_singlegal_evaluates():
+    logm0 = 13.0
     ran_key = jran.PRNGKey(0)
     lgmu_infall = -1.0
     logmhost_infall = 13.0
@@ -43,6 +45,7 @@ def test_mc_diffstar_sfh_singlegal_evaluates():
     args = (
         DEFAULT_DIFFSTARPOP_PARAMS,
         DEFAULT_MAH_PARAMS,
+        logm0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -69,6 +72,7 @@ def test_mc_diffstar_sfh_singlegal_evaluates():
 def test_mc_diffstar_u_params_galpop():
     ngals = 50
     zz = np.zeros(ngals)
+    logm0 = 13.0 + zz
     lgmu_infall = -1.0 + zz
     logmhost_infall = 13.0 + zz
     gyr_since_infall = 2.0 + zz
@@ -76,7 +80,7 @@ def test_mc_diffstar_u_params_galpop():
     mah_params = DEFAULT_MAH_PARAMS._make([zz + p for p in DEFAULT_MAH_PARAMS])
     _res = mcdsp.mc_diffstar_u_params_galpop(
         DEFAULT_DIFFSTARPOP_PARAMS,
-        mah_params,
+        logm0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
