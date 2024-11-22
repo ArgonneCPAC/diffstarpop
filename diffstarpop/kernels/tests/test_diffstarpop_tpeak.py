@@ -2,7 +2,6 @@
 """
 
 import numpy as np
-from diffmah.diffmah_kernels import DEFAULT_MAH_PARAMS
 from jax import random as jran
 
 from .. import diffstarpop_tpeak as dsp

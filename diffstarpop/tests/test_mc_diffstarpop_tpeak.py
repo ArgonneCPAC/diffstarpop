@@ -77,7 +77,6 @@ def test_mc_diffstar_u_params_galpop():
     logmhost_infall = 13.0 + zz
     gyr_since_infall = 2.0 + zz
     ran_key = jran.key(0)
-    mah_params = DEFAULT_MAH_PARAMS._make([zz + p for p in DEFAULT_MAH_PARAMS])
     _res = mcdsp.mc_diffstar_u_params_galpop(
         DEFAULT_DIFFSTARPOP_PARAMS,
         logm0,
@@ -87,6 +86,12 @@ def test_mc_diffstar_u_params_galpop():
         ran_key,
     )
     diffstar_u_params_ms, diffstar_u_params_q, frac_q, mc_is_q = _res
+    assert np.all(np.isfinite(diffstar_u_params_ms.u_ms_params))
+    assert np.all(np.isfinite(diffstar_u_params_ms.u_q_params))
+    assert np.all(np.isfinite(diffstar_u_params_q.u_ms_params))
+    assert np.all(np.isfinite(diffstar_u_params_q.u_q_params))
+    assert np.all(np.isfinite(frac_q))
+    assert np.all(np.isfinite(mc_is_q))
 
 
 # def test_mc_diffstar_params_galpop():

@@ -1,11 +1,11 @@
-from collections import OrderedDict, namedtuple
-import numpy as np
+from collections import OrderedDict
+
 import jax
+import numpy as np
 from jax import numpy as jnp
 
 from ..kernels.defaults_tpeak import (
-    DEFAULT_DIFFSTARPOP_U_PARAMS as DEFAULT_DIFFSTARPOP_U_PARAMS_tpeak,
-    # DEFAULT_DIFFSTARPOP_PARAMS,
+    DEFAULT_DIFFSTARPOP_U_PARAMS as DEFAULT_DIFFSTARPOP_U_PARAMS_tpeak,  # DEFAULT_DIFFSTARPOP_PARAMS,
 )
 
 

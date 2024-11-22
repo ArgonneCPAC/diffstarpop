@@ -2,31 +2,26 @@
 """
 
 from collections import OrderedDict, namedtuple
-from diffmah.diffmah_kernels import mah_halopop
-from diffstar.utils import cumulative_mstar_formed
-from diffstar.defaults import LGT0
 
-import jax
+import h5py
+import numpy as np
+from diffmah.diffmah_kernels import DiffmahParams, mah_halopop
+from diffstar.defaults import LGT0
+from diffstar.utils import cumulative_mstar_formed
 from jax import jit as jjit
 from jax import numpy as jnp
-from jax import vmap
-from jax import value_and_grad
 from jax import random as jran
+from jax import value_and_grad, vmap
 
-import numpy as np
-import h5py
-
-from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
 from ..kernels.defaults_tpeak import (
-    get_bounded_diffstarpop_params,
     DEFAULT_DIFFSTARPOP_U_PARAMS,
+    get_bounded_diffstarpop_params,
 )
+from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
 from .namedtuple_utils_tpeak import (
-    tuple_to_jax_array,
     array_to_tuple_new_diffstarpop_tpeak,
+    tuple_to_jax_array,
 )
-from diffmah.diffmah_kernels import DiffmahParams
-
 
 N_TIMES = 20
 
