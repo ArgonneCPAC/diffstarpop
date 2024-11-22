@@ -4,11 +4,17 @@
 from collections import OrderedDict, namedtuple
 from diffmah.diffmah_kernels import mah_halopop
 from diffstar.utils import cumulative_mstar_formed
+from diffstar.defaults import LGT0
+
 import jax
 from jax import jit as jjit
 from jax import numpy as jnp
 from jax import vmap
 from jax import value_and_grad
+from jax import random as jran
+
+import numpy as np
+import h5py
 
 from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
 from ..kernels.defaults_tpeak import (
@@ -178,3 +184,120 @@ def mean_smhm_loss_kern_tobs_wrapper(flat_uparams, loss_data):
 
     return loss, grads
 
+def get_loss_data(
+    indir,
+    nhalos
+):
+    # Load SMHM data ---------------------------------------------
+    print("Loading SMHM data...")
+
+
+    with h5py.File(indir+"smdpl_smhm.h5", "r") as hdf:
+        redshift_targets = hdf["redshift_targets"][:]
+        smhm_diff = hdf["smhm_diff"][:]
+        smhm = hdf["smhm"][:]
+        logmh_bins = hdf["logmh_bins"][:]
+        age_targets = hdf["age_targets"][:]
+        """ 
+            hdfout["counts_diff"] = wcounts
+            hdfout["hist_diff"] = whist
+            hdfout["counts"] = counts
+            hdfout["hist"] = hist
+            hdfout["smhm_diff"] = whist / wcounts
+            hdfout["smhm"] = hist / counts
+            hdfout["logmh_bins"] = smhm_utils.LOGMH_BINS
+            hdfout["subvol_used"] = subvol_used
+            
+        """
+
+    logmh_binsc = 0.5*(logmh_bins[1:]+logmh_bins[:-1])
+
+
+    with h5py.File(indir+"smdpl_smhm_samples_haloes.h5", "r") as hdf:
+        logmh_id = hdf["logmh_id"][:]
+        logmh_val = hdf["logmh_id"][:]
+        mah_params_samp = hdf["mah_params_samp"][:]
+        ms_params_samp = hdf["ms_params_samp"][:]
+        q_params_samp = hdf["q_params_samp"][:]
+        t_peak_samp = hdf["t_peak_samp"][:]
+        tobs_id = hdf["tobs_id"][:]
+        tobs_val = hdf["tobs_val"][:]
+        redshift_val = hdf["redshift_val"][:]
+
+    
+    mah_params_samp = np.concatenate((mah_params_samp, t_peak_samp[None, :]), axis=0)
+
+    # Create loss_data ---------------------------------------------
+    print("Creating loss data...")
+
+    ran_key = jran.PRNGKey(np.random.randint(2**32))
+
+    lgmu_infall = -1.0
+    logmhost_infall = 13.0
+    gyr_since_infall = 2.0
+
+    mah_params_data = []
+    lomg0_data = []
+    lgmu_infall_data = []
+    logmhost_infall_data = []
+    gyr_since_infall_data = []
+    t_obs_targets = []
+    smhm_targets = []
+
+    tarr_logm0 = np.logspace(-1, LGT0, 50)
+
+    for i in range(len(age_targets)):
+        t_target = age_targets[i]
+
+        for j in range(len(logmh_binsc)):
+            sel = (tobs_id == i)  & (logmh_id == j)
+
+            if sel.sum() < nhalos: continue
+            arange_sel = np.arange(len(tobs_id))[sel]
+            arange_sel = np.random.choice(arange_sel, nhalos, replace=False)
+            mah_params_data.append(mah_params_samp[:, arange_sel])
+            lgmu_infall_data.append(np.ones(len(arange_sel))*lgmu_infall)
+            logmhost_infall_data.append(np.ones(len(arange_sel))*logmhost_infall)
+            gyr_since_infall_data.append(np.ones(len(arange_sel))*gyr_since_infall)
+            t_obs_targets.append(t_target)
+            smhm_targets.append(smhm[i,j])
+            mah_pars_ntuple = DiffmahParams(*mah_params_samp[:, arange_sel])
+            dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
+            lomg0_data.append(log_mah_fit[:, -1])
+
+    mah_params_data = np.array(mah_params_data)
+    lomg0_data = np.array(lomg0_data)
+    lgmu_infall_data = np.array(lgmu_infall_data)
+    logmhost_infall_data = np.array(logmhost_infall_data)
+    gyr_since_infall_data = np.array(gyr_since_infall_data)
+    t_obs_targets = np.array(t_obs_targets)
+    smhm_targets = np.array(smhm_targets)
+
+    ran_key_data = jran.split(ran_key, len(smhm_targets))
+    loss_data = (
+        mah_params_data,
+        lomg0_data,
+        lgmu_infall_data,
+        logmhost_infall_data,
+        gyr_since_infall_data,
+        ran_key_data,
+        t_obs_targets,
+        smhm_targets
+    )
+
+    plot_data = (
+        age_targets,
+        logmh_binsc,
+        tobs_id,
+        logmh_id,
+        tarr_logm0,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
+        ran_key,
+        redshift_targets,
+        smhm,
+        mah_params_samp,
+    )
+
+    return loss_data, plot_data
