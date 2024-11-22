@@ -32,12 +32,6 @@ unbound_params_dict = OrderedDict(diffstarpop_u_params=DEFAULT_DIFFSTARPOP_U_PAR
 UnboundParams = namedtuple("UnboundParams", list(unbound_params_dict.keys()))
 
 
-@jjit
-def _mse(pred, target):
-    diff = pred - target
-    return jnp.mean(diff**2)
-
-
 def _calculate_obs_smh_kern(
     tobs_target,
     sfh_ms,
@@ -192,11 +186,11 @@ def get_loss_data(indir, nhalos):
 
     with h5py.File(indir + "smdpl_smhm.h5", "r") as hdf:
         redshift_targets = hdf["redshift_targets"][:]
-        smhm_diff = hdf["smhm_diff"][:]
+        # smhm_diff = hdf["smhm_diff"][:]
         smhm = hdf["smhm"][:]
         logmh_bins = hdf["logmh_bins"][:]
         age_targets = hdf["age_targets"][:]
-        """ 
+        """
             hdfout["counts_diff"] = wcounts
             hdfout["hist_diff"] = whist
             hdfout["counts"] = counts
@@ -205,21 +199,20 @@ def get_loss_data(indir, nhalos):
             hdfout["smhm"] = hist / counts
             hdfout["logmh_bins"] = smhm_utils.LOGMH_BINS
             hdfout["subvol_used"] = subvol_used
-            
         """
 
     logmh_binsc = 0.5 * (logmh_bins[1:] + logmh_bins[:-1])
 
     with h5py.File(indir + "smdpl_smhm_samples_haloes.h5", "r") as hdf:
         logmh_id = hdf["logmh_id"][:]
-        logmh_val = hdf["logmh_id"][:]
+        # logmh_val = hdf["logmh_id"][:]
         mah_params_samp = hdf["mah_params_samp"][:]
-        ms_params_samp = hdf["ms_params_samp"][:]
-        q_params_samp = hdf["q_params_samp"][:]
+        # ms_params_samp = hdf["ms_params_samp"][:]
+        # q_params_samp = hdf["q_params_samp"][:]
         t_peak_samp = hdf["t_peak_samp"][:]
         tobs_id = hdf["tobs_id"][:]
-        tobs_val = hdf["tobs_val"][:]
-        redshift_val = hdf["redshift_val"][:]
+        # tobs_val = hdf["tobs_val"][:]
+        # redshift_val = hdf["redshift_val"][:]
 
     mah_params_samp = np.concatenate((mah_params_samp, t_peak_samp[None, :]), axis=0)
 
