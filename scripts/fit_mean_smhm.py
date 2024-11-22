@@ -33,7 +33,7 @@ from diffstarpop.kernels.defaults_tpeak import (
     get_bounded_diffstarpop_params,
 )
 
-BEBOP_SMHM_MEAN_DATA = "/lcrc/project/halotools/alarcon/results/"
+BEBOP_SMHM_MEAN_DATA = "/lcrc/project/halotools/alarcon/results/ridge_term_smhm_data/"
 
 if __name__ == "__main__":
 
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
 
     # Make plot ---------------------------------------------
-    
+
     if make_plot:
         print("Making plot...")
 
