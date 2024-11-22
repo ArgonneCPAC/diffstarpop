@@ -1,5 +1,6 @@
 """
 """
+
 import typing
 from collections import namedtuple
 

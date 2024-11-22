@@ -1,5 +1,6 @@
 """
 """
+
 import numpy as np
 
 from ..param_bounding import (

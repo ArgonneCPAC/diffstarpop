@@ -1,5 +1,6 @@
 """
 """
+
 # flake8: noqa
 
 from .kernels.param_bounding import (

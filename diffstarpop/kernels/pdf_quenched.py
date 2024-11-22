@@ -1,4 +1,5 @@
 """Model of a quenched galaxy population calibrated to SMDPL halos."""
+
 from collections import OrderedDict
 
 from jax import jit as jjit
@@ -308,12 +309,8 @@ def mean_urej_quench_vs_lgm0(
 @jjit
 def chol_ulgm_ulgm_quench_vs_lgm0(
     lgm0,
-    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgm_ulgm_quench_ylo"
-    ],
-    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgm_ulgm_quench_yhi"
-    ],
+    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgm_ulgm_quench_ylo"],
+    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgm_ulgm_quench_yhi"],
 ):
     _res = _fun_chol_diag(lgm0, chol_ulgm_ulgm_quench_ylo, chol_ulgm_ulgm_quench_yhi)
     return _res
@@ -322,12 +319,8 @@ def chol_ulgm_ulgm_quench_vs_lgm0(
 @jjit
 def chol_ulgy_ulgy_quench_vs_lgm0(
     lgm0,
-    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgy_quench_ylo"
-    ],
-    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgy_quench_yhi"
-    ],
+    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgy_quench_ylo"],
+    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgy_quench_yhi"],
 ):
     _res = _fun_chol_diag(lgm0, chol_ulgy_ulgy_quench_ylo, chol_ulgy_ulgy_quench_yhi)
     return _res
@@ -346,12 +339,8 @@ def chol_ul_ul_quench_vs_lgm0(
 @jjit
 def chol_utau_utau_quench_vs_lgm0(
     lgm0,
-    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_utau_quench_ylo"
-    ],
-    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_utau_quench_yhi"
-    ],
+    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_utau_quench_ylo"],
+    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_utau_quench_yhi"],
 ):
     _res = _fun_chol_diag(lgm0, chol_utau_utau_quench_ylo, chol_utau_utau_quench_yhi)
     return _res
@@ -396,12 +385,8 @@ def chol_udrop_udrop_quench_vs_lgm0(
 @jjit
 def chol_urej_urej_quench_vs_lgm0(
     lgm0,
-    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_urej_quench_ylo"
-    ],
-    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_urej_quench_yhi"
-    ],
+    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_urej_quench_ylo"],
+    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_urej_quench_yhi"],
 ):
     _res = _fun_chol_diag(lgm0, chol_urej_urej_quench_ylo, chol_urej_urej_quench_yhi)
     return _res
@@ -410,12 +395,8 @@ def chol_urej_urej_quench_vs_lgm0(
 @jjit
 def chol_ulgy_ulgm_quench_vs_lgm0(
     lgm0,
-    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgm_quench_ylo"
-    ],
-    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgm_quench_yhi"
-    ],
+    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgm_quench_ylo"],
+    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgm_quench_yhi"],
 ):
     _res = _fun(lgm0, chol_ulgy_ulgm_quench_ylo, chol_ulgy_ulgm_quench_yhi)
     return _res
@@ -444,12 +425,8 @@ def chol_ul_ulgy_quench_vs_lgm0(
 @jjit
 def chol_utau_ulgm_quench_vs_lgm0(
     lgm0,
-    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgm_quench_ylo"
-    ],
-    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgm_quench_yhi"
-    ],
+    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgm_quench_ylo"],
+    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgm_quench_yhi"],
 ):
     _res = _fun(lgm0, chol_utau_ulgm_quench_ylo, chol_utau_ulgm_quench_yhi)
     return _res
@@ -458,12 +435,8 @@ def chol_utau_ulgm_quench_vs_lgm0(
 @jjit
 def chol_utau_ulgy_quench_vs_lgm0(
     lgm0,
-    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgy_quench_ylo"
-    ],
-    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgy_quench_yhi"
-    ],
+    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgy_quench_ylo"],
+    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgy_quench_yhi"],
 ):
     _res = _fun(lgm0, chol_utau_ulgy_quench_ylo, chol_utau_ulgy_quench_yhi)
     return _res
@@ -624,12 +597,8 @@ def chol_udrop_utau_quench_vs_lgm0(
 @jjit
 def chol_udrop_uqt_quench_vs_lgm0(
     lgm0,
-    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqt_quench_ylo"
-    ],
-    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqt_quench_yhi"
-    ],
+    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqt_quench_ylo"],
+    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqt_quench_yhi"],
 ):
     _res = _fun(lgm0, chol_udrop_uqt_quench_ylo, chol_udrop_uqt_quench_yhi)
     return _res
@@ -638,12 +607,8 @@ def chol_udrop_uqt_quench_vs_lgm0(
 @jjit
 def chol_udrop_uqs_quench_vs_lgm0(
     lgm0,
-    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqs_quench_ylo"
-    ],
-    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqs_quench_yhi"
-    ],
+    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqs_quench_ylo"],
+    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqs_quench_yhi"],
 ):
     _res = _fun(lgm0, chol_udrop_uqs_quench_ylo, chol_udrop_uqs_quench_yhi)
     return _res
@@ -652,12 +617,8 @@ def chol_udrop_uqs_quench_vs_lgm0(
 @jjit
 def chol_urej_ulgm_quench_vs_lgm0(
     lgm0,
-    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgm_quench_ylo"
-    ],
-    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgm_quench_yhi"
-    ],
+    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgm_quench_ylo"],
+    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgm_quench_yhi"],
 ):
     _res = _fun(lgm0, chol_urej_ulgm_quench_ylo, chol_urej_ulgm_quench_yhi)
     return _res
@@ -666,12 +627,8 @@ def chol_urej_ulgm_quench_vs_lgm0(
 @jjit
 def chol_urej_ulgy_quench_vs_lgm0(
     lgm0,
-    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgy_quench_ylo"
-    ],
-    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgy_quench_yhi"
-    ],
+    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgy_quench_ylo"],
+    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgy_quench_yhi"],
 ):
     _res = _fun(lgm0, chol_urej_ulgy_quench_ylo, chol_urej_ulgy_quench_yhi)
     return _res
@@ -690,12 +647,8 @@ def chol_urej_ul_quench_vs_lgm0(
 @jjit
 def chol_urej_utau_quench_vs_lgm0(
     lgm0,
-    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_utau_quench_ylo"
-    ],
-    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_utau_quench_yhi"
-    ],
+    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_utau_quench_ylo"],
+    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_utau_quench_yhi"],
 ):
     _res = _fun(lgm0, chol_urej_utau_quench_ylo, chol_urej_utau_quench_yhi)
     return _res
@@ -855,26 +808,14 @@ def get_smah_means_and_covs_quench(
     mean_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["mean_udrop_quench_yhi"],
     mean_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["mean_urej_quench_ylo"],
     mean_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["mean_urej_quench_yhi"],
-    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgm_ulgm_quench_ylo"
-    ],
-    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgm_ulgm_quench_yhi"
-    ],
-    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgy_quench_ylo"
-    ],
-    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgy_quench_yhi"
-    ],
+    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgm_ulgm_quench_ylo"],
+    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgm_ulgm_quench_yhi"],
+    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgy_quench_ylo"],
+    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgy_quench_yhi"],
     chol_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ul_quench_ylo"],
     chol_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ul_quench_yhi"],
-    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_utau_quench_ylo"
-    ],
-    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_utau_quench_yhi"
-    ],
+    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_utau_quench_ylo"],
+    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_utau_quench_yhi"],
     chol_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqt_uqt_quench_ylo"],
     chol_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqt_uqt_quench_yhi"],
     chol_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqs_uqs_quench_ylo"],
@@ -885,34 +826,18 @@ def get_smah_means_and_covs_quench(
     chol_udrop_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
         "chol_udrop_udrop_quench_yhi"
     ],
-    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_urej_quench_ylo"
-    ],
-    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_urej_quench_yhi"
-    ],
-    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgm_quench_ylo"
-    ],
-    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgm_quench_yhi"
-    ],
+    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_urej_quench_ylo"],
+    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_urej_quench_yhi"],
+    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgm_quench_ylo"],
+    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgm_quench_yhi"],
     chol_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgm_quench_ylo"],
     chol_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgm_quench_yhi"],
     chol_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgy_quench_ylo"],
     chol_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgy_quench_yhi"],
-    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgm_quench_ylo"
-    ],
-    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgm_quench_yhi"
-    ],
-    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgy_quench_ylo"
-    ],
-    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgy_quench_yhi"
-    ],
+    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgm_quench_ylo"],
+    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgm_quench_yhi"],
+    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgy_quench_ylo"],
+    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgy_quench_yhi"],
     chol_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ul_quench_ylo"],
     chol_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ul_quench_yhi"],
     chol_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqt_ulgm_quench_ylo"],
@@ -953,38 +878,18 @@ def get_smah_means_and_covs_quench(
     chol_udrop_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
         "chol_udrop_utau_quench_yhi"
     ],
-    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqt_quench_ylo"
-    ],
-    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqt_quench_yhi"
-    ],
-    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqs_quench_ylo"
-    ],
-    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqs_quench_yhi"
-    ],
-    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgm_quench_ylo"
-    ],
-    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgm_quench_yhi"
-    ],
-    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgy_quench_ylo"
-    ],
-    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgy_quench_yhi"
-    ],
+    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqt_quench_ylo"],
+    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqt_quench_yhi"],
+    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqs_quench_ylo"],
+    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqs_quench_yhi"],
+    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgm_quench_ylo"],
+    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgm_quench_yhi"],
+    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgy_quench_ylo"],
+    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgy_quench_yhi"],
     chol_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ul_quench_ylo"],
     chol_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ul_quench_yhi"],
-    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_utau_quench_ylo"
-    ],
-    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_utau_quench_yhi"
-    ],
+    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_utau_quench_ylo"],
+    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_utau_quench_yhi"],
     chol_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_uqt_quench_ylo"],
     chol_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_uqt_quench_yhi"],
     chol_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_uqs_quench_ylo"],
@@ -1133,26 +1038,14 @@ def _get_mean_smah_params_quench(
 @jjit
 def _get_covs_quench(
     lgmp_arr,
-    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgm_ulgm_quench_ylo"
-    ],
-    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgm_ulgm_quench_yhi"
-    ],
-    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgy_quench_ylo"
-    ],
-    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgy_quench_yhi"
-    ],
+    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgm_ulgm_quench_ylo"],
+    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgm_ulgm_quench_yhi"],
+    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgy_quench_ylo"],
+    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgy_quench_yhi"],
     chol_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ul_quench_ylo"],
     chol_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ul_quench_yhi"],
-    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_utau_quench_ylo"
-    ],
-    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_utau_quench_yhi"
-    ],
+    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_utau_quench_ylo"],
+    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_utau_quench_yhi"],
     chol_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqt_uqt_quench_ylo"],
     chol_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqt_uqt_quench_yhi"],
     chol_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqs_uqs_quench_ylo"],
@@ -1163,34 +1056,18 @@ def _get_covs_quench(
     chol_udrop_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
         "chol_udrop_udrop_quench_yhi"
     ],
-    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_urej_quench_ylo"
-    ],
-    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_urej_quench_yhi"
-    ],
-    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgm_quench_ylo"
-    ],
-    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgm_quench_yhi"
-    ],
+    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_urej_quench_ylo"],
+    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_urej_quench_yhi"],
+    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgm_quench_ylo"],
+    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgm_quench_yhi"],
     chol_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgm_quench_ylo"],
     chol_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgm_quench_yhi"],
     chol_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgy_quench_ylo"],
     chol_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgy_quench_yhi"],
-    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgm_quench_ylo"
-    ],
-    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgm_quench_yhi"
-    ],
-    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgy_quench_ylo"
-    ],
-    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgy_quench_yhi"
-    ],
+    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgm_quench_ylo"],
+    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgm_quench_yhi"],
+    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgy_quench_ylo"],
+    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgy_quench_yhi"],
     chol_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ul_quench_ylo"],
     chol_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ul_quench_yhi"],
     chol_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqt_ulgm_quench_ylo"],
@@ -1231,38 +1108,18 @@ def _get_covs_quench(
     chol_udrop_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
         "chol_udrop_utau_quench_yhi"
     ],
-    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqt_quench_ylo"
-    ],
-    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqt_quench_yhi"
-    ],
-    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqs_quench_ylo"
-    ],
-    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqs_quench_yhi"
-    ],
-    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgm_quench_ylo"
-    ],
-    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgm_quench_yhi"
-    ],
-    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgy_quench_ylo"
-    ],
-    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgy_quench_yhi"
-    ],
+    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqt_quench_ylo"],
+    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqt_quench_yhi"],
+    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqs_quench_ylo"],
+    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqs_quench_yhi"],
+    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgm_quench_ylo"],
+    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgm_quench_yhi"],
+    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgy_quench_ylo"],
+    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgy_quench_yhi"],
     chol_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ul_quench_ylo"],
     chol_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ul_quench_yhi"],
-    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_utau_quench_ylo"
-    ],
-    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_utau_quench_yhi"
-    ],
+    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_utau_quench_ylo"],
+    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_utau_quench_yhi"],
     chol_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_uqt_quench_ylo"],
     chol_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_uqt_quench_yhi"],
     chol_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_uqs_quench_ylo"],
@@ -1355,26 +1212,14 @@ def _get_covs_quench(
 @jjit
 def _get_chol_params_quench(
     lgm,
-    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgm_ulgm_quench_ylo"
-    ],
-    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgm_ulgm_quench_yhi"
-    ],
-    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgy_quench_ylo"
-    ],
-    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgy_quench_yhi"
-    ],
+    chol_ulgm_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgm_ulgm_quench_ylo"],
+    chol_ulgm_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgm_ulgm_quench_yhi"],
+    chol_ulgy_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgy_quench_ylo"],
+    chol_ulgy_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgy_quench_yhi"],
     chol_ul_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ul_quench_ylo"],
     chol_ul_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ul_quench_yhi"],
-    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_utau_quench_ylo"
-    ],
-    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_utau_quench_yhi"
-    ],
+    chol_utau_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_utau_quench_ylo"],
+    chol_utau_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_utau_quench_yhi"],
     chol_uqt_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqt_uqt_quench_ylo"],
     chol_uqt_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqt_uqt_quench_yhi"],
     chol_uqs_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqs_uqs_quench_ylo"],
@@ -1385,34 +1230,18 @@ def _get_chol_params_quench(
     chol_udrop_udrop_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
         "chol_udrop_udrop_quench_yhi"
     ],
-    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_urej_quench_ylo"
-    ],
-    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_urej_quench_yhi"
-    ],
-    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgm_quench_ylo"
-    ],
-    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_ulgy_ulgm_quench_yhi"
-    ],
+    chol_urej_urej_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_urej_quench_ylo"],
+    chol_urej_urej_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_urej_quench_yhi"],
+    chol_ulgy_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgm_quench_ylo"],
+    chol_ulgy_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ulgy_ulgm_quench_yhi"],
     chol_ul_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgm_quench_ylo"],
     chol_ul_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgm_quench_yhi"],
     chol_ul_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgy_quench_ylo"],
     chol_ul_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_ul_ulgy_quench_yhi"],
-    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgm_quench_ylo"
-    ],
-    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgm_quench_yhi"
-    ],
-    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgy_quench_ylo"
-    ],
-    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_utau_ulgy_quench_yhi"
-    ],
+    chol_utau_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgm_quench_ylo"],
+    chol_utau_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgm_quench_yhi"],
+    chol_utau_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgy_quench_ylo"],
+    chol_utau_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ulgy_quench_yhi"],
     chol_utau_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ul_quench_ylo"],
     chol_utau_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_utau_ul_quench_yhi"],
     chol_uqt_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_uqt_ulgm_quench_ylo"],
@@ -1453,38 +1282,18 @@ def _get_chol_params_quench(
     chol_udrop_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
         "chol_udrop_utau_quench_yhi"
     ],
-    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqt_quench_ylo"
-    ],
-    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqt_quench_yhi"
-    ],
-    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqs_quench_ylo"
-    ],
-    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_udrop_uqs_quench_yhi"
-    ],
-    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgm_quench_ylo"
-    ],
-    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgm_quench_yhi"
-    ],
-    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgy_quench_ylo"
-    ],
-    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_ulgy_quench_yhi"
-    ],
+    chol_udrop_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqt_quench_ylo"],
+    chol_udrop_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqt_quench_yhi"],
+    chol_udrop_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqs_quench_ylo"],
+    chol_udrop_uqs_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_udrop_uqs_quench_yhi"],
+    chol_urej_ulgm_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgm_quench_ylo"],
+    chol_urej_ulgm_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgm_quench_yhi"],
+    chol_urej_ulgy_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgy_quench_ylo"],
+    chol_urej_ulgy_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ulgy_quench_yhi"],
     chol_urej_ul_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ul_quench_ylo"],
     chol_urej_ul_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_ul_quench_yhi"],
-    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_utau_quench_ylo"
-    ],
-    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT[
-        "chol_urej_utau_quench_yhi"
-    ],
+    chol_urej_utau_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_utau_quench_ylo"],
+    chol_urej_utau_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_utau_quench_yhi"],
     chol_urej_uqt_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_uqt_quench_ylo"],
     chol_urej_uqt_quench_yhi=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_uqt_quench_yhi"],
     chol_urej_uqs_quench_ylo=DEFAULT_SFH_PDF_QUENCH_PDICT["chol_urej_uqs_quench_ylo"],

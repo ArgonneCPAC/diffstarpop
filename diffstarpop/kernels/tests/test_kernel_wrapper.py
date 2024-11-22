@@ -1,5 +1,6 @@
 """
 """
+
 import numpy as np
 from diffmah.defaults import DEFAULT_MAH_PARAMS
 from jax import random as jran

@@ -1,5 +1,6 @@
 """
 """
+
 from jax import jit as jjit
 
 from .defaults import DEFAULT_DIFFSTARPOP_U_PARAMS

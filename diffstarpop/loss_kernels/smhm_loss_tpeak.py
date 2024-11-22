@@ -19,7 +19,7 @@ import h5py
 from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
 from ..kernels.defaults_tpeak import (
     get_bounded_diffstarpop_params,
-    DEFAULT_DIFFSTARPOP_U_PARAMS
+    DEFAULT_DIFFSTARPOP_U_PARAMS,
 )
 from .namedtuple_utils_tpeak import (
     tuple_to_jax_array,
@@ -33,11 +33,9 @@ N_TIMES = 20
 _A = (None, 0)
 cumulative_mstar_formed_halopop = jjit(vmap(cumulative_mstar_formed, in_axes=_A))
 
-unbound_params_dict = OrderedDict(
-    diffstarpop_u_params=DEFAULT_DIFFSTARPOP_U_PARAMS
-)
-UnboundParams = namedtuple(
-    "UnboundParams", list(unbound_params_dict.keys()))
+unbound_params_dict = OrderedDict(diffstarpop_u_params=DEFAULT_DIFFSTARPOP_U_PARAMS)
+UnboundParams = namedtuple("UnboundParams", list(unbound_params_dict.keys()))
+
 
 @jjit
 def _mse(pred, target):
@@ -56,8 +54,10 @@ def _calculate_obs_smh_kern(
     smh_ms_tobs = smh_ms[:, -1]
     smh_q_tobs = smh_q[:, -1]
     return smh_ms_tobs, smh_q_tobs
-    
-calculate_obs_smh = jjit(vmap(_calculate_obs_smh_kern, in_axes=(0,0,0)))
+
+
+calculate_obs_smh = jjit(vmap(_calculate_obs_smh_kern, in_axes=(0, 0, 0)))
+
 
 @jjit
 def _mse(pred, target):
@@ -75,9 +75,9 @@ def mean_smhm_loss_kern(diffstarpop_params, loss_data):
         gyr_since_infall,
         ran_key,
         t_table,
-        mean_logsm_target
+        mean_logsm_target,
     ) = loss_data
-    
+
     _res = mc_diffstar_sfh_galpop(
         diffstarpop_params,
         mah_params,
@@ -120,13 +120,14 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
         logmhost_infall,
         gyr_since_infall,
         ran_key,
-        tarr
+        tarr,
     )
     return res
 
 
-_U = (None, *[0]*7)
+_U = (None, *[0] * 7)
 mc_diffstar_sfh_galpop_vmap = jjit(vmap(_mc_diffstar_sfh_galpop_vmap_kern, in_axes=_U))
+
 
 @jjit
 def mean_smhm_kern_tobs(u_params, loss_data):
@@ -138,11 +139,11 @@ def mean_smhm_kern_tobs(u_params, loss_data):
         gyr_since_infall,
         ran_key,
         tobs_target,
-        mean_logsm_target
+        mean_logsm_target,
     ) = loss_data
 
     diffstarpop_params = get_bounded_diffstarpop_params(u_params.diffstarpop_u_params)
-    
+
     _res = mc_diffstar_sfh_galpop_vmap(
         diffstarpop_params,
         mah_params,
@@ -164,35 +165,37 @@ def mean_smhm_kern_tobs(u_params, loss_data):
 
     return mean_logsm_pred
 
+
 @jjit
 def mean_smhm_loss_kern_tobs(u_params, loss_data):
     mean_logsm_target = loss_data[-1]
-    mean_logsm_pred  = mean_smhm_kern_tobs(u_params, loss_data)
+    mean_logsm_pred = mean_smhm_kern_tobs(u_params, loss_data)
 
     return _mse(mean_logsm_pred, mean_logsm_target)
 
 
-mean_smhm_loss_kern_tobs_grad_kern = jjit(value_and_grad(mean_smhm_loss_kern_tobs, argnums=(0,)))
+mean_smhm_loss_kern_tobs_grad_kern = jjit(
+    value_and_grad(mean_smhm_loss_kern_tobs, argnums=(0,))
+)
 
 
 def mean_smhm_loss_kern_tobs_wrapper(flat_uparams, loss_data):
-        
-    namedtuple_uparams = array_to_tuple_new_diffstarpop_tpeak(flat_uparams, UnboundParams)
+
+    namedtuple_uparams = array_to_tuple_new_diffstarpop_tpeak(
+        flat_uparams, UnboundParams
+    )
 
     loss, grads = mean_smhm_loss_kern_tobs_grad_kern(namedtuple_uparams, loss_data)
     grads = tuple_to_jax_array(grads)
 
     return loss, grads
 
-def get_loss_data(
-    indir,
-    nhalos
-):
+
+def get_loss_data(indir, nhalos):
     # Load SMHM data ---------------------------------------------
     print("Loading SMHM data...")
 
-
-    with h5py.File(indir+"smdpl_smhm.h5", "r") as hdf:
+    with h5py.File(indir + "smdpl_smhm.h5", "r") as hdf:
         redshift_targets = hdf["redshift_targets"][:]
         smhm_diff = hdf["smhm_diff"][:]
         smhm = hdf["smhm"][:]
@@ -210,10 +213,9 @@ def get_loss_data(
             
         """
 
-    logmh_binsc = 0.5*(logmh_bins[1:]+logmh_bins[:-1])
+    logmh_binsc = 0.5 * (logmh_bins[1:] + logmh_bins[:-1])
 
-
-    with h5py.File(indir+"smdpl_smhm_samples_haloes.h5", "r") as hdf:
+    with h5py.File(indir + "smdpl_smhm_samples_haloes.h5", "r") as hdf:
         logmh_id = hdf["logmh_id"][:]
         logmh_val = hdf["logmh_id"][:]
         mah_params_samp = hdf["mah_params_samp"][:]
@@ -224,7 +226,6 @@ def get_loss_data(
         tobs_val = hdf["tobs_val"][:]
         redshift_val = hdf["redshift_val"][:]
 
-    
     mah_params_samp = np.concatenate((mah_params_samp, t_peak_samp[None, :]), axis=0)
 
     # Create loss_data ---------------------------------------------
@@ -250,17 +251,18 @@ def get_loss_data(
         t_target = age_targets[i]
 
         for j in range(len(logmh_binsc)):
-            sel = (tobs_id == i)  & (logmh_id == j)
+            sel = (tobs_id == i) & (logmh_id == j)
 
-            if sel.sum() < nhalos: continue
+            if sel.sum() < nhalos:
+                continue
             arange_sel = np.arange(len(tobs_id))[sel]
             arange_sel = np.random.choice(arange_sel, nhalos, replace=False)
             mah_params_data.append(mah_params_samp[:, arange_sel])
-            lgmu_infall_data.append(np.ones(len(arange_sel))*lgmu_infall)
-            logmhost_infall_data.append(np.ones(len(arange_sel))*logmhost_infall)
-            gyr_since_infall_data.append(np.ones(len(arange_sel))*gyr_since_infall)
+            lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
+            logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
+            gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
             t_obs_targets.append(t_target)
-            smhm_targets.append(smhm[i,j])
+            smhm_targets.append(smhm[i, j])
             mah_pars_ntuple = DiffmahParams(*mah_params_samp[:, arange_sel])
             dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
             lomg0_data.append(log_mah_fit[:, -1])
@@ -282,7 +284,7 @@ def get_loss_data(
         gyr_since_infall_data,
         ran_key_data,
         t_obs_targets,
-        smhm_targets
+        smhm_targets,
     )
 
     plot_data = (

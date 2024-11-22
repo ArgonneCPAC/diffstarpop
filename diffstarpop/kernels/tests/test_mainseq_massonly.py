@@ -1,5 +1,6 @@
 """
 """
+
 import numpy as np
 
 from ..mainseq_massonly import (
