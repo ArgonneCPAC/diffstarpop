@@ -52,7 +52,7 @@ def get_test_loss_data():
 
 
 def test_smhm_loss_and_grads_are_finite():
-  
+
     loss_data = get_test_loss_data()
 
     # Register params ---------------------------------------------
@@ -98,7 +98,7 @@ def test_mean_smhm_loss_kern():
         gyr_since_infall,
         ran_key,
         t_table,
-        mean_logsm_target,           
+        mean_logsm_target,         
     )
 
     loss = smhm_loss.mean_smhm_loss_kern(DEFAULT_DIFFSTARPOP_PARAMS, loss_data)
