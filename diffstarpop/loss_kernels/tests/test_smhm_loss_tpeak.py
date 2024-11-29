@@ -6,7 +6,9 @@ from diffmah.diffmah_kernels import DEFAULT_MAH_PARAMS
 from jax import random as jran
 from collections import OrderedDict, namedtuple
 
-from ...kernels.defaults_tpeak import DEFAULT_DIFFSTARPOP_U_PARAMS, DEFAULT_DIFFSTARPOP_PARAMS
+from ...kernels.defaults_tpeak import (
+    DEFAULT_DIFFSTARPOP_U_PARAMS, DEFAULT_DIFFSTARPOP_PARAMS
+)
 from .. import smhm_loss_tpeak as smhm_loss
 from ..namedtuple_utils_tpeak import (
     tuple_to_array,
@@ -50,7 +52,7 @@ def get_test_loss_data():
 
 
 def test_smhm_loss_and_grads_are_finite():
-    
+  
     loss_data = get_test_loss_data()
 
     # Register params ---------------------------------------------
@@ -78,7 +80,7 @@ def test_mean_smhm_loss_kern():
     ran_key = jran.PRNGKey(np.random.randint(2**32))
     lgmu_infall = -1.0 + ZZ
     logmhost_infall = 13.0 + ZZ
-    gyr_since_infall  = 2.0 + ZZ
+    gyr_since_infall = 2.0 + ZZ
 
     t_table = np.linspace(1.0, 13.8, 100)
 
@@ -102,6 +104,7 @@ def test_mean_smhm_loss_kern():
     loss = smhm_loss.mean_smhm_loss_kern(DEFAULT_DIFFSTARPOP_PARAMS, loss_data)
     assert loss > 0, "Loss is not positive!"
 
+
 def test_cumulative_mstar_formed_halopop():
 
     n_halos = 100
@@ -110,13 +113,12 @@ def test_cumulative_mstar_formed_halopop():
     ran_key = jran.PRNGKey(np.random.randint(2**32))
     lgmu_infall = -1.0 + ZZ
     logmhost_infall = 13.0 + ZZ
-    gyr_since_infall  = 2.0 + ZZ
+    gyr_since_infall = 2.0 + ZZ
 
     t_table = np.linspace(1.0, 13.8, 100)
 
     mah_params = DEFAULT_MAH_PARAMS._make([ZZ + x for x in DEFAULT_MAH_PARAMS])
     logm0 = np.random.uniform(low=11.0, high=15.0, size=(n_halos))
-    mean_logsm_target = np.random.uniform(low=9.0, high=1.0, size=(n_halos))
     mah_params = mah_params._replace(logm0=logm0)
     mah_params = np.array(mah_params)
 
@@ -140,6 +142,3 @@ def test_cumulative_mstar_formed_halopop():
 
     assert (smh_ms >= 0.0).all()
     assert (smh_q >= 0.0).all()
-
-
-

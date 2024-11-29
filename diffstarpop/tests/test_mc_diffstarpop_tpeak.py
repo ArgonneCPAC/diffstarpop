@@ -122,13 +122,12 @@ def test_mc_diffstar_sfh_galpop():
     ran_key = jran.PRNGKey(np.random.randint(2**32))
     lgmu_infall = -1.0 + ZZ
     logmhost_infall = 13.0 + ZZ
-    gyr_since_infall  = 2.0 + ZZ
+    gyr_since_infall = 2.0 + ZZ
 
     t_table = np.linspace(1.0, 13.8, 100)
 
     mah_params = DEFAULT_MAH_PARAMS._make([ZZ + x for x in DEFAULT_MAH_PARAMS])
     logm0 = np.random.uniform(low=11.0, high=15.0, size=(n_halos))
-    mean_logsm_target = np.random.uniform(low=9.0, high=1.0, size=(n_halos))
     mah_params = mah_params._replace(logm0=logm0)
     mah_params = np.array(mah_params)
 
@@ -142,7 +141,7 @@ def test_mc_diffstar_sfh_galpop():
         ran_key,
         t_table,
     )
-    diffstar_params_ms, diffstar_params_q, sfh_q, sfh_ms, frac_q, mc_is_q = _res
+    sfh_q, sfh_ms, frac_q = _res[2:5]
 
     assert np.isfinite(sfh_q).all()
     assert np.isfinite(sfh_ms).all()
