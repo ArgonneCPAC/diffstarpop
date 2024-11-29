@@ -98,7 +98,7 @@ def test_mean_smhm_loss_kern():
         gyr_since_infall,
         ran_key,
         t_table,
-        mean_logsm_target,         
+        mean_logsm_target,
     )
 
     loss = smhm_loss.mean_smhm_loss_kern(DEFAULT_DIFFSTARPOP_PARAMS, loss_data)

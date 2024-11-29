@@ -150,4 +150,3 @@ def test_mc_diffstar_sfh_galpop():
     assert (sfh_q >= 0.0).all()
     assert (sfh_ms >= 0.0).all()
     assert (frac_q >= 0.0).all()
-    
