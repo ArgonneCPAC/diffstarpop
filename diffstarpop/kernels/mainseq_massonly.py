@@ -1,4 +1,5 @@
 """Model of a main sequence galaxy population calibrated to SMDPL halos."""
+
 from collections import OrderedDict, namedtuple
 
 from diffstar import DEFAULT_DIFFSTAR_U_PARAMS

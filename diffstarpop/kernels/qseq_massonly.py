@@ -1,4 +1,5 @@
 """Model of a quenched galaxy population calibrated to SMDPL halos."""
+
 from collections import OrderedDict, namedtuple
 
 from jax import jit as jjit

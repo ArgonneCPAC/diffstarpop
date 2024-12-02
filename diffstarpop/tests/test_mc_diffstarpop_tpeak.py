@@ -10,13 +10,14 @@ from ..kernels.defaults_tpeak import DEFAULT_DIFFSTARPOP_PARAMS
 
 
 def test_mc_diffstar_params_singlegal_evaluates():
+    logm0 = 13.0
     ran_key = jran.PRNGKey(0)
     lgmu_infall = -1.0
     logmhost_infall = 13.0
     gyr_since_infall = 2.0
     args = (
         DEFAULT_DIFFSTARPOP_PARAMS,
-        DEFAULT_MAH_PARAMS,
+        logm0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -34,6 +35,7 @@ def test_mc_diffstar_params_singlegal_evaluates():
 
 
 def test_mc_diffstar_sfh_singlegal_evaluates():
+    logm0 = 13.0
     ran_key = jran.PRNGKey(0)
     lgmu_infall = -1.0
     logmhost_infall = 13.0
@@ -43,6 +45,7 @@ def test_mc_diffstar_sfh_singlegal_evaluates():
     args = (
         DEFAULT_DIFFSTARPOP_PARAMS,
         DEFAULT_MAH_PARAMS,
+        logm0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -69,20 +72,26 @@ def test_mc_diffstar_sfh_singlegal_evaluates():
 def test_mc_diffstar_u_params_galpop():
     ngals = 50
     zz = np.zeros(ngals)
+    logm0 = 13.0 + zz
     lgmu_infall = -1.0 + zz
     logmhost_infall = 13.0 + zz
     gyr_since_infall = 2.0 + zz
     ran_key = jran.key(0)
-    mah_params = DEFAULT_MAH_PARAMS._make([zz + p for p in DEFAULT_MAH_PARAMS])
     _res = mcdsp.mc_diffstar_u_params_galpop(
         DEFAULT_DIFFSTARPOP_PARAMS,
-        mah_params,
+        logm0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
         ran_key,
     )
     diffstar_u_params_ms, diffstar_u_params_q, frac_q, mc_is_q = _res
+    assert np.all(np.isfinite(diffstar_u_params_ms.u_ms_params))
+    assert np.all(np.isfinite(diffstar_u_params_ms.u_q_params))
+    assert np.all(np.isfinite(diffstar_u_params_q.u_ms_params))
+    assert np.all(np.isfinite(diffstar_u_params_q.u_q_params))
+    assert np.all(np.isfinite(frac_q))
+    assert np.all(np.isfinite(mc_is_q))
 
 
 # def test_mc_diffstar_params_galpop():
@@ -106,25 +115,38 @@ def test_mc_diffstar_u_params_galpop():
 #     diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
 
 
-# def test_mc_diffstar_sfh_galpop():
-#     ngals = 50
-#     zz = np.zeros(ngals)
-#     lgmu_infall = -1.0 + zz
-#     logmhost_infall = 13.0 + zz
-#     gyr_since_infall = 2.0 + zz
-#     ran_key = jran.key(0)
-#     mah_params = DEFAULT_MAH_PARAMS._make([zz + p for p in DEFAULT_MAH_PARAMS])
-#     t_peak = zz + 12.1
-#     n_times = 100
-#     tarr = np.linspace(0.1, 13.8, n_times)
-#     _res = mcdsp.mc_diffstar_sfh_galpop(
-#         DEFAULT_DIFFSTARPOP_PARAMS,
-#         mah_params,
-#         t_peak,
-#         lgmu_infall,
-#         logmhost_infall,
-#         gyr_since_infall,
-#         ran_key,
-#         tarr,
-#     )
-#     diffstar_params_ms, diffstar_params_q, sfh_q, sfh_ms, frac_q, mc_is_q = _res
+def test_mc_diffstar_sfh_galpop():
+    n_halos = 100
+    ZZ = np.zeros(n_halos)
+
+    ran_key = jran.PRNGKey(np.random.randint(2**32))
+    lgmu_infall = -1.0 + ZZ
+    logmhost_infall = 13.0 + ZZ
+    gyr_since_infall = 2.0 + ZZ
+
+    t_table = np.linspace(1.0, 13.8, 100)
+
+    mah_params = DEFAULT_MAH_PARAMS._make([ZZ + x for x in DEFAULT_MAH_PARAMS])
+    logm0 = np.random.uniform(low=11.0, high=15.0, size=(n_halos))
+    mah_params = mah_params._replace(logm0=logm0)
+    mah_params = np.array(mah_params)
+
+    _res = mcdsp.mc_diffstar_sfh_galpop(
+        DEFAULT_DIFFSTARPOP_PARAMS,
+        mah_params,
+        logm0,
+        lgmu_infall,
+        logmhost_infall,
+        gyr_since_infall,
+        ran_key,
+        t_table,
+    )
+    sfh_q, sfh_ms, frac_q = _res[2:5]
+
+    assert np.isfinite(sfh_q).all()
+    assert np.isfinite(sfh_ms).all()
+    assert np.isfinite(frac_q).all()
+
+    assert (sfh_q >= 0.0).all()
+    assert (sfh_ms >= 0.0).all()
+    assert (frac_q >= 0.0).all()

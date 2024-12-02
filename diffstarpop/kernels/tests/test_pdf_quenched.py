@@ -1,5 +1,6 @@
 """
 """
+
 import numpy as np
 
 from ..pdf_quenched import frac_quench_vs_lgm0
