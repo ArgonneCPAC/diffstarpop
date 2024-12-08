@@ -60,8 +60,7 @@ if __name__ == "__main__":
     # Load SMHM data ---------------------------------------------
     print("Loading SMHM data...")
 
-
-    with h5py.File(indir+"smdpl_smhm.h5", "r") as hdf:
+    with h5py.File(indir + "smdpl_smhm.h5", "r") as hdf:
         redshift_targets = hdf["redshift_targets"][:]
         smhm_diff = hdf["smhm_diff"][:]
         smhm = hdf["smhm"][:]
@@ -79,10 +78,9 @@ if __name__ == "__main__":
             
         """
 
-    logmh_binsc = 0.5*(logmh_bins[1:]+logmh_bins[:-1])
+    logmh_binsc = 0.5 * (logmh_bins[1:] + logmh_bins[:-1])
 
-
-    with h5py.File(indir+"smdpl_smhm_samples_haloes.h5", "r") as hdf:
+    with h5py.File(indir + "smdpl_smhm_samples_haloes.h5", "r") as hdf:
         logmh_id = hdf["logmh_id"][:]
         logmh_val = hdf["logmh_id"][:]
         mah_params_samp = hdf["mah_params_samp"][:]
@@ -93,9 +91,8 @@ if __name__ == "__main__":
         tobs_val = hdf["tobs_val"][:]
         redshift_val = hdf["redshift_val"][:]
 
-
     tpeak_path = "/Users/alarcon/Documents/diffmah_data/tpeak/random_data_241007/"
-    with h5py.File(tpeak_path+"smdpl_mstar_ssfr.h5", "r") as hdf:
+    with h5py.File(tpeak_path + "smdpl_mstar_ssfr.h5", "r") as hdf:
         mstar_wcounts = hdf["mstar_wcounts"][:]
         mstar_counts = hdf["mstar_counts"][:]
         mstar_ssfr_wcounts_cent = hdf["mstar_ssfr_wcounts_cent"][:]
@@ -114,9 +111,8 @@ if __name__ == "__main__":
         hdfout["age_targets"] = age_targets
         """
 
-    logssfr_binsc_pdf = 0.5*(logssfr_bins_pdf[1:]+logssfr_bins_pdf[:-1])
-    logmstar_binsc_pdf = 0.5*(logmstar_bins_pdf[1:]+logmstar_bins_pdf[:-1])
-
+    logssfr_binsc_pdf = 0.5 * (logssfr_bins_pdf[1:] + logssfr_bins_pdf[:-1])
+    logmstar_binsc_pdf = 0.5 * (logmstar_bins_pdf[1:] + logmstar_bins_pdf[:-1])
 
     # Create loss_data ---------------------------------------------
     print("Creating loss data...")
@@ -142,19 +138,25 @@ if __name__ == "__main__":
         t_target = age_targets[i]
 
         for j in range(len(logmh_binsc)):
-            sel = (tobs_id == i)  & (logmh_id == j)
+            sel = (tobs_id == i) & (logmh_id == j)
 
-            if sel.sum() < nhalos: continue
+            if sel.sum() < nhalos:
+                continue
             arange_sel = np.arange(len(tobs_id))[sel]
             arange_sel = np.random.choice(arange_sel, nhalos, replace=False)
             mah_params_data.append(mah_params_samp[:, arange_sel])
             t_peak_data.append(t_peak_samp[arange_sel])
-            lgmu_infall_data.append(np.ones(len(arange_sel))*lgmu_infall)
-            logmhost_infall_data.append(np.ones(len(arange_sel))*logmhost_infall)
-            gyr_since_infall_data.append(np.ones(len(arange_sel))*gyr_since_infall)
+            lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
+            logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
+            gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
             t_obs_targets.append(t_target)
-            mstar_counts_target.append(mstar_wcounts[i,j]/mstar_wcounts[i,j].sum())
-            dmhdt_fit, log_mah_fit = mah_halopop(mah_params_samp[:, arange_sel].T, tarr_logm0, t_peak_samp[arange_sel], LGT0)
+            mstar_counts_target.append(mstar_wcounts[i, j] / mstar_wcounts[i, j].sum())
+            dmhdt_fit, log_mah_fit = mah_halopop(
+                mah_params_samp[:, arange_sel].T,
+                tarr_logm0,
+                t_peak_samp[arange_sel],
+                LGT0,
+            )
             lomg0_data.append(log_mah_fit[:, -1])
         break
 
@@ -178,17 +180,13 @@ if __name__ == "__main__":
         ran_key_data,
         t_obs_targets,
         logmstar_bins_pdf,
-        mstar_counts_target
+        mstar_counts_target,
     )
 
     # Register params ---------------------------------------------
 
-
-    unbound_params_dict = OrderedDict(
-        diffstarpop_u_params=DEFAULT_DIFFSTARPOP_U_PARAMS
-    )
-    UnboundParams = namedtuple(
-        "UnboundParams", list(unbound_params_dict.keys()))
+    unbound_params_dict = OrderedDict(diffstarpop_u_params=DEFAULT_DIFFSTARPOP_U_PARAMS)
+    UnboundParams = namedtuple("UnboundParams", list(unbound_params_dict.keys()))
     register_tuple_new_diffstarpop(UnboundParams)
     all_u_params = UnboundParams(*list(unbound_params_dict.values()))
 
@@ -201,7 +199,7 @@ if __name__ == "__main__":
     start = time()
 
     n_step = int(1e4)
-    step_size=0.01
+    step_size = 0.01
 
     loss_arr = np.zeros(n_step).astype("f4") + np.inf
 
@@ -220,10 +218,8 @@ if __name__ == "__main__":
 
         p = np.array(get_params(opt_state))
 
-        loss, grads = loss_mstar_ssfr_kern_tobs_grad_wrapper(
-            p, loss_data
-        )
-        
+        loss, grads = loss_mstar_ssfr_kern_tobs_grad_wrapper(p, loss_data)
+
         no_nan_params = np.all(np.isfinite(p))
         no_nan_loss = np.isfinite(loss)
         no_nan_grads = np.all(np.isfinite(grads))
@@ -240,24 +236,24 @@ if __name__ == "__main__":
             params_arr[istep, :] = p
             loss_arr[istep] = loss
             opt_state = opt_update(istep, grads, opt_state)
-            
-        
+
         no_nan_grads_arr[istep] = ~no_nan_grads
         end = time()
-        if istep%100==0:
-            print(istep, loss, end-start, no_nan_grads)
+        if istep % 100 == 0:
+            print(istep, loss, end - start, no_nan_grads)
         if ~no_nan_grads:
             break
 
     argmin_best = np.argmin(loss_arr)
     best_fit_params = params_arr[argmin_best]
 
-
     def return_params_from_result(bestfit):
-            bestfit_u_tuple = array_to_tuple_new_diffstarpop(bestfit, UnboundParams)
-            diffstarpop_params = get_bounded_diffstarpop_params(bestfit_u_tuple.diffstarpop_u_params)
-            return diffstarpop_params
-    
+        bestfit_u_tuple = array_to_tuple_new_diffstarpop(bestfit, UnboundParams)
+        diffstarpop_params = get_bounded_diffstarpop_params(
+            bestfit_u_tuple.diffstarpop_u_params
+        )
+        return diffstarpop_params
+
     best_result = return_params_from_result(best_fit_params)
     best_result = tuple_to_array(best_result)
-    np.save(outdir+"bestfit_diffstarpop_params.npy", best_result)
+    np.save(outdir + "bestfit_diffstarpop_params.npy", best_result)
