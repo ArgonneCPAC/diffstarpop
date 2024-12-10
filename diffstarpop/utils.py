@@ -3,12 +3,18 @@
 
 import numpy as np
 from diffstar.utils import jax_np_interp
-from halotools.utils import sliding_conditional_percentile
 from jax import jit as jjit
 from jax import lax, nn
 from jax import numpy as jnp
 from jax import vmap
 from scipy.optimize import minimize
+
+try:
+    from halotools.utils import sliding_conditional_percentile
+
+    HAS_HALOTOOLS = True
+except ImportError:
+    HAS_HALOTOOLS = False
 
 
 @jjit
@@ -120,6 +126,8 @@ jax_np_interp_vmap = jjit(vmap(jax_np_interp, in_axes=(0, 0, None, 0)))
 
 
 def get_t50_p50(t_table, histories, threshold, logmpeak, window_length=101):
+    if not HAS_HALOTOOLS:
+        raise ImportError("Must have halotools installed to use this function")
     hist_val_at_threshold = histories[:, -1] * threshold
     indices = return_searchsorted_like_results(histories, threshold)
     t50 = jax_np_interp_vmap(hist_val_at_threshold, histories, t_table, indices)
