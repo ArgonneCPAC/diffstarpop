@@ -67,22 +67,22 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
 
     # Generate a random subhalo catalog
     subcat_key, ran_key = jran.split(ran_key, 2)
-    lgmp_min = 11.5
-    z_obs = 0.5
-    Lbox = 50.0
+    lgmp_min = 11.25
+    z_obs = 0.01
+    Lbox = 75.0
     volume_com = Lbox**3
     subcat = mc_subhalos(subcat_key, lgmp_min, z_obs, volume_com)
 
-    nhalos = subcat.logmhost_ult_inf.shape[0]
+    n_halos = subcat.logmhost_ult_inf.shape[0]
 
     # Generate a few extra quantities needed by the diffstarpop mc generator
     p50_key, ran_key = jran.split(ran_key, 2)
-    p50_arr = jran.uniform(p50_key, minval=0, maxval=1, shape=(nhalos,))
+    p50_arr = jran.uniform(p50_key, minval=0, maxval=1, shape=(n_halos,))
 
     lgmu_infall = subcat.logmp_ult_inf - subcat.logmhost_ult_inf
     gyr_since_infall = subcat.t_obs - subcat.t_ult_inf
 
-    ntimes = 100
+    ntimes = 30
     tarr = np.linspace(T_TABLE_MIN, 13.7, ntimes)
 
     # compute SFHs for the default galaxy population
@@ -100,7 +100,7 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
         mc_diffstar_sfh_galpop(*args)
     )
 
-    assert default_sfh_q.shape == (nhalos, ntimes)
+    assert default_sfh_q.shape == (n_halos, ntimes)
     assert np.all(np.isfinite(default_sfh_q))
 
     # Set target <SFH(t)> according to the default galpop
@@ -128,7 +128,7 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
     alt_diffstar_params_q, alt_diffstar_params_ms, alt_sfh_q, alt_sfh_ms, alt_frac_q = (
         mc_diffstar_sfh_galpop(*args)
     )
-    assert alt_sfh_q.shape == (nhalos, ntimes)
+    assert alt_sfh_q.shape == (n_halos, ntimes)
     assert np.all(np.isfinite(alt_sfh_q))
 
     # Define a dummy loss function based on the target <SFH(t)>
