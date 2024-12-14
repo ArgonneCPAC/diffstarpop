@@ -2,7 +2,7 @@
 
 import numpy as np
 from diffmah.defaults import DEFAULT_MAH_PARAMS
-from diffsky.mass_functions.mc_subhalo_catalog import mc_subhalo_catalog_singlez
+from diffsky.mass_functions.mc_diffmah_tpeak import mc_subhalos
 from dsps.constants import T_TABLE_MIN
 from jax import jit as jjit
 from jax import numpy as jnp
@@ -71,16 +71,16 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
     z_obs = 0.5
     Lbox = 50.0
     volume_com = Lbox**3
-    subcat = mc_subhalo_catalog_singlez(subcat_key, lgmp_min, z_obs, volume_com)
+    subcat = mc_subhalos(subcat_key, lgmp_min, z_obs, volume_com)
 
-    nhalos = subcat.log_mhost_ultimate_infall.shape[0]
+    nhalos = subcat.logmhost_ult_inf.shape[0]
 
     # Generate a few extra quantities needed by the diffstarpop mc generator
     p50_key, ran_key = jran.split(ran_key, 2)
     p50_arr = jran.uniform(p50_key, minval=0, maxval=1, shape=(nhalos,))
 
-    lgmu_infall = subcat.log_mpeak_ultimate_infall - subcat.log_mhost_ultimate_infall
-    gyr_since_infall = subcat.t_obs - subcat.t_ultimate_infall
+    lgmu_infall = subcat.logmp_ult_inf - subcat.logmhost_ult_inf
+    gyr_since_infall = subcat.t_obs - subcat.t_ult_inf
 
     ntimes = 100
     tarr = np.linspace(T_TABLE_MIN, 13.7, ntimes)
@@ -91,7 +91,7 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
         subcat.mah_params,
         p50_arr,
         lgmu_infall,
-        subcat.log_mhost_ultimate_infall,
+        subcat.logmhost_ult_inf,
         gyr_since_infall,
         ran_key,
         tarr,
@@ -119,7 +119,7 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
         subcat.mah_params,
         p50_arr,
         lgmu_infall,
-        subcat.log_mhost_ultimate_infall,
+        subcat.logmhost_ult_inf,
         gyr_since_infall,
         ran_key,
         tarr,
@@ -140,7 +140,7 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
             subcat.mah_params,
             p50_arr,
             lgmu_infall,
-            subcat.log_mhost_ultimate_infall,
+            subcat.logmhost_ult_inf,
             gyr_since_infall,
             ran_key,
             tarr,
@@ -172,14 +172,14 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
 
     p50 = 0.3
     lgmu_infall = -1.5
-    log_mhost = 13.5
+    logmhost = 13.5
     gyr_since_infall = 1.0
     args = (
         *DEFAULT_DIFFSTARPOP_PARAMS,
         DEFAULT_MAH_PARAMS,
         p50,
         lgmu_infall,
-        log_mhost,
+        logmhost,
         gyr_since_infall,
     )
     _res = _diffstarpop_pdf_params(*args)
@@ -194,7 +194,7 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
         DEFAULT_MAH_PARAMS,
         p50,
         lgmu_infall,
-        log_mhost,
+        logmhost,
         gyr_since_infall,
     )
     _res = _diffstarpop_pdf_params(*args)
@@ -216,7 +216,7 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
             DEFAULT_MAH_PARAMS,
             p50,
             lgmu_infall,
-            log_mhost,
+            logmhost,
             gyr_since_infall,
         )
         _res = _diffstarpop_pdf_params(*args)

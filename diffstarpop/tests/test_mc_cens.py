@@ -3,7 +3,7 @@
 
 import numpy as np
 from diffmah.defaults import DEFAULT_MAH_PARAMS, DiffmahParams
-from diffsky.mass_functions.mc_subhalo_catalog import mc_subhalo_catalog_singlez
+from diffsky.mass_functions.mc_diffmah_tpeak import mc_subhalos
 from diffstar import DEFAULT_DIFFSTAR_PARAMS
 from diffstar.defaults import T_TABLE_MIN, TODAY
 from jax import random as jran
@@ -66,8 +66,8 @@ def test_mc_diffstar_sfh_cenpop_agrees_with_galpop():
     z_obs = 0.5
     volume_com = 50.0**3
     ran_key, sub_key, gal_key = jran.split(ran_key, 3)
-    subcat = mc_subhalo_catalog_singlez(sub_key, lgmp_min, z_obs, volume_com)
-    ngals = subcat.log_mpeak_penultimate_infall.size
+    subcat = mc_subhalos(sub_key, lgmp_min, z_obs, volume_com)
+    ngals = subcat.logmp_pen_inf.size
 
     p50 = np.random.uniform(0, 1, ngals)
     nt = 50
