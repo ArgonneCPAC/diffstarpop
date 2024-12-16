@@ -1,4 +1,3 @@
-
 import h5py
 import numpy as np
 from jax import (
@@ -33,6 +32,8 @@ from diffstarpop.kernels.defaults_tpeak import (
     get_bounded_diffstarpop_params,
 )
 
+from fit_get_loss_helpers import get_loss_data_smhm
+
 BEBOP_SMHM_MEAN_DATA = "/lcrc/project/halotools/alarcon/results/ridge_term_smhm_data/"
 
 if __name__ == "__main__":
@@ -57,19 +58,14 @@ if __name__ == "__main__":
     make_plot = args.make_plot
     nhalos = args.nhalos
 
-
     # Load SMHM data ---------------------------------------------
 
-    loss_data, plot_data = get_loss_data(indir, nhalos)
-
+    loss_data, plot_data = get_loss_data_smhm(indir, nhalos)
 
     # Register params ---------------------------------------------
 
-    unbound_params_dict = OrderedDict(
-        diffstarpop_u_params=DEFAULT_DIFFSTARPOP_U_PARAMS
-    )
-    UnboundParams = namedtuple(
-        "UnboundParams", list(unbound_params_dict.keys()))
+    unbound_params_dict = OrderedDict(diffstarpop_u_params=DEFAULT_DIFFSTARPOP_U_PARAMS)
+    UnboundParams = namedtuple("UnboundParams", list(unbound_params_dict.keys()))
     register_tuple_new_diffstarpop_tpeak(UnboundParams)
     all_u_params = UnboundParams(*list(unbound_params_dict.values()))
 
@@ -81,27 +77,34 @@ if __name__ == "__main__":
     mean_smhm_loss_kern_tobs_wrapper(flat_all_u_params, loss_data)
 
     result = minimize(
-        mean_smhm_loss_kern_tobs_wrapper, 
-        method="L-BFGS-B", 
-        x0=flat_all_u_params, 
-        jac=True, 
-        options=dict(maxiter=200), 
-        args=(loss_data,)
+        mean_smhm_loss_kern_tobs_wrapper,
+        method="L-BFGS-B",
+        x0=flat_all_u_params,
+        jac=True,
+        options=dict(maxiter=200),
+        args=(loss_data,),
     )
     end = time()
     runtime = end - start
     print(f"Total runtime to fit = {runtime:.1f} seconds")
 
+    def return_params_from_result(best_fit_u_params):
+        bestfit_u_tuple = array_to_tuple_new_diffstarpop_tpeak(
+            best_fit_u_params, UnboundParams
+        )
+        diffstarpop_params = get_bounded_diffstarpop_params(
+            bestfit_u_tuple.diffstarpop_u_params
+        )
+        return diffstarpop_params
 
-    def return_params_from_result(bestfit):
-            bestfit_u_tuple = array_to_tuple_new_diffstarpop_tpeak(bestfit, UnboundParams)
-            diffstarpop_params = get_bounded_diffstarpop_params(bestfit_u_tuple.diffstarpop_u_params)
-            return diffstarpop_params
-    
-    best_result = return_params_from_result(result.x)
-    best_result = tuple_to_array(best_result)
-    np.save(outdir+"bestfit_diffstarpop_params.npy", best_result)
-
+    best_fit_u_params = result.x
+    best_fit_params = return_params_from_result(best_fit_u_params)
+    best_fit_params = tuple_to_array(best_fit_params)
+    np.savez(
+        outdir + "bestfit_diffstarpop_params.npz",
+        diffstarpop_params=best_fit_params,
+        diffstarpop_u_params=best_fit_u_params,
+    )
 
     # Make plot ---------------------------------------------
 
@@ -137,8 +140,8 @@ if __name__ == "__main__":
             tarr = np.logspace(-1, np.log10(t_target), 50)
 
             for j in range(len(logmh_binsc)):
-                
-                sel = (tobs_id == i)  & (logmh_id == j)
+
+                sel = (tobs_id == i) & (logmh_id == j)
                 mah_pars_ntuple = DiffmahParams(*mah_params_samp[:, sel])
                 dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
                 lomg0_vals = log_mah_fit[:, -1]
@@ -146,42 +149,58 @@ if __name__ == "__main__":
                     return_params_from_result(result.x),
                     mah_pars_ntuple,
                     lomg0_vals,
-                    np.ones(sel.sum())*lgmu_infall,
-                    np.ones(sel.sum())*logmhost_infall,
-                    np.ones(sel.sum())*gyr_since_infall,
+                    np.ones(sel.sum()) * lgmu_infall,
+                    np.ones(sel.sum()) * logmhost_infall,
+                    np.ones(sel.sum()) * gyr_since_infall,
                     ran_key,
                     tarr,
                 )
-        
-                diffstar_params_ms, diffstar_params_q, sfh_ms, sfh_q, frac_q, mc_is_q = res
+
+                (
+                    diffstar_params_ms,
+                    diffstar_params_q,
+                    sfh_ms,
+                    sfh_q,
+                    frac_q,
+                    mc_is_q,
+                ) = res
                 mstar_q = _cumulative_mstar_formed_vmap(tarr, sfh_q)
                 mstar_ms = _cumulative_mstar_formed_vmap(tarr, sfh_ms)
-                mean_mstar_grad_vals = mstar_q[:,-1] * frac_q + mstar_ms[:,-1] * (1 - frac_q)
+                mean_mstar_grad_vals = mstar_q[:, -1] * frac_q + mstar_ms[:, -1] * (
+                    1 - frac_q
+                )
                 mean_mstar_grad = jnp.mean(jnp.log10(mean_mstar_grad_vals))
-                
-                mean_mstar_plot_vals = mstar_q[:,-1] * mc_is_q.astype(int).astype(float) + mstar_ms[:,-1] * (1.0 - mc_is_q.astype(int))
+
+                mean_mstar_plot_vals = mstar_q[:, -1] * mc_is_q.astype(int).astype(
+                    float
+                ) + mstar_ms[:, -1] * (1.0 - mc_is_q.astype(int))
                 mean_mstar_plot_vals = jnp.mean(jnp.log10(mean_mstar_plot_vals))
-                mstar_plot[i,j] = mean_mstar_plot_vals
-                mstar_plot_grad[i,j] = mean_mstar_grad
+                mstar_plot[i, j] = mean_mstar_plot_vals
+                mstar_plot_grad[i, j] = mean_mstar_grad
                 # break
 
-                cmap = plt.get_cmap("plasma")(redshift_targets/redshift_targets.max())
+                cmap = plt.get_cmap("plasma")(redshift_targets / redshift_targets.max())
 
-        fig, ax = plt.subplots(1, 1, figsize=(6,4))
+        fig, ax = plt.subplots(1, 1, figsize=(6, 4))
         for i in range(len(smhm)):
-            ax.plot(10**logmh_binsc, 10**smhm[i], color=cmap[i])
-            ax.plot(10**logmh_binsc, 10**mstar_plot[i], color=cmap[i], ls='--')
+            ax.plot(10**logmh_binsc, 10 ** smhm[i], color=cmap[i])
+            ax.plot(10**logmh_binsc, 10 ** mstar_plot[i], color=cmap[i], ls="--")
 
         norm = mpl.colors.Normalize(vmin=0, vmax=2)
 
-        fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=mpl.cm.plasma),
-                    ax = ax, label='Redshift')
+        fig.colorbar(
+            mpl.cm.ScalarMappable(norm=norm, cmap=mpl.cm.plasma),
+            ax=ax,
+            label="Redshift",
+        )
 
-        ax.set_yscale('log')
-        ax.set_xscale('log')
+        ax.set_yscale("log")
+        ax.set_xscale("log")
         ax.set_xlim(9e10, 1e15)
 
-        ax.set_ylabel(r"$\langle M_\star(t_{\rm obs})| M_{\rm halo}(t_{\rm obs}) \rangle$ $[M_\odot]$")
+        ax.set_ylabel(
+            r"$\langle M_\star(t_{\rm obs})| M_{\rm halo}(t_{\rm obs}) \rangle$ $[M_\odot]$"
+        )
         ax.set_xlabel(r"$M_{\rm halo}(t_{\rm obs})$ $[M_\odot]$")
-        plt.savefig(outdir+"smhm_logsm.png", bbox_inches='tight', dpi=300)
+        plt.savefig(outdir + "smhm_logsm.png", bbox_inches="tight", dpi=300)
         plt.clf()
