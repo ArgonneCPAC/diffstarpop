@@ -1,6 +1,8 @@
 """This module implements kernels for Monte Carlo generating Diffstar SFHs
 """
 
+from collections import namedtuple
+
 from diffstar import get_bounded_diffstar_params
 from diffstar.defaults import FB, LGT0
 from diffstar.sfh_model_tpeak import calc_sfh_galpop, calc_sfh_singlegal
@@ -9,6 +11,19 @@ from jax import random as jran
 from jax import vmap
 
 from .kernels.diffstarpop_tpeak import mc_diffstar_u_params_singlegal_kernel
+
+_mcdp_keys = ("diffstar_params_ms", "diffstar_params_q", "frac_q", "mc_is_q")
+MCDiffstarParams = namedtuple("MCDiffstarParams", _mcdp_keys)
+
+_mcd_keys = (
+    "diffstar_params_ms",
+    "diffstar_params_q",
+    "sfh_ms",
+    "sfh_q",
+    "frac_q",
+    "mc_is_q",
+)
+MCDiffstar = namedtuple("MCDiffstar", _mcd_keys)
 
 
 @jjit
@@ -97,7 +112,7 @@ def mc_diffstar_sfh_singlegal(
         True for a quenched galaxy and False for unquenched
 
     """
-    _res = mc_diffstar_params_singlegal(
+    mc_diffstar = mc_diffstar_params_singlegal(
         diffstarpop_params,
         logm0,
         lgmu_infall,
@@ -105,10 +120,21 @@ def mc_diffstar_sfh_singlegal(
         gyr_since_infall,
         ran_key,
     )
-    diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
-    sfh_ms = calc_sfh_singlegal(diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb)
-    sfh_q = calc_sfh_singlegal(diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb)
-    return diffstar_params_ms, diffstar_params_q, sfh_ms, sfh_q, frac_q, mc_is_q
+
+    sfh_ms = calc_sfh_singlegal(
+        mc_diffstar.diffstar_params_ms, mah_params, tarr, lgt0=lgt0, fb=fb
+    )
+    sfh_q = calc_sfh_singlegal(
+        mc_diffstar.diffstar_params_q, mah_params, tarr, lgt0=lgt0, fb=fb
+    )
+    return MCDiffstar(
+        mc_diffstar.diffstar_params_ms,
+        mc_diffstar.diffstar_params_q,
+        sfh_ms,
+        sfh_q,
+        mc_diffstar.frac_q,
+        mc_diffstar.mc_is_q,
+    )
 
 
 @jjit
@@ -181,7 +207,8 @@ def mc_diffstar_params_singlegal(
     u_params_ms, u_params_qseq, frac_q, mc_is_q = _res
     diffstar_params_q = get_bounded_diffstar_params(u_params_qseq)
     diffstar_params_ms = get_bounded_diffstar_params(u_params_ms)
-    return diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q
+
+    return MCDiffstarParams(diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q)
 
 
 @jjit
