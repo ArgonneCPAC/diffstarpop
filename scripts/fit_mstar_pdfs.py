@@ -1,3 +1,4 @@
+import os
 import h5py
 import numpy as np
 from jax import (
@@ -18,20 +19,23 @@ from diffstar.defaults import TODAY, LGT0
 from diffmah.diffmah_kernels import mah_halopop
 
 from diffstarpop.loss_kernels.mstar_ssfr_loss_tpeak import (
-    loss_mstar_ssfr_kern_tobs_grad_wrapper,
-    UnboundParams,
+    loss_mstar_kern_tobs_grad_wrapper,
+    get_pred_mstar_data_wrapper,
 )
 
-from diffstarpop.loss_kernels.namedtuple_utils import (
+from diffstarpop.loss_kernels.namedtuple_utils_tpeak import (
     tuple_to_array,
-    register_tuple_new_diffstarpop,
-    array_to_tuple_new_diffstarpop,
+    register_tuple_new_diffstarpop_tpeak,
+    array_to_tuple_new_diffstarpop_tpeak,
 )
-from diffstarpop.kernels.defaults_tpeak_block_cov import (
+from diffstarpop.kernels.defaults_tpeak import (
     DEFAULT_DIFFSTARPOP_U_PARAMS,
     DEFAULT_DIFFSTARPOP_PARAMS,
     get_bounded_diffstarpop_params,
 )
+
+from fit_get_loss_helpers import get_loss_data_pdfs_mstar
+
 
 BEBOP_SMHM_MEAN_DATA = "/lcrc/project/halotools/alarcon/results/"
 
@@ -51,154 +55,43 @@ if __name__ == "__main__":
         "-nhalos", help="Number of halos for fitting", type=int, default=100
     )
 
+    parser.add_argument(
+        "-nstep", help="Number of steps for fitting", type=int, default=1000
+    )
+    parser.add_argument(
+        "-outname",
+        help="output fname for best params",
+        type=str,
+        default="bestfit_diffstarpop_params",
+    )
+
     args = parser.parse_args()
     indir = args.indir
     outdir = args.outdir
     make_plot = args.make_plot
     nhalos = args.nhalos
+    n_step = args.nstep
+    outname = args.outname
 
-    # Load SMHM data ---------------------------------------------
-    print("Loading SMHM data...")
+    # Load MStar pdf data ---------------------------------------------
 
-    with h5py.File(indir + "smdpl_smhm.h5", "r") as hdf:
-        redshift_targets = hdf["redshift_targets"][:]
-        smhm_diff = hdf["smhm_diff"][:]
-        smhm = hdf["smhm"][:]
-        logmh_bins = hdf["logmh_bins"][:]
-        age_targets = hdf["age_targets"][:]
-        """ 
-            hdfout["counts_diff"] = wcounts
-            hdfout["hist_diff"] = whist
-            hdfout["counts"] = counts
-            hdfout["hist"] = hist
-            hdfout["smhm_diff"] = whist / wcounts
-            hdfout["smhm"] = hist / counts
-            hdfout["logmh_bins"] = smhm_utils.LOGMH_BINS
-            hdfout["subvol_used"] = subvol_used
-            
-        """
-
-    logmh_binsc = 0.5 * (logmh_bins[1:] + logmh_bins[:-1])
-
-    with h5py.File(indir + "smdpl_smhm_samples_haloes.h5", "r") as hdf:
-        logmh_id = hdf["logmh_id"][:]
-        logmh_val = hdf["logmh_id"][:]
-        mah_params_samp = hdf["mah_params_samp"][:]
-        ms_params_samp = hdf["ms_params_samp"][:]
-        q_params_samp = hdf["q_params_samp"][:]
-        t_peak_samp = hdf["t_peak_samp"][:]
-        tobs_id = hdf["tobs_id"][:]
-        tobs_val = hdf["tobs_val"][:]
-        redshift_val = hdf["redshift_val"][:]
-
-    tpeak_path = "/Users/alarcon/Documents/diffmah_data/tpeak/random_data_241007/"
-    with h5py.File(tpeak_path + "smdpl_mstar_ssfr.h5", "r") as hdf:
-        mstar_wcounts = hdf["mstar_wcounts"][:]
-        mstar_counts = hdf["mstar_counts"][:]
-        mstar_ssfr_wcounts_cent = hdf["mstar_ssfr_wcounts_cent"][:]
-        mstar_ssfr_wcounts_sat = hdf["mstar_ssfr_wcounts_sat"][:]
-        logssfr_bins_pdf = hdf["logssfr_bins_pdf"][:]
-        logmstar_bins_pdf = hdf["logmstar_bins_pdf"][:]
-        """
-        hdfout["mstar_wcounts"] = mstar_wcounts
-        hdfout["mstar_counts"] = mstar_counts
-        hdfout["mstar_ssfr_wcounts_cent"] = mstar_ssfr_wcounts_cent
-        hdfout["mstar_ssfr_wcounts_sat"] = mstar_ssfr_wcounts_sat
-        hdfout["logmh_bins"] = smhm_utils.LOGMH_BINS
-        hdfout["logmstar_bins_pdf"] = smhm_utils.LOGMSTAR_BINS_PDF
-        hdfout["logssfr_bins_pdf"] = smhm_utils.LOGSSFR_BINS_PDF
-        hdfout["redshift_targets"] = redshift_targets
-        hdfout["age_targets"] = age_targets
-        """
-
-    logssfr_binsc_pdf = 0.5 * (logssfr_bins_pdf[1:] + logssfr_bins_pdf[:-1])
-    logmstar_binsc_pdf = 0.5 * (logmstar_bins_pdf[1:] + logmstar_bins_pdf[:-1])
-
-    # Create loss_data ---------------------------------------------
-    print("Creating loss data...")
-
-    ran_key = jran.PRNGKey(np.random.randint(2**32))
-
-    lgmu_infall = -1.0
-    logmhost_infall = 13.0
-    gyr_since_infall = 2.0
-
-    mah_params_data = []
-    lomg0_data = []
-    t_peak_data = []
-    lgmu_infall_data = []
-    logmhost_infall_data = []
-    gyr_since_infall_data = []
-    t_obs_targets = []
-    mstar_counts_target = []
-
-    tarr_logm0 = np.logspace(-1, LGT0, 50)
-
-    for i in range(len(age_targets)):
-        t_target = age_targets[i]
-
-        for j in range(len(logmh_binsc)):
-            sel = (tobs_id == i) & (logmh_id == j)
-
-            if sel.sum() < nhalos:
-                continue
-            arange_sel = np.arange(len(tobs_id))[sel]
-            arange_sel = np.random.choice(arange_sel, nhalos, replace=False)
-            mah_params_data.append(mah_params_samp[:, arange_sel])
-            t_peak_data.append(t_peak_samp[arange_sel])
-            lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
-            logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
-            gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
-            t_obs_targets.append(t_target)
-            mstar_counts_target.append(mstar_wcounts[i, j] / mstar_wcounts[i, j].sum())
-            dmhdt_fit, log_mah_fit = mah_halopop(
-                mah_params_samp[:, arange_sel].T,
-                tarr_logm0,
-                t_peak_samp[arange_sel],
-                LGT0,
-            )
-            lomg0_data.append(log_mah_fit[:, -1])
-        break
-
-    mah_params_data = np.array(mah_params_data)
-    lomg0_data = np.array(lomg0_data)
-    t_peak_data = np.array(t_peak_data)
-    lgmu_infall_data = np.array(lgmu_infall_data)
-    logmhost_infall_data = np.array(logmhost_infall_data)
-    gyr_since_infall_data = np.array(gyr_since_infall_data)
-    t_obs_targets = np.array(t_obs_targets)
-    mstar_counts_target = np.array(mstar_counts_target)
-
-    ran_key_data = jran.split(ran_key, len(mstar_counts_target))
-    loss_data = (
-        mah_params_data,
-        lomg0_data,
-        t_peak_data,
-        lgmu_infall_data,
-        logmhost_infall_data,
-        gyr_since_infall_data,
-        ran_key_data,
-        t_obs_targets,
-        logmstar_bins_pdf,
-        mstar_counts_target,
-    )
+    loss_data, plot_data = get_loss_data_pdfs_mstar(indir, nhalos)
 
     # Register params ---------------------------------------------
 
     unbound_params_dict = OrderedDict(diffstarpop_u_params=DEFAULT_DIFFSTARPOP_U_PARAMS)
     UnboundParams = namedtuple("UnboundParams", list(unbound_params_dict.keys()))
-    register_tuple_new_diffstarpop(UnboundParams)
+    register_tuple_new_diffstarpop_tpeak(UnboundParams)
     all_u_params = UnboundParams(*list(unbound_params_dict.values()))
 
     # Run fitter ---------------------------------------------
     print("Running fitter...")
 
     params_init = tuple_to_array(all_u_params)
-    loss_mstar_ssfr_kern_tobs_grad_wrapper(params_init, loss_data)
+    loss_mstar_kern_tobs_grad_wrapper(params_init, loss_data)
 
     start = time()
 
-    n_step = int(1e4)
     step_size = 0.01
 
     loss_arr = np.zeros(n_step).astype("f4") + np.inf
@@ -211,6 +104,8 @@ if __name__ == "__main__":
 
     n_mah = 100
 
+    ran_key = jran.PRNGKey(np.random.randint(2**32))
+
     no_nan_grads_arr = np.zeros(n_step)
     for istep in range(n_step):
         start = time()
@@ -218,7 +113,7 @@ if __name__ == "__main__":
 
         p = np.array(get_params(opt_state))
 
-        loss, grads = loss_mstar_ssfr_kern_tobs_grad_wrapper(p, loss_data)
+        loss, grads = loss_mstar_kern_tobs_grad_wrapper(p, loss_data)
 
         no_nan_params = np.all(np.isfinite(p))
         no_nan_loss = np.isfinite(loss)
@@ -245,15 +140,116 @@ if __name__ == "__main__":
             break
 
     argmin_best = np.argmin(loss_arr)
-    best_fit_params = params_arr[argmin_best]
+    best_fit_u_params = params_arr[argmin_best]
 
-    def return_params_from_result(bestfit):
-        bestfit_u_tuple = array_to_tuple_new_diffstarpop(bestfit, UnboundParams)
+    def return_params_from_result(best_fit_u_params):
+        bestfit_u_tuple = array_to_tuple_new_diffstarpop_tpeak(
+            best_fit_u_params, UnboundParams
+        )
         diffstarpop_params = get_bounded_diffstarpop_params(
             bestfit_u_tuple.diffstarpop_u_params
         )
         return diffstarpop_params
 
-    best_result = return_params_from_result(best_fit_params)
-    best_result = tuple_to_array(best_result)
-    np.save(outdir + "bestfit_diffstarpop_params.npy", best_result)
+    best_fit_params = return_params_from_result(best_fit_u_params)
+    best_fit_params = tuple_to_array(best_fit_params)
+
+    np.savez(
+        os.path.join(outdir, outname) + ".npz",
+        diffstarpop_params=best_fit_params,
+        diffstarpop_u_params=best_fit_u_params,
+    )
+
+    # Make plot ---------------------------------------------
+    if make_plot:
+        print("Making plot...")
+
+        from matplotlib import pyplot as plt
+        from matplotlib.patches import Patch
+        from matplotlib.lines import Line2D
+
+        (
+            logmstar_bins_pdf,
+            mstar_wcounts,
+            age_targets,
+            redshift_targets,
+            tobs_id,
+            logmh_id,
+            logmh_binsc,
+            loss_data_mstar_pred,
+        ) = plot_data
+
+        _mstar_counts_pred = get_pred_mstar_data_wrapper(
+            best_fit_u_params, loss_data_mstar_pred
+        )
+
+        mstar_counts_pred = np.zeros_like(mstar_wcounts) * np.nan
+        ij = 0
+        for i in range(len(age_targets)):
+            t_target = age_targets[i]
+
+            for j in range(len(logmh_binsc)):
+                sel = (tobs_id == i) & (logmh_id == j)
+
+                # if sel.sum() == 0: continue
+                if sel.sum() < 50:
+                    continue
+                mstar_counts_pred[i, j] = _mstar_counts_pred[ij]
+                ij += 1
+
+        fig, ax = plt.subplots(5, 1, figsize=(12, 16), sharex=False)
+
+        colors_mstar = plt.get_cmap("viridis")(np.linspace(0, 1, 11))
+
+        for i in range(5):
+
+            for j in range(11):
+                ax[i].fill_between(
+                    logmstar_bins_pdf[1:],
+                    0.0,
+                    mstar_wcounts[i, j] / mstar_wcounts[i, j].sum(),
+                    color=colors_mstar[j],
+                    alpha=0.2,
+                )
+                ax[i].plot(
+                    logmstar_bins_pdf[1:],
+                    mstar_counts_pred[i, j],
+                    color=colors_mstar[j],
+                    ls="--",
+                )
+
+            ax[i].set_ylim(0, 0.3)
+            ax[i].set_xlim(7, 12.0)
+            ax[i].set_ylabel(r"$P(M_\star(t_{\rm obs})| M_{\rm halo}(t_{\rm obs}))$")
+            ax[i].set_title(
+                r"${\rm Redshift}=%.1f$" % redshift_targets[i], y=0.85, x=0.9
+            )
+            if i < 4:
+                ax[i].set_xticklabels([])
+
+        legend_elements = [
+            Patch(
+                facecolor=colors_mstar[0],
+                edgecolor="none",
+                label=r"$M_{\rm halo}(t_{\rm obs}))=11$",
+                alpha=0.7,
+            ),
+            Patch(
+                facecolor=colors_mstar[-1],
+                edgecolor="none",
+                label=r"$M_{\rm halo}(t_{\rm obs}))=14.5$",
+                alpha=0.7,
+            ),
+            Line2D([0], [0], color="k", ls="--", label="Diffstarpop"),
+        ]
+        ax[0].legend(handles=legend_elements, loc=2, fontsize=14)
+        ax[4].set_xlabel(r"$\log M_\star(t_{\rm obs})$")
+
+        fig.subplots_adjust(hspace=0.08)
+
+        plt.savefig(
+            outdir + "pdf_mstar.png",
+            bbox_inches="tight",
+            dpi=250,
+        )
+        plt.clf()

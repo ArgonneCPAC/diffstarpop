@@ -10,15 +10,15 @@ from jax import numpy as jnp
 from jax import vmap
 from jax import value_and_grad
 
-from ..mc_diffstarpop_tpeak_block_cov import mc_diffstar_sfh_galpop
+from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
 from ..sumstats.smhm import compute_smhm
-from ..kernels.defaults_tpeak_block_cov import (
+from ..kernels.defaults_tpeak import (
     get_bounded_diffstarpop_params,
     DEFAULT_DIFFSTARPOP_U_PARAMS,
 )
-from .namedtuple_utils import (
+from .namedtuple_utils_tpeak import (
     tuple_to_jax_array,
-    array_to_tuple_new_diffstarpop_tpeak_block_cov,
+    array_to_tuple_new_diffstarpop_tpeak,
 )
 from diffmah import DiffmahParams
 from diffsky.diffndhist import tw_ndhist_weighted
@@ -59,20 +59,17 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
     diffstarpop_params,
     mah_params,
     logm0,
-    t_peak,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
     ran_key,
     tobs_target,
 ):
-    mah_params = DiffmahParams(*mah_params)
     tarr = jnp.logspace(-1, jnp.log10(tobs_target), N_TIMES)
     res = mc_diffstar_sfh_galpop(
         diffstarpop_params,
         mah_params,
         logm0,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -82,7 +79,7 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
     return res
 
 
-_U = (None, *[0] * 8)
+_U = (None, *[0] * 7)
 mc_diffstar_sfh_galpop_vmap = jjit(vmap(_mc_diffstar_sfh_galpop_vmap_kern, in_axes=_U))
 
 
@@ -128,7 +125,6 @@ def mstar_kern_tobs(u_params, loss_data):
     (
         mah_params,
         logm0,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -144,7 +140,6 @@ def mstar_kern_tobs(u_params, loss_data):
         diffstarpop_params,
         mah_params,
         logm0,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -194,7 +189,9 @@ loss_mstar_kern_tobs_grad_kern = jjit(
 
 def loss_mstar_kern_tobs_grad_wrapper(flat_uparams, loss_data):
 
-    namedtuple_uparams = array_to_tuple_new_diffstarpop(flat_uparams, UnboundParams)
+    namedtuple_uparams = array_to_tuple_new_diffstarpop_tpeak(
+        flat_uparams, UnboundParams
+    )
     loss, grads = loss_mstar_kern_tobs_grad_kern(namedtuple_uparams, loss_data)
     grads = tuple_to_jax_array(grads)
 
@@ -203,7 +200,9 @@ def loss_mstar_kern_tobs_grad_wrapper(flat_uparams, loss_data):
 
 def get_pred_mstar_data_wrapper(flat_uparams, loss_data):
 
-    namedtuple_uparams = array_to_tuple_new_diffstarpop(flat_uparams, UnboundParams)
+    namedtuple_uparams = array_to_tuple_new_diffstarpop_tpeak(
+        flat_uparams, UnboundParams
+    )
     pred_mstar_pdf = mstar_kern_tobs(namedtuple_uparams, loss_data)
 
     return pred_mstar_pdf
@@ -249,7 +248,6 @@ def mstar_ssfr_kern_tobs(u_params, loss_data):
     (
         mah_params,
         logm0,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -270,7 +268,6 @@ def mstar_ssfr_kern_tobs(u_params, loss_data):
         diffstarpop_params,
         mah_params,
         logm0,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -371,7 +368,9 @@ loss_mstar_ssfr_kern_tobs_grad_kern = jjit(
 
 def loss_mstar_ssfr_kern_tobs_grad_wrapper(flat_uparams, loss_data):
 
-    namedtuple_uparams = array_to_tuple_new_diffstarpop(flat_uparams, UnboundParams)
+    namedtuple_uparams = array_to_tuple_new_diffstarpop_tpeak(
+        flat_uparams, UnboundParams
+    )
     loss, grads = loss_mstar_ssfr_kern_tobs_grad_kern(namedtuple_uparams, loss_data)
     grads = tuple_to_jax_array(grads)
 
@@ -380,7 +379,9 @@ def loss_mstar_ssfr_kern_tobs_grad_wrapper(flat_uparams, loss_data):
 
 def get_pred_mstar_ssfr_data_wrapper(flat_uparams, loss_data):
 
-    namedtuple_uparams = array_to_tuple_new_diffstarpop(flat_uparams, UnboundParams)
+    namedtuple_uparams = array_to_tuple_new_diffstarpop_tpeak(
+        flat_uparams, UnboundParams
+    )
     pred_mstar_pdf = mstar_ssfr_kern_tobs(namedtuple_uparams, loss_data)
 
     return pred_mstar_pdf
@@ -396,7 +397,6 @@ def mstar_ssfr_sat_kern_tobs(u_params, loss_data):
     (
         mah_params,
         logm0,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -417,7 +417,6 @@ def mstar_ssfr_sat_kern_tobs(u_params, loss_data):
         diffstarpop_params,
         mah_params,
         logm0,
-        t_peak,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -518,7 +517,9 @@ loss_mstar_ssfr_sat_kern_tobs_grad_kern = jjit(
 
 def loss_mstar_ssfr_sat_kern_tobs_grad_wrapper(flat_uparams, loss_data):
 
-    namedtuple_uparams = array_to_tuple_new_diffstarpop(flat_uparams, UnboundParams)
+    namedtuple_uparams = array_to_tuple_new_diffstarpop_tpeak(
+        flat_uparams, UnboundParams
+    )
     loss, grads = loss_mstar_ssfr_sat_kern_tobs_grad_kern(namedtuple_uparams, loss_data)
     grads = tuple_to_jax_array(grads)
 
@@ -527,7 +528,9 @@ def loss_mstar_ssfr_sat_kern_tobs_grad_wrapper(flat_uparams, loss_data):
 
 def get_pred_mstar_ssfr_sat_data_wrapper(flat_uparams, loss_data):
 
-    namedtuple_uparams = array_to_tuple_new_diffstarpop(flat_uparams, UnboundParams)
+    namedtuple_uparams = array_to_tuple_new_diffstarpop_tpeak(
+        flat_uparams, UnboundParams
+    )
     pred_mstar_pdf = mstar_ssfr_sat_kern_tobs(namedtuple_uparams, loss_data)
 
     return pred_mstar_pdf
@@ -551,7 +554,9 @@ loss_combined_grad_kern = jjit(value_and_grad(loss_combined_kern, argnums=(0,)))
 
 def loss_combined_wrapper(flat_uparams, loss_data_mstar, loss_data_ssfr_cen):
 
-    namedtuple_uparams = array_to_tuple_new_diffstarpop(flat_uparams, UnboundParams)
+    namedtuple_uparams = array_to_tuple_new_diffstarpop_tpeak(
+        flat_uparams, UnboundParams
+    )
     loss, grads = loss_combined_grad_kern(
         namedtuple_uparams, loss_data_mstar, loss_data_ssfr_cen
     )
@@ -582,7 +587,9 @@ def loss_combined_3loss_wrapper(
     flat_uparams, loss_data_mstar, loss_data_ssfr_cen, loss_data_ssfr_sat
 ):
 
-    namedtuple_uparams = array_to_tuple_new_diffstarpop(flat_uparams, UnboundParams)
+    namedtuple_uparams = array_to_tuple_new_diffstarpop_tpeak(
+        flat_uparams, UnboundParams
+    )
     loss, grads = loss_combined_3loss_grad_kern(
         namedtuple_uparams, loss_data_mstar, loss_data_ssfr_cen, loss_data_ssfr_sat
     )
