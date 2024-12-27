@@ -13,7 +13,7 @@ from .kernels.param_bounding import (
     get_bounded_diffstarpop_params,
     get_unbounded_diffstarpop_params,
 )
-from .mc_diffstarpop import (
+from .mc_diffstarpop_tpeak import (
     mc_diffstar_params_galpop,
     mc_diffstar_params_singlegal,
     mc_diffstar_sfh_galpop,
