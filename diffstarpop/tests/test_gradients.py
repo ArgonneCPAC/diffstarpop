@@ -1,7 +1,6 @@
 """Test that mc_diffstar_sfh_galpop has non-zero gradients w/r/t all its parameters"""
 
 import numpy as np
-from diffmah.defaults import DEFAULT_MAH_PARAMS
 from diffsky.mass_functions.mc_diffmah_tpeak import mc_subhalos
 from dsps.constants import T_TABLE_MIN
 from jax import jit as jjit
