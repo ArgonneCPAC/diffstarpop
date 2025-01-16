@@ -35,10 +35,7 @@ def get_all_diffstarpop_u_params(varied_u_params):
     ----------
     varied_u_params : namedtuple
         varied_u_params is a namedtuple with the same 5 entries as DiffstarPopUParams
-            u_sfh_pdf_mainseq_params
-            u_sfh_pdf_quench_params
-            u_assembias_mainseq_params
-            u_assembias_quench_params
+            u_sfh_pdf_cens_params
             u_satquench_params
         Each entry is itself a namedtuple of parameters, which can be any subset
         of the same parameters appearing in that component of DiffstarPopUParams
@@ -50,36 +47,17 @@ def get_all_diffstarpop_u_params(varied_u_params):
         present, and otherwise will be taken from DEFAULT_DIFFSTARPOP_U_PARAMS
 
     """
-    u_sfh_pdf_mainseq_params = get_all_params_from_varied(
-        varied_u_params.u_sfh_pdf_mainseq_params,
-        DEFAULT_DIFFSTARPOP_U_PARAMS.u_sfh_pdf_mainseq_params,
+    u_sfh_pdf_cens_params = get_all_params_from_varied(
+        varied_u_params.u_sfh_pdf_cens_params,
+        DEFAULT_DIFFSTARPOP_U_PARAMS.u_sfh_pdf_cens_params,
     )
-
-    u_sfh_pdf_quench_params = get_all_params_from_varied(
-        varied_u_params.u_sfh_pdf_quench_params,
-        DEFAULT_DIFFSTARPOP_U_PARAMS.u_sfh_pdf_quench_params,
-    )
-
-    u_assembias_mainseq_params = get_all_params_from_varied(
-        varied_u_params.u_assembias_mainseq_params,
-        DEFAULT_DIFFSTARPOP_U_PARAMS.u_assembias_mainseq_params,
-    )
-
-    u_assembias_quench_params = get_all_params_from_varied(
-        varied_u_params.u_assembias_quench_params,
-        DEFAULT_DIFFSTARPOP_U_PARAMS.u_assembias_quench_params,
-    )
-
     u_satquench_params = get_all_params_from_varied(
         varied_u_params.u_satquench_params,
         DEFAULT_DIFFSTARPOP_U_PARAMS.u_satquench_params,
     )
 
     _diffstarpop_u_params = (
-        u_sfh_pdf_mainseq_params,
-        u_sfh_pdf_quench_params,
-        u_assembias_mainseq_params,
-        u_assembias_quench_params,
+        u_sfh_pdf_cens_params,
         u_satquench_params,
     )
     return DEFAULT_DIFFSTARPOP_U_PARAMS._make(_diffstarpop_u_params)
