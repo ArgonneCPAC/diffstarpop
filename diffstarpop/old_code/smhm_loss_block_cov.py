@@ -7,7 +7,7 @@ from jax import jit as jjit
 from jax import numpy as jnp
 from jax import vmap
 
-from ..mc_diffstarpop_block_cov import mc_diffstar_sfh_galpop
+from .mc_diffstarpop_block_cov import mc_diffstar_sfh_galpop
 from ..sumstats.smhm import compute_smhm
 
 _A = (None, 0)

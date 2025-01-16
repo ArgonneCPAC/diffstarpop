@@ -5,7 +5,7 @@ import numpy as np
 from diffmah.diffmah_kernels import DEFAULT_MAH_PARAMS
 from jax import random as jran
 
-from ...kernels.defaults_block_cov import DEFAULT_DIFFSTARPOP_PARAMS
+from ..defaults_block_cov import DEFAULT_DIFFSTARPOP_PARAMS
 from ...sumstats.smdpl_smhm_targets import umachine_smhm_z0_allhalos
 from .. import smhm_loss_block_cov as smhm_loss
 
