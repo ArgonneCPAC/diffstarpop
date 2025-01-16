@@ -7,7 +7,7 @@ from jax import jit as jjit
 from jax import random as jran
 from jax import vmap
 
-from .kernels.diffstarpop_block_cov import mc_diffstar_u_params_singlegal_kernel
+from .diffstarpop_block_cov import mc_diffstar_u_params_singlegal_kernel
 
 
 @jjit

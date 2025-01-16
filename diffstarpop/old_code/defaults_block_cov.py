@@ -7,7 +7,7 @@ from collections import namedtuple
 from jax import jit as jjit
 from jax import numpy as jnp
 
-from .satquenchpop_model import (
+from ..kernels.satquenchpop_model import (
     DEFAULT_SATQUENCHPOP_PARAMS,
     get_bounded_satquenchpop_params,
     get_unbounded_satquenchpop_params,

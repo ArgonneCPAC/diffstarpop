@@ -7,7 +7,7 @@ from jax import jit as jjit
 from jax import numpy as jnp
 from jax import random as jran
 
-from .satquenchpop_model import get_qprob_sat
+from ..kernels.satquenchpop_model import get_qprob_sat
 from .sfh_pdf_block_cov import _sfh_pdf_scalar_kernel
 
 

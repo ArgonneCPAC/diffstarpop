@@ -6,9 +6,12 @@ from diffmah.defaults import DEFAULT_MAH_PARAMS
 from jax import random as jran
 
 from ...defaults import DEFAULT_DIFFSTARPOP_PARAMS
-from ..assembias_kernels import DEFAULT_AB_MAINSEQ_PARAMS, DEFAULT_AB_QSEQ_PARAMS
-from ..mainseq_massonly import DEFAULT_SFH_PDF_MAINSEQ_PARAMS
-from ..qseq_massonly import DEFAULT_SFH_PDF_QUENCH_PARAMS
+from ...kernels.assembias_kernels import (
+    DEFAULT_AB_MAINSEQ_PARAMS,
+    DEFAULT_AB_QSEQ_PARAMS,
+)
+from ...kernels.mainseq_massonly import DEFAULT_SFH_PDF_MAINSEQ_PARAMS
+from ...kernels.qseq_massonly import DEFAULT_SFH_PDF_QUENCH_PARAMS
 from ..refactored_driver import (
     _diffstarpop_pdf_params,
     get_assembias_slopes_mainseq,

@@ -7,19 +7,19 @@ from jax import jit as jjit
 from jax import numpy as jnp
 from jax import random as jran
 
-from .assembias_kernels import _get_slopes_mainseq, _get_slopes_qseq
-from .mainseq_massonly import (
+from ..kernels.assembias_kernels import _get_slopes_mainseq, _get_slopes_qseq
+from ..kernels.mainseq_massonly import (
     MainseqMassOnlyParams,
     _get_cov_mainseq,
     _get_mean_u_params_mainseq,
 )
-from .qseq_massonly import (
+from ..kernels.qseq_massonly import (
     QseqMassOnlyParams,
     _frac_quench_vs_lgm0,
     _get_cov_qseq,
     _get_mean_u_params_qseq,
 )
-from .satquenchpop_model import get_qprob_sat
+from ..kernels.satquenchpop_model import get_qprob_sat
 
 
 @jjit

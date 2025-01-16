@@ -8,7 +8,7 @@ from diffstar import DEFAULT_DIFFSTAR_PARAMS
 from diffstar.defaults import T_TABLE_MIN, TODAY
 from jax import random as jran
 
-from ..defaults import DEFAULT_DIFFSTARPOP_PARAMS
+from ...defaults import DEFAULT_DIFFSTARPOP_PARAMS
 from ..mc_cens import mc_diffstar_sfh_cenpop, mc_diffstar_sfh_singlecen
 from ..mc_diffstarpop import mc_diffstar_sfh_galpop
 

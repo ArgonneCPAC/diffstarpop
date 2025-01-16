@@ -10,18 +10,21 @@ from diffstar import DEFAULT_DIFFSTAR_U_PARAMS
 from jax import numpy as jnp
 from jax import random as jran
 
-from .pdf_mainseq import DEFAULT_SFH_PDF_MAINSEQ_PDICT, _get_chol_params_mainseq
-from .pdf_mainseq import _get_cov_scalar as _get_cov_scalar_ms
-from .pdf_mainseq import _get_mean_smah_params_mainseq
-from .pdf_model_assembly_bias_shifts import (
+from ..kernels.pdf_mainseq import (
+    DEFAULT_SFH_PDF_MAINSEQ_PDICT,
+    _get_chol_params_mainseq,
+)
+from ..kernels.pdf_mainseq import _get_cov_scalar as _get_cov_scalar_ms
+from ..kernels.pdf_mainseq import _get_mean_smah_params_mainseq
+from ..kernels.pdf_model_assembly_bias_shifts import (
     DEFAULT_R_MAINSEQ_PDICT,
     DEFAULT_R_QUENCH_PDICT,
     _get_slopes_mainseq,
     _get_slopes_quench,
 )
-from .pdf_quenched import DEFAULT_SFH_PDF_QUENCH_PDICT, _get_chol_params_quench
-from .pdf_quenched import _get_cov_scalar as _get_cov_scalar_q
-from .pdf_quenched import _get_mean_smah_params_quench, frac_quench_vs_lgm0
+from ..kernels.pdf_quenched import DEFAULT_SFH_PDF_QUENCH_PDICT, _get_chol_params_quench
+from ..kernels.pdf_quenched import _get_cov_scalar as _get_cov_scalar_q
+from ..kernels.pdf_quenched import _get_mean_smah_params_quench, frac_quench_vs_lgm0
 
 DEFAULT_Q_U_PARAMS_UNQUENCHED = jnp.ones(4) * 5
 

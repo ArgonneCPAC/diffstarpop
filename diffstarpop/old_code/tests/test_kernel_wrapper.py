@@ -6,7 +6,10 @@ from diffmah.defaults import DEFAULT_MAH_PARAMS
 from jax import random as jran
 
 from ...defaults import DEFAULT_DIFFSTARPOP_PARAMS
-from ..assembias_kernels import DEFAULT_AB_MAINSEQ_PARAMS, DEFAULT_AB_QSEQ_PARAMS
+from ...kernels.assembias_kernels import (
+    DEFAULT_AB_MAINSEQ_PARAMS,
+    DEFAULT_AB_QSEQ_PARAMS,
+)
 from ..kernel_wrapper import (
     _diffstarpop_pdf_params,
     get_assembias_slopes_mainseq,
@@ -15,9 +18,9 @@ from ..kernel_wrapper import (
     mc_diffstar_u_params_singlegal_kernel,
     quenched_sequence_mu_cov,
 )
-from ..mainseq_massonly import DEFAULT_SFH_PDF_MAINSEQ_PARAMS
-from ..qseq_massonly import DEFAULT_SFH_PDF_QUENCH_PARAMS
-from ..satquenchpop_model import DEFAULT_SATQUENCHPOP_PARAMS
+from ...kernels.mainseq_massonly import DEFAULT_SFH_PDF_MAINSEQ_PARAMS
+from ...kernels.qseq_massonly import DEFAULT_SFH_PDF_QUENCH_PARAMS
+from ...kernels.satquenchpop_model import DEFAULT_SATQUENCHPOP_PARAMS
 
 
 def test_quenched_sequence_mu_cov():

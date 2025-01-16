@@ -11,7 +11,7 @@ from jax import numpy as jnp
 from jax import random as jran
 from jax import value_and_grad
 
-from ..defaults import DEFAULT_DIFFSTARPOP_PARAMS, DiffstarPopParams
+from ...defaults import DEFAULT_DIFFSTARPOP_PARAMS, DiffstarPopParams
 from ..mc_diffstarpop import (
     mc_diffstar_params_galpop,
     mc_diffstar_sfh_galpop,
