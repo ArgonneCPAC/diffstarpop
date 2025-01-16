@@ -1,5 +1,5 @@
-diffmah>=0.6.1
-diffstar>=0.3.2
+diffmah>=0.7.0
+diffstar>=0.3.3
 numpy
 jax
 dsps
