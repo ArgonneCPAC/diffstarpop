@@ -1,22 +1,21 @@
 """This module implements kernels for Monte Carlo generating Diffstar SFHs
 """
 
-from diffstar.defaults import FB, LGT0, get_bounded_diffstar_params
+from diffstar import get_bounded_diffstar_params
+from diffstar.defaults import FB, LGT0
 from diffstar.sfh_model_tpeak import calc_sfh_galpop, calc_sfh_singlegal
 from jax import jit as jjit
 from jax import random as jran
 from jax import vmap
 
-from .kernels.diffstarpop_block_cov import mc_diffstar_u_params_singlegal_kernel
+from .kernels.diffstarpop_tpeak import mc_diffstar_u_params_singlegal_kernel_cen
 
 
 @jjit
-def mc_diffstar_sfh_singlegal(
+def mc_diffstar_sfh_singlegal_cen(
     diffstarpop_params,
     mah_params,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
+    logm0,
     ran_key,
     tarr,
     lgt0=LGT0,
@@ -30,25 +29,12 @@ def mc_diffstar_sfh_singlegal(
     diffstarpop_params : namedtuple
         See defaults.DEFAULT_DIFFSTARPOP_PARAMS for an example
 
-    mah_params : namedtuple, length 4
+    mah_params : namedtuple, length 5
         mah_params is a tuple of floats
-        DiffmahParams = logmp, logtc, early_index, late_index
+        DiffmahParams = logmp, logtc, early_index, late_index, tpeak
 
-    p50 : float
-        Prob(<t_50% | logm0), the CDF of the distribution of halo
-        formation times t_50% conditioned on mass logm0
-
-    lgmu_infall : float
-        Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
-        Set to 0.0 for centrals
-
-    logmhost_infall : float
-        Base-10 log of Mhost(t_infall)
-        Set to 0.0 for centrals
-
-    gyr_since_infall : float
-        Time since infall in Gyr
-        Set to -100.0 for centrals
+    logm0 : float
+        Mhalo(t0). Note that logm0 diffmah parameter is not Mhalo(t0) when t_peak<t0.
 
     ran_key : jax.random.PRNGKey
         Single instance of a jax random seed
@@ -96,12 +82,9 @@ def mc_diffstar_sfh_singlegal(
         True for a quenched galaxy and False for unquenched
 
     """
-    _res = mc_diffstar_params_singlegal(
+    _res = mc_diffstar_params_singlegal_cen(
         diffstarpop_params,
-        mah_params,
-        lgmu_infall,
-        logmhost_infall,
-        gyr_since_infall,
+        logm0,
         ran_key,
     )
     diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
@@ -111,12 +94,9 @@ def mc_diffstar_sfh_singlegal(
 
 
 @jjit
-def mc_diffstar_params_singlegal(
+def mc_diffstar_params_singlegal_cen(
     diffstarpop_params,
-    mah_params,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
+    logm0,
     ran_key,
 ):
     """Monte Carlo realization of a single point in Diffstar parameter space.
@@ -126,21 +106,8 @@ def mc_diffstar_params_singlegal(
     diffstarpop_params : namedtuple
         See defaults.DEFAULT_DIFFSTARPOP_PARAMS for an example
 
-    mah_params : namedtuple, length 4
-        mah_params is a tuple of floats
-        DiffmahParams = logmp, logtc, early_index, late_index
-
-    lgmu_infall : float
-        Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
-        Set to 0.0 for centrals
-
-    logmhost_infall : float
-        Base-10 log of Mhost(t_infall)
-        Set to 0.0 for centrals
-
-    gyr_since_infall : float
-        Time since infall in Gyr
-        Set to -100.0 for centrals
+    logm0 : float
+        Mhalo(t0). Note that logm0 diffmah parameter is not Mhalo(t0) when t_peak<t0.
 
     ran_key : jax.random.PRNGKey
         Single instance of a jax random seed
@@ -170,12 +137,9 @@ def mc_diffstar_params_singlegal(
         True for a quenched galaxy and False for unquenched
 
     """
-    _res = mc_diffstar_u_params_singlegal_kernel(
+    _res = mc_diffstar_u_params_singlegal_kernel_cen(
         diffstarpop_params,
-        mah_params,
-        lgmu_infall,
-        logmhost_infall,
-        gyr_since_infall,
+        logm0,
         ran_key,
     )
     u_params_ms, u_params_qseq, frac_q, mc_is_q = _res
@@ -185,52 +149,40 @@ def mc_diffstar_params_singlegal(
 
 
 @jjit
-def mc_diffstar_u_params_singlegal(
+def mc_diffstar_u_params_singlegal_cen(
     diffstarpop_params,
-    mah_params,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
+    logm0,
     ran_key,
 ):
     """"""
 
-    _res = mc_diffstar_u_params_singlegal_kernel(
+    _res = mc_diffstar_u_params_singlegal_kernel_cen(
         diffstarpop_params,
-        mah_params,
-        lgmu_infall,
-        logmhost_infall,
-        gyr_since_infall,
+        logm0,
         ran_key,
     )
     u_params_ms, u_params_qseq, frac_q, mc_is_q = _res
     return u_params_ms, u_params_qseq, frac_q, mc_is_q
 
 
-_POP = (None, 0, 0, 0, 0, 0)
-mc_diffstar_u_params_galpop_kernel = jjit(
-    vmap(mc_diffstar_u_params_singlegal, in_axes=_POP)
+_POP = (None, 0, 0)
+mc_diffstar_u_params_galpop_cen_kernel = jjit(
+    vmap(mc_diffstar_u_params_singlegal_cen, in_axes=_POP)
 )
 
 
 @jjit
-def mc_diffstar_u_params_galpop(
+def mc_diffstar_u_params_galpop_cen(
     diffstarpop_params,
-    mah_params,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
+    logm0,
     ran_key,
 ):
     """"""
-    ngals = mah_params[0].size
+    ngals = logm0.size
     ran_keys = jran.split(ran_key, ngals)
-    _res = mc_diffstar_u_params_galpop_kernel(
+    _res = mc_diffstar_u_params_galpop_cen_kernel(
         diffstarpop_params,
-        mah_params,
-        lgmu_infall,
-        logmhost_infall,
-        gyr_since_infall,
+        logm0,
         ran_keys,
     )
     diffstar_u_params_ms, diffstar_u_params_q, frac_q, mc_is_q = _res
@@ -241,12 +193,9 @@ get_bounded_diffstar_params_galpop = jjit(vmap(get_bounded_diffstar_params, in_a
 
 
 @jjit
-def mc_diffstar_params_galpop(
+def mc_diffstar_params_galpop_cen(
     diffstarpop_params,
-    mah_params,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
+    logm0,
     ran_key,
 ):
     """Monte Carlo realization of a population of points in Diffstar parameter space.
@@ -256,21 +205,8 @@ def mc_diffstar_params_galpop(
     diffstarpop_params : namedtuple
         See defaults.DEFAULT_DIFFSTARPOP_PARAMS for an example
 
-    mah_params : namedtuple, length 4
-        mah_params is a tuple of ndarrays of shape (ngals, )
-        DiffmahParams = logmp, logtc, early_index, late_index
-
-    lgmu_infall : ndarray of shape (ngals, )
-        Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
-        Set to 0.0 for centrals
-
-    logmhost_infall : ndarray of shape (ngals, )
-        Base-10 log of Mhost(t_infall)
-        Set to 0.0 for centrals
-
-    gyr_since_infall : ndarray of shape (ngals, )
-        Time since infall in Gyr
-        Set to -100.0 for centrals
+    logm0 :  ndarray of shape (ngals, )
+        Mhalo(t0). Note that logm0 diffmah parameter is not Mhalo(t0) when t_peak<t0.
 
     ran_key : jax.random.PRNGKey
         Single instance of a jax random seed
@@ -301,12 +237,9 @@ def mc_diffstar_params_galpop(
         the result of a stochastic Monte Carlo realization
 
     """
-    _res = mc_diffstar_u_params_galpop(
+    _res = mc_diffstar_u_params_galpop_cen(
         diffstarpop_params,
-        mah_params,
-        lgmu_infall,
-        logmhost_infall,
-        gyr_since_infall,
+        logm0,
         ran_key,
     )
     diffstar_u_params_ms, diffstar_u_params_q, frac_q, mc_is_q = _res
@@ -316,12 +249,10 @@ def mc_diffstar_params_galpop(
 
 
 @jjit
-def mc_diffstar_sfh_galpop(
+def mc_diffstar_sfh_galpop_cen(
     diffstarpop_params,
     mah_params,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
+    logm0,
     ran_key,
     tarr,
     lgt0=LGT0,
@@ -335,21 +266,12 @@ def mc_diffstar_sfh_galpop(
     diffstarpop_params : namedtuple
         See defaults.DEFAULT_DIFFSTARPOP_PARAMS for an example
 
-    mah_params : namedtuple, length 4
+    mah_params : namedtuple, length 5
         mah_params is a tuple of ndarrays of shape (ngals, )
-        DiffmahParams = logmp, logtc, early_index, late_index
+        DiffmahParams = logmp, logtc, early_index, late_index, t_peak
 
-    lgmu_infall : ndarray of shape (ngals, )
-        Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
-        Set to 0.0 for centrals
-
-    logmhost_infall : ndarray of shape (ngals, )
-        Base-10 log of Mhost(t_infall)
-        Set to 0.0 for centrals
-
-    gyr_since_infall : ndarray of shape (ngals, )
-        Time since infall in Gyr
-        Set to -100.0 for centrals
+    logm0 : ndarray of shape (ngals, )
+        Mhalo(t0). Note that logm0 diffmah parameter is not Mhalo(t0) when t_peak<t0.
 
     ran_key : jax.random.PRNGKey
         Single instance of a jax random seed
@@ -398,12 +320,9 @@ def mc_diffstar_sfh_galpop(
         the result of a stochastic Monte Carlo realization
 
     """
-    _res = mc_diffstar_params_galpop(
+    _res = mc_diffstar_params_galpop_cen(
         diffstarpop_params,
-        mah_params,
-        lgmu_infall,
-        logmhost_infall,
-        gyr_since_infall,
+        logm0,
         ran_key,
     )
     diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res

@@ -1,22 +1,24 @@
 """Test that mc_diffstar_sfh_galpop has non-zero gradients w/r/t all its parameters"""
 
 import numpy as np
-from diffmah.defaults import DEFAULT_MAH_PARAMS
-from diffsky.mass_functions.mc_subhalo_catalog import mc_subhalo_catalog_singlez
+from diffsky.mass_functions.mc_diffmah_tpeak import mc_subhalos
 from dsps.constants import T_TABLE_MIN
 from jax import jit as jjit
 from jax import numpy as jnp
 from jax import random as jran
 from jax import value_and_grad
 
+from diffstar.defaults import LGT0
+from diffmah.diffmah_kernels import mah_halopop
+
 from ..defaults import (
     DEFAULT_DIFFSTARPOP_PARAMS,
     DEFAULT_DIFFSTARPOP_U_PARAMS,
     DiffstarPopUParams,
 )
-from ..kernels.kernel_wrapper import _diffstarpop_pdf_params
-from ..kernels.param_bounding import get_bounded_diffstarpop_params
-from ..mc_diffstarpop import mc_diffstar_sfh_galpop
+from ..kernels.diffstarpop_tpeak import _diffstarpop_means_covs
+from ..kernels.defaults_tpeak import get_bounded_diffstarpop_params
+from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
 
 
 @jjit
@@ -39,7 +41,7 @@ def get_random_dpp_params(ran_key, dp=0.1):
 
 
 def _check_grads_are_nonzero(grads):
-    if_grads_close_to_zero = np.isclose(grads, 0.0, rtol=1e-13)
+    if_grads_close_to_zero = np.isclose(0.0, grads, rtol=1e-13, atol=1e-13)
     if if_grads_close_to_zero.any():
         raise AssertionError(
             "Parameters with exact zero gradients:",
@@ -48,179 +50,199 @@ def _check_grads_are_nonzero(grads):
 
 
 def _enforce_nonzero_grads(grads):
-    assert np.all(np.isfinite(grads.u_sfh_pdf_mainseq_params))
-    assert np.all(np.isfinite(grads.u_sfh_pdf_quench_params))
-    assert np.all(np.isfinite(grads.u_assembias_mainseq_params))
-    assert np.all(np.isfinite(grads.u_assembias_quench_params))
+    assert np.all(np.isfinite(grads.u_sfh_pdf_cens_params))
     assert np.all(np.isfinite(grads.u_satquench_params))
 
-    _check_grads_are_nonzero(grads.u_sfh_pdf_mainseq_params)
-    _check_grads_are_nonzero(grads.u_sfh_pdf_quench_params)
-    _check_grads_are_nonzero(grads.u_assembias_mainseq_params)
-    _check_grads_are_nonzero(grads.u_assembias_quench_params)
+    _check_grads_are_nonzero(grads.u_sfh_pdf_cens_params)
     _check_grads_are_nonzero(grads.u_satquench_params)
 
 
 def test_all_diffstarpop_u_param_gradients_are_nonzero():
     """Verify that <SFH(t)> has nonzero gradient w/r/t all u_params"""
-    ran_key = jran.PRNGKey(0)
 
-    # Generate a random subhalo catalog
-    subcat_key, ran_key = jran.split(ran_key, 2)
-    lgmp_min = 11.5
-    z_obs = 0.5
-    Lbox = 50.0
-    volume_com = Lbox**3
-    subcat = mc_subhalo_catalog_singlez(subcat_key, lgmp_min, z_obs, volume_com)
 
-    nhalos = subcat.log_mhost_ultimate_infall.shape[0]
+ran_key = jran.PRNGKey(0)
 
-    # Generate a few extra quantities needed by the diffstarpop mc generator
-    p50_key, ran_key = jran.split(ran_key, 2)
-    p50_arr = jran.uniform(p50_key, minval=0, maxval=1, shape=(nhalos,))
+# Generate a random subhalo catalog
+subcat_key, ran_key = jran.split(ran_key, 2)
+lgmp_min = 11.25
+z_obs = 0.01
+Lbox = 75.0
+volume_com = Lbox**3
+subcat = mc_subhalos(subcat_key, lgmp_min, z_obs, volume_com)
 
-    lgmu_infall = subcat.log_mpeak_ultimate_infall - subcat.log_mhost_ultimate_infall
-    gyr_since_infall = subcat.t_obs - subcat.t_ultimate_infall
+n_halos = subcat.logmhost_ult_inf.shape[0]
 
-    ntimes = 100
-    tarr = np.linspace(T_TABLE_MIN, 13.7, ntimes)
+lgmu_infall = subcat.logmp_ult_inf - subcat.logmhost_ult_inf
+gyr_since_infall = subcat.t_obs - subcat.t_ult_inf
 
-    # compute SFHs for the default galaxy population
+ntimes = 30
+tarr = np.linspace(T_TABLE_MIN, 13.7, ntimes)
+
+dmhdt_fit, log_mah_fit = mah_halopop(subcat.mah_params, tarr, LGT0)
+lomg0_vals = log_mah_fit[:, -1]
+
+# compute SFHs for the default galaxy population
+args = (
+    DEFAULT_DIFFSTARPOP_PARAMS,
+    subcat.mah_params,
+    lomg0_vals,
+    lgmu_infall,
+    subcat.logmhost_ult_inf,
+    gyr_since_infall,
+    ran_key,
+    tarr,
+)
+
+(
+    diffstar_params_ms,
+    diffstar_params_q,
+    default_sfh_ms,
+    default_sfh_q,
+    frac_q,
+    mc_is_q,
+) = mc_diffstar_sfh_galpop(*args)
+
+assert default_sfh_q.shape == (n_halos, ntimes)
+assert np.all(np.isfinite(default_sfh_q))
+
+# Set target <SFH(t)> according to the default galpop
+target_mean_sfh = np.mean(
+    frac_q[:, None] * default_sfh_q + (1.0 - frac_q[:, None]) * default_sfh_ms,
+    axis=0,
+)
+
+# Generate an alternate galpop at some other point in param space
+ran_params_key, ran_key = jran.split(ran_key, 2)
+alt_dpp_params, alt_dpp_u_params = get_random_dpp_params(ran_params_key)
+
+# Compute the SFH of the alternate galpop and verify it's well-behaved
+args = (
+    alt_dpp_params,
+    subcat.mah_params,
+    lomg0_vals,
+    lgmu_infall,
+    subcat.logmhost_ult_inf,
+    gyr_since_infall,
+    ran_key,
+    tarr,
+)
+# alt_diffstar_params, alt_sfh = mc_diffstar_sfh_galpop(*args)
+(
+    alt_diffstar_params_ms,
+    alt_diffstar_params_q,
+    alt_sfh_ms,
+    alt_sfh_q,
+    alt_frac_q,
+    mc_is_q,
+) = mc_diffstar_sfh_galpop(*args)
+assert alt_sfh_q.shape == (n_halos, ntimes)
+assert np.all(np.isfinite(alt_sfh_q))
+
+
+# Define a dummy loss function based on the target <SFH(t)>
+@jjit
+def _loss(u_params):
+    dpp = get_bounded_diffstarpop_params(u_params)
     args = (
-        DEFAULT_DIFFSTARPOP_PARAMS,
+        dpp,
         subcat.mah_params,
-        p50_arr,
+        lomg0_vals,
         lgmu_infall,
-        subcat.log_mhost_ultimate_infall,
+        subcat.logmhost_ult_inf,
         gyr_since_infall,
         ran_key,
         tarr,
     )
-    diffstar_params_q, diffstar_params_ms, default_sfh_q, default_sfh_ms, frac_q = (
-        mc_diffstar_sfh_galpop(*args)
-    )
-
-    assert default_sfh_q.shape == (nhalos, ntimes)
-    assert np.all(np.isfinite(default_sfh_q))
-
-    # Set target <SFH(t)> according to the default galpop
-    target_mean_sfh = np.mean(
-        frac_q[:, None] * default_sfh_q + (1.0 - frac_q[:, None]) * default_sfh_ms,
+    # __, pred_sfh = mc_diffstar_sfh_galpop(*args)
+    (
+        pred_diffstar_params_ms,
+        pred_diffstar_params_q,
+        pred_sfh_ms,
+        pred_sfh_q,
+        pred_frac_q,
+        mc_is_q,
+    ) = mc_diffstar_sfh_galpop(*args)
+    pred_mean_sfh_total = jnp.mean(
+        pred_frac_q[:, None] * pred_sfh_q + (1.0 - pred_frac_q[:, None]) * pred_sfh_ms,
         axis=0,
     )
 
-    # Generate an alternate galpop at some other point in param space
-    ran_params_key, ran_key = jran.split(ran_key, 2)
-    alt_dpp_params, alt_dpp_u_params = get_random_dpp_params(ran_params_key)
+    return _mse(pred_mean_sfh_total, target_mean_sfh)
 
-    # Compute the SFH of the alternate galpop and verify it's well-behaved
-    args = (
-        alt_dpp_params,
-        subcat.mah_params,
-        p50_arr,
-        lgmu_infall,
-        subcat.log_mhost_ultimate_infall,
-        gyr_since_infall,
-        ran_key,
-        tarr,
-    )
-    # alt_diffstar_params, alt_sfh = mc_diffstar_sfh_galpop(*args)
-    alt_diffstar_params_q, alt_diffstar_params_ms, alt_sfh_q, alt_sfh_ms, alt_frac_q = (
-        mc_diffstar_sfh_galpop(*args)
-    )
-    assert alt_sfh_q.shape == (nhalos, ntimes)
-    assert np.all(np.isfinite(alt_sfh_q))
 
-    # Define a dummy loss function based on the target <SFH(t)>
-    @jjit
-    def _loss(u_params):
-        dpp = get_bounded_diffstarpop_params(u_params)
-        args = (
-            dpp,
-            subcat.mah_params,
-            p50_arr,
-            lgmu_infall,
-            subcat.log_mhost_ultimate_infall,
-            gyr_since_infall,
-            ran_key,
-            tarr,
-        )
-        # __, pred_sfh = mc_diffstar_sfh_galpop(*args)
-        (
-            pred_diffstar_params_q,
-            pred_diffstar_params_ms,
-            pred_sfh_q,
-            pred_sfh_ms,
-            pred_frac_q,
-        ) = mc_diffstar_sfh_galpop(*args)
-        pred_mean_sfh_total = jnp.mean(
-            pred_frac_q[:, None] * pred_sfh_q
-            + (1.0 - pred_frac_q[:, None]) * pred_sfh_ms,
-            axis=0,
-        )
-
-        return _mse(pred_mean_sfh_total, target_mean_sfh)
-
-    loss_and_grad = value_and_grad(_loss)
-    loss, loss_grads = loss_and_grad(alt_dpp_u_params)
-    assert loss > 0
-    _enforce_nonzero_grads(loss_grads)
+loss_and_grad = value_and_grad(_loss)
+loss, loss_grads = loss_and_grad(alt_dpp_u_params)
+assert loss > 0
+_enforce_nonzero_grads(loss_grads)
 
 
 def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
     ran_key = jran.PRNGKey(0)
 
-    p50 = 0.3
+    logm0 = 12.5
     lgmu_infall = -1.5
-    log_mhost = 13.5
+    logmhost = 13.5
     gyr_since_infall = 1.0
     args = (
-        *DEFAULT_DIFFSTARPOP_PARAMS,
-        DEFAULT_MAH_PARAMS,
-        p50,
+        DEFAULT_DIFFSTARPOP_PARAMS,
+        logm0,
         lgmu_infall,
-        log_mhost,
+        logmhost,
         gyr_since_infall,
     )
-    _res = _diffstarpop_pdf_params(*args)
-    mu_ms, cov_ms, mu_qs, cov_qs, frac_q = _res
+    _res = _diffstarpop_means_covs(*args)
+    (
+        frac_quench,
+        mu_mseq,
+        mu_qseq_ms_block,
+        cov_qseq_ms_block,
+        mu_qseq_q_block,
+        cov_qseq_q_block,
+    ) = _res
 
     # Generate an alternate galpop at some other point in param space
     ran_params_key, ran_key = jran.split(ran_key, 2)
     alt_dpp_params, alt_dpp_u_params = get_random_dpp_params(ran_params_key, dp=1.0)
 
     args = (
-        *alt_dpp_params,
-        DEFAULT_MAH_PARAMS,
-        p50,
+        alt_dpp_params,
+        logm0,
         lgmu_infall,
-        log_mhost,
+        logmhost,
         gyr_since_infall,
     )
-    _res = _diffstarpop_pdf_params(*args)
-    mu_ms2, cov_ms2, mu_qs2, cov_qs2, frac_q2 = _res
+    _res = _diffstarpop_means_covs(*args)
+    (
+        frac_quench2,
+        mu_mseq2,
+        mu_qseq_ms_block2,
+        cov_qseq_ms_block2,
+        mu_qseq_q_block2,
+        cov_qseq_q_block2,
+    ) = _res
 
-    assert not np.allclose(mu_ms2, mu_ms)
-    assert not np.allclose(cov_ms2, cov_ms)
-    assert not np.allclose(mu_qs2, mu_qs)
-    assert not np.allclose(cov_qs2, cov_qs)
-    assert not np.allclose(frac_q2, frac_q)
+    assert not np.allclose(mu_mseq2, mu_mseq)
+    assert not np.allclose(mu_qseq_ms_block2, mu_qseq_ms_block)
+    assert not np.allclose(cov_qseq_ms_block2, cov_qseq_ms_block)
+    assert not np.allclose(mu_qseq_q_block2, mu_qseq_q_block)
+    assert not np.allclose(cov_qseq_q_block2, cov_qseq_q_block)
+    assert not np.allclose(frac_quench2, frac_quench)
 
-    frac_q_target = np.copy(frac_q)
+    frac_q_target = np.copy(frac_quench)
 
     @jjit
     def _loss(u_params):
         dpp_params = get_bounded_diffstarpop_params(u_params)
         args = (
-            *dpp_params,
-            DEFAULT_MAH_PARAMS,
-            p50,
+            dpp_params,
+            logm0,
             lgmu_infall,
-            log_mhost,
+            logmhost,
             gyr_since_infall,
         )
-        _res = _diffstarpop_pdf_params(*args)
-        frac_q_pred = _res[-1]
+        _res = _diffstarpop_means_covs(*args)
+        frac_q_pred = _res[0]
         return _mse(frac_q_pred, frac_q_target)
 
     frac_q_loss, frac_q_grads = value_and_grad(_loss)(alt_dpp_u_params)
