@@ -9,7 +9,7 @@ from .defaults import (
     DiffstarPopParams,
     DiffstarPopUParams,
 )
-from .kernels.param_bounding import (
+from .kernels.defaults_tpeak import (
     get_bounded_diffstarpop_params,
     get_unbounded_diffstarpop_params,
 )
