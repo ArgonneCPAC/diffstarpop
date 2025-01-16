@@ -7,7 +7,7 @@ from collections import namedtuple
 from jax import jit as jjit
 from jax import numpy as jnp
 
-from .assembias_kernels import (
+from ..kernels.assembias_kernels import (
     DEFAULT_AB_MAINSEQ_PARAMS,
     DEFAULT_AB_QSEQ_PARAMS,
     get_bounded_ab_mainseq_params,
@@ -15,17 +15,17 @@ from .assembias_kernels import (
     get_unbounded_ab_mainseq_params,
     get_unbounded_ab_qseq_params,
 )
-from .mainseq_massonly import (
+from ..kernels.mainseq_massonly import (
     DEFAULT_SFH_PDF_MAINSEQ_PARAMS,
     get_bounded_mainseq_massonly_params,
     get_unbounded_mainseq_massonly_params,
 )
-from .qseq_massonly import (
+from ..kernels.qseq_massonly import (
     DEFAULT_SFH_PDF_QUENCH_PARAMS,
     get_bounded_qseq_massonly_params,
     get_unbounded_qseq_massonly_params,
 )
-from .satquenchpop_model import (
+from ..kernels.satquenchpop_model import (
     DEFAULT_SATQUENCHPOP_PARAMS,
     get_bounded_satquenchpop_params,
     get_unbounded_satquenchpop_params,
