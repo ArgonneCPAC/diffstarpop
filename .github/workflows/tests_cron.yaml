@@ -1,4 +1,4 @@
-name: test_main_branch_dependencies
+name: tests
 
 on:
   workflow_dispatch: null
@@ -12,7 +12,7 @@ on:
 
 jobs:
   tests:
-    name: test_main_branch_dependencies
+    name: test-main-branch-dependencies
     runs-on: "ubuntu-latest"
 
     steps:
