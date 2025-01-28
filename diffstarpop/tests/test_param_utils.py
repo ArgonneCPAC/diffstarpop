@@ -4,8 +4,11 @@
 from collections import namedtuple
 from copy import deepcopy
 
+import numpy as np
+from diffstar.defaults import DEFAULT_DIFFSTAR_PARAMS
+
 from ..defaults import DEFAULT_DIFFSTARPOP_U_PARAMS
-from ..param_utils import get_all_diffstarpop_u_params
+from ..param_utils import get_all_diffstarpop_u_params, mc_select_diffstar_params
 
 
 def test_get_all_ms_massonly_params_from_varied():
@@ -32,3 +35,53 @@ def test_get_all_ms_massonly_params_from_varied():
             assert getattr(all_u_params.u_sfh_pdf_cens_params, key) == val + 0.1
         else:
             assert getattr(all_u_params.u_sfh_pdf_cens_params, key) == val
+
+
+def test_mc_select_diffstar_params():
+    mc_is_1 = np.concatenate((np.ones(5), np.zeros(5)))
+    ngals = mc_is_1.size
+    ZZ1 = np.zeros(ngals)
+    ZZ2 = np.zeros(ngals)
+
+    ms_params_1 = DEFAULT_DIFFSTAR_PARAMS.ms_params._make(
+        [
+            getattr(DEFAULT_DIFFSTAR_PARAMS.ms_params, x) + ZZ1
+            for x in DEFAULT_DIFFSTAR_PARAMS.ms_params._fields
+        ]
+    )
+    ms_params_2 = DEFAULT_DIFFSTAR_PARAMS.ms_params._make(
+        [
+            getattr(DEFAULT_DIFFSTAR_PARAMS.ms_params, x) + ZZ2
+            for x in DEFAULT_DIFFSTAR_PARAMS.ms_params._fields
+        ]
+    )
+
+    q_params_1 = DEFAULT_DIFFSTAR_PARAMS.q_params._make(
+        [
+            getattr(DEFAULT_DIFFSTAR_PARAMS.q_params, x) + ZZ1
+            for x in DEFAULT_DIFFSTAR_PARAMS.q_params._fields
+        ]
+    )
+    q_params_2 = DEFAULT_DIFFSTAR_PARAMS.q_params._make(
+        [
+            getattr(DEFAULT_DIFFSTAR_PARAMS.q_params, x) + ZZ2
+            for x in DEFAULT_DIFFSTAR_PARAMS.q_params._fields
+        ]
+    )
+    sfh_params_1 = DEFAULT_DIFFSTAR_PARAMS._make([ms_params_1, q_params_1])
+    sfh_params_2 = DEFAULT_DIFFSTAR_PARAMS._make([ms_params_2, q_params_2])
+    sfh_params = mc_select_diffstar_params(sfh_params_1, sfh_params_2, mc_is_1)
+
+    for pname in sfh_params.ms_params._fields:
+        val = getattr(sfh_params.ms_params, pname)
+        val1 = getattr(sfh_params_1.ms_params, pname)
+        val2 = getattr(sfh_params_2.ms_params, pname)
+        assert np.allclose(val[:5], val1[:5])
+        assert np.allclose(val[5:], val2[5:])
+
+    for pname in sfh_params.q_params._fields:
+        val = getattr(sfh_params.q_params, pname)
+        val1 = getattr(sfh_params_1.q_params, pname)
+        val2 = getattr(sfh_params_2.q_params, pname)
+        assert np.allclose(val[:5], val1[:5])
+        assert np.allclose(val[5:], val2[5:])
