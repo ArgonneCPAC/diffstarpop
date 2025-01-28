@@ -1,7 +1,13 @@
 """
 """
 
+from diffstar.defaults import (
+    DEFAULT_DIFFSTAR_PARAMS,
+    DEFAULT_MS_PARAMS,
+    DEFAULT_Q_PARAMS,
+)
 from jax import jit as jjit
+from jax import numpy as jnp
 
 from .defaults import DEFAULT_DIFFSTARPOP_U_PARAMS
 
@@ -61,3 +67,53 @@ def get_all_diffstarpop_u_params(varied_u_params):
         u_satquench_params,
     )
     return DEFAULT_DIFFSTARPOP_U_PARAMS._make(_diffstarpop_u_params)
+
+
+def mc_select_diffstar_params(sfh_params_1, sfh_params_0, mc_is_1):
+    """Select Monte Carlo realization of diffstar params
+
+    Parameters
+    ----------
+    sfh_params_1 : namedtuple of sfh_params
+        sfh_params_1.ms_params stores main sequence params, 4 arrays with shape (n, )
+        sfh_params_1.q_params stores quenching params, 4 arrays with shape (n, )
+
+    sfh_params_0 : namedtuple of sfh_params
+        sfh_params_0.ms_params stores main sequence params, 4 arrays with shape (n, )
+        sfh_params_0.q_params stores quenching params, 4 arrays with shape (n, )
+
+    mc_is_1 : bool
+        Boolean array, shape (n, )
+        Equals 1 for sfh_params1 and 0 for sfh_params0
+
+    Returns
+    -------
+    sfh_params: namedtuple of sfh_params
+        sfh_params.ms_params stores main sequence params, 4 arrays with shape (n, )
+        sfh_params.q_params stores quenching params, 4 arrays with shape (n, )
+
+    """
+    x_ms = DEFAULT_MS_PARAMS._make(
+        [
+            jnp.where(
+                mc_is_1,
+                getattr(sfh_params_1.ms_params, x),
+                getattr(sfh_params_0.ms_params, x),
+            )
+            for x in DEFAULT_MS_PARAMS._fields
+        ]
+    )
+
+    x_q = DEFAULT_Q_PARAMS._make(
+        [
+            jnp.where(
+                mc_is_1,
+                getattr(sfh_params_1.q_params, x),
+                getattr(sfh_params_0.q_params, x),
+            )
+            for x in DEFAULT_Q_PARAMS._fields
+        ]
+    )
+
+    sfh_params = DEFAULT_DIFFSTAR_PARAMS._make([x_ms, x_q])
+    return sfh_params
