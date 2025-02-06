@@ -84,6 +84,18 @@ if __name__ == "__main__":
                 counts_sat_i,
             ) = _res
 
+            (
+                logmh_id,
+                logmh_val,
+                mah_params_samp,
+                ms_params_samp,
+                q_params_samp,
+                upid_samp,
+                tobs_id,
+                tobs_val,
+                redshift_val,
+            ) = haloes
+
             _res = smhm_utils.create_pdf_target_data(
                 i, redshift_targets, diffmah_drn=diffmah_drn, diffstar_drn=diffstar_drn
             )
@@ -102,6 +114,16 @@ if __name__ == "__main__":
                 hdfout["mstar_counts_i"] = _res[1]
                 hdfout["mstar_ssfr_wcounts_cent_i"] = _res[2]
                 hdfout["mstar_ssfr_wcounts_sat_i"] = _res[3]
+
+                hdfout["logmh_id"] = logmh_id
+                hdfout["logmh_val"] = logmh_val
+                hdfout["mah_params_samp"] = mah_params_samp
+                hdfout["ms_params_samp"] = ms_params_samp
+                hdfout["q_params_samp"] = q_params_samp
+                hdfout["upid_samp"] = upid_samp
+                hdfout["tobs_id"] = tobs_id
+                hdfout["tobs_val"] = tobs_val
+                hdfout["redshift_val"] = redshift_val
 
             end = time()
             runtime = end - start
@@ -142,11 +164,24 @@ if __name__ == "__main__":
                 counts_cen = counts_cen + hdfout["counts_cen_i"][:]
                 counts_sat = counts_sat + hdfout["counts_sat_i"][:]
                 subvol_used[i] = 1
-                haloes_data.append(hdfout["haloes"][:])
                 mstar_wcounts += hdfout["mstar_wcounts_i"][:]
                 mstar_counts += hdfout["mstar_counts_i"][:]
                 mstar_ssfr_wcounts_cent += hdfout["mstar_ssfr_wcounts_cent_i"][:]
                 mstar_ssfr_wcounts_sat += hdfout["mstar_ssfr_wcounts_sat_i"][:]
+
+                haloes_data.append(
+                    (
+                        hdfout["logmh_id"][:],
+                        hdfout["logmh_val"][:],
+                        hdfout["mah_params_samp"][:],
+                        hdfout["ms_params_samp"][:],
+                        hdfout["q_params_samp"][:],
+                        hdfout["upid_samp"][:],
+                        hdfout["tobs_id"][:],
+                        hdfout["tobs_val"][:],
+                        hdfout["redshift_val"][:],
+                    )
+                )
 
         sampled_haloes = smhm_utils.concatenate_samples_haloes(haloes_data)
         end = time()
