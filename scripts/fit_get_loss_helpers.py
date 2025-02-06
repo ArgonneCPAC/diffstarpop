@@ -1,6 +1,7 @@
 """
 """
 
+import os
 import h5py
 import numpy as np
 from diffmah.diffmah_kernels import DiffmahParams, mah_halopop
@@ -125,14 +126,8 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
     # Load SMHM data ---------------------------------------------
     print("Loading SMHM data...")
 
-    tpeak_path = "/Users/alarcon/Documents/diffmah_data/tpeak/random_data_241008/"
-    with h5py.File(tpeak_path + "smdpl_smhm.h5", "r") as hdf:
-        counts_cen = hdf["counts_cen"][:]
-        counts_sat = hdf["counts_sat"][:]
-
-    tpeak_path = "/Users/alarcon/Documents/diffmah_data/tpeak/"
-
-    with h5py.File(tpeak_path + "smdpl_smhm.h5", "r") as hdf:
+    fname = os.path.join(indir, "smdpl_smhm.h5")
+    with h5py.File(fname, "r") as hdf:
         redshift_targets = hdf["redshift_targets"][:]
         smhm_diff = hdf["smhm_diff"][:]
         smhm = hdf["smhm"][:]
@@ -140,13 +135,13 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
         age_targets = hdf["age_targets"][:]
         hist = hdf["hist"][:]
         counts = hdf["counts"][:]
-        # counts_cen = hdf["counts_cen"][:]
-        # counts_sat = hdf["counts_sat"][:]
+        counts_cen = hdf["counts_cen"][:]
+        counts_sat = hdf["counts_sat"][:]
 
     logmh_binsc = 0.5 * (logmh_bins[1:] + logmh_bins[:-1])
 
-    tpeak_path = "/Users/alarcon/Documents/diffmah_data/tpeak/random_data_241007/"
-    with h5py.File(tpeak_path + "smdpl_smhm_samples_haloes.h5", "r") as hdf:
+    fname = os.path.join(indir, "smdpl_smhm_samples_haloes.h5")
+    with h5py.File(fname, "r") as hdf:
         logmh_id = hdf["logmh_id"][:]
         logmh_val = hdf["logmh_id"][:]
         mah_params_samp = hdf["mah_params_samp"][:]
@@ -158,8 +153,8 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
         tobs_val = hdf["tobs_val"][:]
         redshift_val = hdf["redshift_val"][:]
 
-    tpeak_path = "/Users/alarcon/Documents/diffmah_data/tpeak/random_data_241007/"
-    with h5py.File(tpeak_path + "smdpl_mstar_ssfr.h5", "r") as hdf:
+    fname = os.path.join(indir, "smdpl_mstar_ssfr.h5")
+    with h5py.File(fname, "r") as hdf:
         mstar_wcounts = hdf["mstar_wcounts"][:]
         mstar_counts = hdf["mstar_counts"][:]
         mstar_ssfr_wcounts_cent = hdf["mstar_ssfr_wcounts_cent"][:]
