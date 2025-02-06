@@ -84,7 +84,6 @@ def load_diffstar_sfh_tables(
     mah_params = DEFAULT_MAH_PARAMS._make(
         [diffmah_data[key] for key in DEFAULT_MAH_PARAMS._fields]
     )
-    t_peak = diffmah_data["t_peak"]
 
     ms_params = DEFAULT_DIFFSTAR_PARAMS.ms_params._make(
         [diffstar_data[key] for key in DEFAULT_DIFFSTAR_PARAMS.ms_params._fields]
@@ -97,10 +96,10 @@ def load_diffstar_sfh_tables(
     t_0 = 10**lgt0
     t_table = np.linspace(T_TABLE_MIN, t_0, n_times)
 
-    __, log_mah_table = mah_halopop(mah_params, t_table, t_peak, LGT0)
+    __, log_mah_table = mah_halopop(mah_params, t_table, LGT0)
 
     sfh_table, smh_table = calc_sfh_galpop(
-        sfh_params, mah_params, t_peak, t_table, lgt0=LGT0, return_smh=True
+        sfh_params, mah_params, t_table, lgt0=LGT0, return_smh=True
     )
     log_sfh_table = np.log10(sfh_table)
     log_smh_table = np.log10(smh_table)
@@ -114,7 +113,6 @@ def load_diffstar_sfh_tables(
         mah_params,
         ms_params,
         q_params,
-        t_peak,
     )
 
     return out
@@ -206,7 +204,6 @@ def sample_halos(
     mah_params,
     ms_params,
     q_params,
-    t_peak,
     upid,
 ):
     ndbins_lo = logmh_bins[:-1]
@@ -217,7 +214,6 @@ def sample_halos(
     mah_params_samp = []
     ms_params_samp = []
     q_params_samp = []
-    t_peak_samp = []
     upid_samp = []
 
     mah_params = np.array(mah_params).T
@@ -233,7 +229,6 @@ def sample_halos(
         mah_params_samp.append(mah_params[sel])
         ms_params_samp.append(ms_params[sel])
         q_params_samp.append(q_params[sel])
-        t_peak_samp.append(t_peak[sel])
         upid_samp.append(upid[sel])
 
     logmh_id = np.concatenate(logmh_id)
@@ -241,7 +236,6 @@ def sample_halos(
     mah_params_samp = np.concatenate(mah_params_samp)
     ms_params_samp = np.concatenate(ms_params_samp)
     q_params_samp = np.concatenate(q_params_samp)
-    t_peak_samp = np.concatenate(t_peak_samp)
     upid_samp = np.concatenate(upid_samp)
 
     mah_params_samp = DEFAULT_MAH_PARAMS._make(mah_params_samp.T)
@@ -253,7 +247,6 @@ def sample_halos(
         mah_params_samp,
         ms_params_samp,
         q_params_samp,
-        t_peak_samp,
         upid_samp,
     )
     return out
@@ -283,7 +276,6 @@ def create_target_data(
         mah_params,
         ms_params,
         q_params,
-        t_peak,
     ) = _res
 
     galprops = ["halo_id", "upid"]
@@ -339,7 +331,6 @@ def create_target_data(
             mah_params,
             ms_params,
             q_params,
-            t_peak,
             upid,
         )
         data.append(
@@ -376,7 +367,6 @@ def concatenate_samples_haloes(data):
     mah_params_samp = []
     ms_params_samp = []
     q_params_samp = []
-    t_peak_samp = []
     upid_samp = []
 
     for subdata in data:
@@ -386,18 +376,16 @@ def concatenate_samples_haloes(data):
         mah_params_samp.append(np.array(subdata[2]).T)
         ms_params_samp.append(np.array(subdata[3]).T)
         q_params_samp.append(np.array(subdata[4]).T)
-        t_peak_samp.append(subdata[5])
-        upid_samp.append(subdata[6])
-        tobs_id.append(subdata[7])
-        tobs_val.append(subdata[8])
-        redshift_val.append(subdata[9])
+        upid_samp.append(subdata[5])
+        tobs_id.append(subdata[6])
+        tobs_val.append(subdata[7])
+        redshift_val.append(subdata[8])
 
     logmh_id = np.concatenate(logmh_id)
     logmh_val = np.concatenate(logmh_val)
     mah_params_samp = np.concatenate(mah_params_samp)
     ms_params_samp = np.concatenate(ms_params_samp)
     q_params_samp = np.concatenate(q_params_samp)
-    t_peak_samp = np.concatenate(t_peak_samp)
     upid_samp = np.concatenate(upid_samp)
     tobs_id = np.concatenate(tobs_id)
     tobs_val = np.concatenate(tobs_val)
@@ -413,7 +401,6 @@ def concatenate_samples_haloes(data):
         mah_params_samp,
         ms_params_samp,
         q_params_samp,
-        t_peak_samp,
         upid_samp,
         tobs_id,
         tobs_val,
@@ -499,7 +486,6 @@ def create_pdf_target_data(
         mah_params,
         ms_params,
         q_params,
-        t_peak,
     ) = _res
 
     log_ssfrh_table = np.clip(log_ssfrh_table, -12.0, None)

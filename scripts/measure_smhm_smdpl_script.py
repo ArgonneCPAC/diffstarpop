@@ -7,6 +7,7 @@ from time import time
 
 import h5py
 import numpy as np
+import gc
 
 import smdpl_smhm_utils as smhm_utils
 
@@ -69,6 +70,7 @@ if __name__ == "__main__":
     print("Beginning loop over subvolumes...\n")
     start = time()
     for i in range(istart, iend):
+        gc.collect()
         try:
             _res = smhm_utils.create_target_data(
                 i, redshift_targets, diffmah_drn=diffmah_drn, diffstar_drn=diffstar_drn
@@ -131,7 +133,6 @@ if __name__ == "__main__":
         mah_params_samp,
         ms_params_samp,
         q_params_samp,
-        t_peak_samp,
         upid_samp,
         tobs_id,
         tobs_val,
@@ -145,7 +146,6 @@ if __name__ == "__main__":
         hdfout["mah_params_samp"] = mah_params_samp
         hdfout["ms_params_samp"] = ms_params_samp
         hdfout["q_params_samp"] = q_params_samp
-        hdfout["t_peak_samp"] = t_peak_samp
         hdfout["upid_samp"] = upid_samp
         hdfout["tobs_id"] = tobs_id
         hdfout["tobs_val"] = tobs_val
