@@ -38,12 +38,9 @@ def get_loss_data_smhm(indir, nhalos):
         mah_params_samp = hdf["mah_params_samp"][:]
         # ms_params_samp = hdf["ms_params_samp"][:]
         # q_params_samp = hdf["q_params_samp"][:]
-        t_peak_samp = hdf["t_peak_samp"][:]
         tobs_id = hdf["tobs_id"][:]
         # tobs_val = hdf["tobs_val"][:]
         # redshift_val = hdf["redshift_val"][:]
-
-    mah_params_samp = np.concatenate((mah_params_samp, t_peak_samp[None, :]), axis=0)
 
     # Create loss_data ---------------------------------------------
     print("Creating loss data...")
@@ -147,7 +144,6 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
         mah_params_samp = hdf["mah_params_samp"][:]
         ms_params_samp = hdf["ms_params_samp"][:]
         q_params_samp = hdf["q_params_samp"][:]
-        t_peak_samp = hdf["t_peak_samp"][:]
         upid_samp = hdf["upid_samp"][:]
         tobs_id = hdf["tobs_id"][:]
         tobs_val = hdf["tobs_val"][:]
@@ -175,8 +171,6 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
 
     logssfr_binsc_pdf = 0.5 * (logssfr_bins_pdf[1:] + logssfr_bins_pdf[:-1])
     logmstar_binsc_pdf = 0.5 * (logmstar_bins_pdf[1:] + logmstar_bins_pdf[:-1])
-
-    mah_params_samp = np.concatenate((mah_params_samp, t_peak_samp[None, :]), axis=0)
 
     # Create loss_data ---------------------------------------------
     print("Creating loss data...")
