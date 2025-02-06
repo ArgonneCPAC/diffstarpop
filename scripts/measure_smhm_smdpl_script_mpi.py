@@ -107,7 +107,6 @@ if __name__ == "__main__":
                 hdfout["counts_i"] = counts_i
                 hdfout["hist_i"] = hist_i
                 hdfout["age_targets"] = age_targets
-                hdfout["haloes"] = haloes
                 hdfout["counts_cen_i"] = counts_cen_i
                 hdfout["counts_sat_i"] = counts_sat_i
                 hdfout["mstar_wcounts_i"] = _res[0]
