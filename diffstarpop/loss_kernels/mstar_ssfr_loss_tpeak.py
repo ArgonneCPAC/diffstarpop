@@ -313,7 +313,7 @@ def mstar_ssfr_kern_tobs(u_params, loss_data):
     pdfs_z1 = pred_mstar_ssfr_pdf[11:22].reshape((11, nms, nsf))
     pdfs_z2 = pred_mstar_ssfr_pdf[22:33].reshape((11, nms, nsf))
     pdfs_z3 = pred_mstar_ssfr_pdf[33:43].reshape((10, nms, nsf))
-    pdfs_z4 = pred_mstar_ssfr_pdf[43:53].reshape((10, nms, nsf))
+    pdfs_z4 = pred_mstar_ssfr_pdf[43:52].reshape((9, nms, nsf))
     """
     pdfs_z0 = pred_mstar_ssfr_pdf[0:8].reshape((8, nms, nsf))
     pdfs_z1 = pred_mstar_ssfr_pdf[8:16].reshape((8, nms, nsf))
@@ -325,7 +325,7 @@ def mstar_ssfr_kern_tobs(u_params, loss_data):
     pdfs_z1 = jnp.einsum("mab,m->ab", pdfs_z1, nmhalo_pdf[1])
     pdfs_z2 = jnp.einsum("mab,m->ab", pdfs_z2, nmhalo_pdf[2])
     pdfs_z3 = jnp.einsum("mab,m->ab", pdfs_z3, nmhalo_pdf[3, :-1])
-    pdfs_z4 = jnp.einsum("mab,m->ab", pdfs_z4, nmhalo_pdf[4, :-1])
+    pdfs_z4 = jnp.einsum("mab,m->ab", pdfs_z4, nmhalo_pdf[4, :-2])
 
     pdfs_z0 = pdfs_z0[target_mstar_ids]
     pdfs_z1 = pdfs_z1[target_mstar_ids]
