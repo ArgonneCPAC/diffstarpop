@@ -120,8 +120,8 @@ def get_loss_data_smhm(indir, nhalos):
 
 
 def get_loss_data_pdfs_mstar(indir, nhalos):
-    # Load SMHM data ---------------------------------------------
-    print("Loading SMHM data...")
+    # Load PDF data ---------------------------------------------
+    print("Loading PDF Mstar data...")
 
     fname = os.path.join(indir, "smdpl_smhm.h5")
     with h5py.File(fname, "r") as hdf:
@@ -307,3 +307,261 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
     )
 
     return loss_data_mstar, plot_data
+
+
+def get_loss_data_pdfs_ssfr_central(indir, nhalos):
+
+    print("Loading PDF Mstar data...")
+
+    fname = os.path.join(indir, "smdpl_smhm.h5")
+    with h5py.File(fname, "r") as hdf:
+        redshift_targets = hdf["redshift_targets"][:]
+        smhm_diff = hdf["smhm_diff"][:]
+        smhm = hdf["smhm"][:]
+        logmh_bins = hdf["logmh_bins"][:]
+        age_targets = hdf["age_targets"][:]
+        hist = hdf["hist"][:]
+        counts = hdf["counts"][:]
+        counts_cen = hdf["counts_cen"][:]
+        counts_sat = hdf["counts_sat"][:]
+
+    logmh_binsc = 0.5 * (logmh_bins[1:] + logmh_bins[:-1])
+
+    fname = os.path.join(indir, "smdpl_smhm_samples_haloes.h5")
+    with h5py.File(fname, "r") as hdf:
+        logmh_id = hdf["logmh_id"][:]
+        logmh_val = hdf["logmh_id"][:]
+        mah_params_samp = hdf["mah_params_samp"][:]
+        ms_params_samp = hdf["ms_params_samp"][:]
+        q_params_samp = hdf["q_params_samp"][:]
+        upid_samp = hdf["upid_samp"][:]
+        tobs_id = hdf["tobs_id"][:]
+        tobs_val = hdf["tobs_val"][:]
+        redshift_val = hdf["redshift_val"][:]
+
+    fname = os.path.join(indir, "smdpl_mstar_ssfr.h5")
+    with h5py.File(fname, "r") as hdf:
+        mstar_wcounts = hdf["mstar_wcounts"][:]
+        mstar_counts = hdf["mstar_counts"][:]
+        mstar_ssfr_wcounts_cent = hdf["mstar_ssfr_wcounts_cent"][:]
+        mstar_ssfr_wcounts_sat = hdf["mstar_ssfr_wcounts_sat"][:]
+        logssfr_bins_pdf = hdf["logssfr_bins_pdf"][:]
+        logmstar_bins_pdf = hdf["logmstar_bins_pdf"][:]
+        """
+        hdfout["mstar_wcounts"] = mstar_wcounts
+        hdfout["mstar_counts"] = mstar_counts
+        hdfout["mstar_ssfr_wcounts_cent"] = mstar_ssfr_wcounts_cent
+        hdfout["mstar_ssfr_wcounts_sat"] = mstar_ssfr_wcounts_sat
+        hdfout["logmh_bins"] = smhm_utils.LOGMH_BINS
+        hdfout["logmstar_bins_pdf"] = smhm_utils.LOGMSTAR_BINS_PDF
+        hdfout["logssfr_bins_pdf"] = smhm_utils.LOGSSFR_BINS_PDF
+        hdfout["redshift_targets"] = redshift_targets
+        hdfout["age_targets"] = age_targets
+        """
+
+    logssfr_binsc_pdf = 0.5 * (logssfr_bins_pdf[1:] + logssfr_bins_pdf[:-1])
+    logmstar_binsc_pdf = 0.5 * (logmstar_bins_pdf[1:] + logmstar_bins_pdf[:-1])
+
+    mhalo_pdf_hist = hist / np.sum(hist, axis=1)[:, None]
+    mhalo_pdf = counts / np.sum(counts, axis=1)[:, None]
+    mhalo_pdf_cen = counts_cen / np.sum(counts_cen, axis=1)[:, None]
+    mhalo_pdf_sat = counts_sat / np.sum(counts_sat, axis=1)[:, None]
+
+    # Create loss_data ---------------------------------------------
+    print("Creating loss data...")
+
+    ran_key = jran.PRNGKey(np.random.randint(2**32))
+
+    lgmu_infall = -1.0
+    logmhost_infall = 13.0
+    gyr_since_infall = 2.0
+
+    mah_params_data = []
+    lomg0_data = []
+    lgmu_infall_data = []
+    logmhost_infall_data = []
+    gyr_since_infall_data = []
+    t_obs_targets = []
+
+    mstar_ssfr_pdfs_cent = np.clip(mstar_ssfr_wcounts_cent, 0.0, None)
+    mstar_ssfr_pdfs_cent = (
+        mstar_ssfr_pdfs_cent
+        / np.sum(mstar_ssfr_pdfs_cent, axis=(2, 3))[:, :, None, None]
+    )
+    mstar_ssfr_pdfs_cent = np.where(
+        np.isnan(mstar_ssfr_pdfs_cent), 0.0, mstar_ssfr_pdfs_cent
+    )
+    mstar_ssfr_pdfs_cent = np.einsum(
+        "zmab,zm->zab", mstar_ssfr_pdfs_cent, mhalo_pdf_cen
+    )
+
+    tarr_logm0 = np.logspace(-1, LGT0, 50)
+    for i in range(len(age_targets)):
+        t_target = age_targets[i]
+
+        for j in range(len(logmh_binsc)):
+            sel = (tobs_id == i) & (logmh_id == j) & (upid_samp == -1)
+
+            if sel.sum() < 50:
+                print(i, j)
+                continue
+            arange_sel = np.arange(len(tobs_id))[sel]
+            replace = True if sel.sum() < nhalos else False
+            arange_sel = np.random.choice(arange_sel, nhalos, replace=replace)
+            mah_params_data.append(mah_params_samp[:, arange_sel])
+            lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
+            logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
+            gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
+            t_obs_targets.append(t_target)
+            mah_pars_ntuple = DiffmahParams(*mah_params_samp[:, arange_sel])
+            dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
+            lomg0_data.append(log_mah_fit[:, -1])
+        # break
+    # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
+    target_mstar_ids = np.array([14, 17, 19, 22])
+    print(logmstar_binsc_pdf[target_mstar_ids])
+    target_data = np.zeros((5, len(target_mstar_ids), len(logssfr_binsc_pdf)))
+    for i in range(len(age_targets)):
+        for j, jval in enumerate(target_mstar_ids):
+            target_data[i, j] = (
+                mstar_ssfr_pdfs_cent[i, jval] / mstar_ssfr_pdfs_cent[i, jval].sum()
+            )
+
+    mah_params_data = np.array(mah_params_data)
+    lomg0_data = np.array(lomg0_data)
+    lgmu_infall_data = np.array(lgmu_infall_data)
+    logmhost_infall_data = np.array(logmhost_infall_data)
+    gyr_since_infall_data = np.array(gyr_since_infall_data)
+    t_obs_targets = np.array(t_obs_targets)
+
+    ran_key_data = jran.split(ran_key, len(t_obs_targets))
+
+    ndbins_lo = []
+    ndbins_hi = []
+    for i in range(len(logmstar_bins_pdf) - 1):
+        for j in range(len(logssfr_bins_pdf) - 1):
+            ndbins_lo.append([logmstar_bins_pdf[i], logssfr_bins_pdf[j]])
+            ndbins_hi.append([logmstar_bins_pdf[i + 1], logssfr_bins_pdf[j + 1]])
+    ndbins_lo = np.array(ndbins_lo)
+    ndbins_hi = np.array(ndbins_hi)
+
+    loss_data_ssfr = (
+        mah_params_data,
+        lomg0_data,
+        lgmu_infall_data,
+        logmhost_infall_data,
+        gyr_since_infall_data,
+        ran_key_data,
+        t_obs_targets,
+        ndbins_lo,
+        ndbins_hi,
+        logmstar_bins_pdf,
+        logssfr_bins_pdf,
+        mhalo_pdf_cen,
+        target_mstar_ids,
+        target_data,
+    )
+
+    # Create loss_data for plot ---------------------------------------------
+    print("Creating loss data for plot...")
+    nhalos_plot = 10000
+
+    ran_key = jran.PRNGKey(np.random.randint(2**32))
+
+    lgmu_infall = -1.0
+    logmhost_infall = 13.0
+    gyr_since_infall = 2.0
+
+    mah_params_data = []
+    lomg0_data = []
+    lgmu_infall_data = []
+    logmhost_infall_data = []
+    gyr_since_infall_data = []
+    t_obs_targets = []
+
+    mstar_ssfr_pdfs_cent = np.clip(mstar_ssfr_wcounts_cent, 0.0, None)
+    mstar_ssfr_pdfs_cent = (
+        mstar_ssfr_pdfs_cent
+        / np.sum(mstar_ssfr_pdfs_cent, axis=(2, 3))[:, :, None, None]
+    )
+    mstar_ssfr_pdfs_cent = np.where(
+        np.isnan(mstar_ssfr_pdfs_cent), 0.0, mstar_ssfr_pdfs_cent
+    )
+    mstar_ssfr_pdfs_cent = np.einsum(
+        "zmab,zm->zab", mstar_ssfr_pdfs_cent, mhalo_pdf_cen
+    )
+
+    for i in range(len(age_targets)):
+        t_target = age_targets[i]
+
+        for j in range(len(logmh_binsc)):
+            sel = (tobs_id == i) & (logmh_id == j) & (upid_samp == -1)
+
+            if sel.sum() < 50:
+                print(i, j)
+                continue
+            arange_sel = np.arange(len(tobs_id))[sel]
+            replace = True if sel.sum() < nhalos_plot else False
+            arange_sel = np.random.choice(arange_sel, nhalos_plot, replace=replace)
+            mah_params_data.append(mah_params_samp[:, arange_sel])
+            lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
+            logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
+            gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
+            t_obs_targets.append(t_target)
+            mah_pars_ntuple = DiffmahParams(*mah_params_samp[:, arange_sel])
+            dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
+            lomg0_data.append(log_mah_fit[:, -1])
+        # break
+    target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
+    # target_mstar_ids = np.array([14, 17, 19, 22])
+    print(logmstar_binsc_pdf[target_mstar_ids])
+    target_data = np.zeros((5, len(target_mstar_ids), len(logssfr_binsc_pdf)))
+    for i in range(len(age_targets)):
+        for j, jval in enumerate(target_mstar_ids):
+            target_data[i, j] = (
+                mstar_ssfr_pdfs_cent[i, jval] / mstar_ssfr_pdfs_cent[i, jval].sum()
+            )
+
+    mah_params_data = np.array(mah_params_data)
+    lomg0_data = np.array(lomg0_data)
+    lgmu_infall_data = np.array(lgmu_infall_data)
+    logmhost_infall_data = np.array(logmhost_infall_data)
+    gyr_since_infall_data = np.array(gyr_since_infall_data)
+    t_obs_targets = np.array(t_obs_targets)
+
+    ran_key_data = jran.split(ran_key, len(t_obs_targets))
+
+    ndbins_lo = []
+    ndbins_hi = []
+    for i in range(len(logmstar_bins_pdf) - 1):
+        for j in range(len(logssfr_bins_pdf) - 1):
+            ndbins_lo.append([logmstar_bins_pdf[i], logssfr_bins_pdf[j]])
+            ndbins_hi.append([logmstar_bins_pdf[i + 1], logssfr_bins_pdf[j + 1]])
+    ndbins_lo = np.array(ndbins_lo)
+    ndbins_hi = np.array(ndbins_hi)
+
+    loss_data_ssfr_pred = (
+        mah_params_data,
+        lomg0_data,
+        lgmu_infall_data,
+        logmhost_infall_data,
+        gyr_since_infall_data,
+        ran_key_data,
+        t_obs_targets,
+        ndbins_lo,
+        ndbins_hi,
+        logmstar_bins_pdf,
+        logssfr_bins_pdf,
+        mhalo_pdf_cen,
+        target_mstar_ids,
+        target_data,
+    )
+
+    plot_data = (
+        target_mstar_ids,
+        logssfr_binsc_pdf,
+        target_data,
+        loss_data_ssfr_pred,
+    )
+
+    return loss_data_ssfr, plot_data
