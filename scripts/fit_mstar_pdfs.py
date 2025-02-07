@@ -64,6 +64,18 @@ if __name__ == "__main__":
         type=str,
         default="bestfit_diffstarpop_params",
     )
+    parser.add_argument(
+        "--params_path",
+        type=str,
+        default=None,
+        help="Path were diffstarpop params are stored",
+    )
+    parser.add_argument(
+        "--print_loss",
+        type=int,
+        default=100,
+        help="How many steps before printing current loss",
+    )
 
     args = parser.parse_args()
     indir = args.indir
@@ -72,6 +84,7 @@ if __name__ == "__main__":
     nhalos = args.nhalos
     n_step = args.nstep
     outname = args.outname
+    params_path = args.params_path
 
     # Load MStar pdf data ---------------------------------------------
 
@@ -82,7 +95,12 @@ if __name__ == "__main__":
     unbound_params_dict = OrderedDict(diffstarpop_u_params=DEFAULT_DIFFSTARPOP_U_PARAMS)
     UnboundParams = namedtuple("UnboundParams", list(unbound_params_dict.keys()))
     register_tuple_new_diffstarpop_tpeak(UnboundParams)
-    all_u_params = UnboundParams(*list(unbound_params_dict.values()))
+
+    if params_path is None:
+        all_u_params = tuple_to_array(DEFAULT_DIFFSTARPOP_U_PARAMS)
+    else:
+        params = np.load(params_path)
+        all_u_params = params["diffstarpop_u_params"]
 
     # Run fitter ---------------------------------------------
     print("Running fitter...")
@@ -134,7 +152,7 @@ if __name__ == "__main__":
 
         no_nan_grads_arr[istep] = ~no_nan_grads
         end = time()
-        if istep % 100 == 0:
+        if istep % args.print_loss == 0:
             print(istep, loss, end - start, no_nan_grads)
         if ~no_nan_grads:
             break
