@@ -49,7 +49,7 @@ def get_loss_data_smhm(indir, nhalos):
 
     lgmu_infall = -1.0
     logmhost_infall = 13.0
-    gyr_since_infall = 2.0
+    gyr_since_infall = -99.0  # 2.0
 
     mah_params_data = []
     lomg0_data = []
@@ -179,7 +179,7 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
 
     lgmu_infall = -1.0
     logmhost_infall = 13.0
-    gyr_since_infall = 2.0
+    gyr_since_infall = -99.0  # 2.0
 
     mah_params_data = []
     lomg0_data = []
@@ -241,7 +241,7 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
 
     lgmu_infall = -1.0
     logmhost_infall = 13.0
-    gyr_since_infall = 2.0
+    gyr_since_infall = -99.0  # 2.0
 
     mah_params_data = []
     lomg0_data = []
@@ -374,7 +374,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
 
     lgmu_infall = -1.0
     logmhost_infall = 13.0
-    gyr_since_infall = 2.0
+    gyr_since_infall = -99.0  # 2.0
 
     mah_params_data = []
     lomg0_data = []
@@ -470,7 +470,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
 
     lgmu_infall = -1.0
     logmhost_infall = 13.0
-    gyr_since_infall = 2.0
+    gyr_since_infall = -99.0  # 2.0
 
     mah_params_data = []
     lomg0_data = []
