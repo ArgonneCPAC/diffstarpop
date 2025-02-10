@@ -67,9 +67,9 @@ def mc_diffstar_u_params_singlegal_kernel(
 
 @jjit
 def _diffstarpop_means_covs(
-    diffstarpop_params, lgm0, lgmu_infall, logmhost_infall, gyr_since_infall
+    diffstarpop_params, logmp0, lgmu_infall, logmhost_infall, gyr_since_infall
 ):
-    means_covs = _sfh_pdf_scalar_kernel(diffstarpop_params.sfh_pdf_cens_params, lgm0)
+    means_covs = _sfh_pdf_scalar_kernel(diffstarpop_params.sfh_pdf_cens_params, logmp0)
 
     # Modify frac_q for satellites
     frac_q = means_covs[0]
@@ -85,8 +85,8 @@ def _diffstarpop_means_covs(
 
 
 @jjit
-def _diffstarpop_means_covs_cen(diffstarpop_params, lgm0):
-    means_covs = _sfh_pdf_scalar_kernel(diffstarpop_params.sfh_pdf_cens_params, lgm0)
+def _diffstarpop_means_covs_cen(diffstarpop_params, logmp0):
+    means_covs = _sfh_pdf_scalar_kernel(diffstarpop_params.sfh_pdf_cens_params, logmp0)
 
     return means_covs
 
