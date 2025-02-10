@@ -13,19 +13,10 @@ from .sfh_pdf_tpeak import _sfh_pdf_scalar_kernel
 
 @jjit
 def mc_diffstar_u_params_singlegal_kernel(
-    diffstarpop_params,
-    logm0,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
-    ran_key,
+    diffstarpop_params, logmp0, lgmu_infall, logmhost_infall, gyr_since_infall, ran_key
 ):
     means_covs = _diffstarpop_means_covs(
-        diffstarpop_params,
-        logm0,
-        lgmu_infall,
-        logmhost_infall,
-        gyr_since_infall,
+        diffstarpop_params, logmp0, lgmu_infall, logmhost_infall, gyr_since_infall
     )
 
     u_indx_hi = DEFAULT_DIFFSTAR_U_PARAMS.u_ms_params.u_indx_hi
@@ -76,11 +67,7 @@ def mc_diffstar_u_params_singlegal_kernel(
 
 @jjit
 def _diffstarpop_means_covs(
-    diffstarpop_params,
-    lgm0,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
+    diffstarpop_params, lgm0, lgmu_infall, logmhost_infall, gyr_since_infall
 ):
     means_covs = _sfh_pdf_scalar_kernel(diffstarpop_params.sfh_pdf_cens_params, lgm0)
 
@@ -105,12 +92,8 @@ def _diffstarpop_means_covs_cen(diffstarpop_params, lgm0):
 
 
 @jjit
-def mc_diffstar_u_params_singlegal_kernel_cen(
-    diffstarpop_params,
-    logm0,
-    ran_key,
-):
-    means_covs = _diffstarpop_means_covs_cen(diffstarpop_params, logm0)
+def mc_diffstar_u_params_singlegal_kernel_cen(diffstarpop_params, logmp0, ran_key):
+    means_covs = _diffstarpop_means_covs_cen(diffstarpop_params, logmp0)
 
     u_indx_hi = DEFAULT_DIFFSTAR_U_PARAMS.u_ms_params.u_indx_hi
 

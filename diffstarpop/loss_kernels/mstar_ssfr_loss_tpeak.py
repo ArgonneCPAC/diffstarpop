@@ -2,24 +2,22 @@
 """
 
 from collections import OrderedDict, namedtuple
-from diffstar.utils import cumulative_mstar_formed
 
+from diffsky.diffndhist import tw_ndhist_weighted
+from diffstar.utils import cumulative_mstar_formed
 from jax import jit as jjit
 from jax import numpy as jnp
-from jax import vmap
-from jax import value_and_grad
+from jax import value_and_grad, vmap
 
-from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
 from ..kernels.defaults_tpeak import (
-    get_bounded_diffstarpop_params,
     DEFAULT_DIFFSTARPOP_U_PARAMS,
+    get_bounded_diffstarpop_params,
 )
+from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
 from .namedtuple_utils_tpeak import (
-    tuple_to_jax_array,
     array_to_tuple_new_diffstarpop_tpeak,
+    tuple_to_jax_array,
 )
-from diffsky.diffndhist import tw_ndhist_weighted
-
 
 N_TIMES = 20
 
@@ -55,7 +53,7 @@ calculate_obs_data = jjit(vmap(_calculate_obs_data_kern, in_axes=(0, 0, 0)))
 def _mc_diffstar_sfh_galpop_vmap_kern(
     diffstarpop_params,
     mah_params,
-    logm0,
+    logmp0,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -66,7 +64,7 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
     res = mc_diffstar_sfh_galpop(
         diffstarpop_params,
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -119,7 +117,7 @@ compute_diff_histograms_mstar_atmobs_z_vmap = jjit(
 def mstar_kern_tobs(u_params, loss_data):
     (
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -134,7 +132,7 @@ def mstar_kern_tobs(u_params, loss_data):
     _res = mc_diffstar_sfh_galpop_vmap(
         diffstarpop_params,
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -239,7 +237,7 @@ compute_diff_histograms_mstar_ssfr_atmobs_z_vmap = jjit(
 def mstar_ssfr_kern_tobs(u_params, loss_data):
     (
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -259,7 +257,7 @@ def mstar_ssfr_kern_tobs(u_params, loss_data):
     _res = mc_diffstar_sfh_galpop_vmap(
         diffstarpop_params,
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -388,7 +386,7 @@ def get_pred_mstar_ssfr_data_wrapper(flat_uparams, loss_data):
 def mstar_ssfr_sat_kern_tobs(u_params, loss_data):
     (
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -408,7 +406,7 @@ def mstar_ssfr_sat_kern_tobs(u_params, loss_data):
     _res = mc_diffstar_sfh_galpop_vmap(
         diffstarpop_params,
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,

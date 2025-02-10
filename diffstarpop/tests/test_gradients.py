@@ -177,13 +177,13 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
 def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
     ran_key = jran.PRNGKey(0)
 
-    logm0 = 12.5
+    logmp0 = 12.5
     lgmu_infall = -1.5
     logmhost = 13.5
     gyr_since_infall = 1.0
     args = (
         DEFAULT_DIFFSTARPOP_PARAMS,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost,
         gyr_since_infall,
@@ -204,7 +204,7 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
 
     args = (
         alt_dpp_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost,
         gyr_since_infall,
@@ -233,7 +233,7 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
         dpp_params = get_bounded_diffstarpop_params(u_params)
         args = (
             dpp_params,
-            logm0,
+            logmp0,
             lgmu_infall,
             logmhost,
             gyr_since_infall,

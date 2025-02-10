@@ -30,7 +30,7 @@ MCDiffstar = namedtuple("MCDiffstar", _mcd_keys)
 def mc_diffstar_sfh_singlegal(
     diffstarpop_params,
     mah_params,
-    logm0,
+    logmp0,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -51,8 +51,10 @@ def mc_diffstar_sfh_singlegal(
         mah_params is a tuple of floats
         DiffmahParams = logmp, logtc, early_index, late_index, tpeak
 
-    logm0 : float
-        Mhalo(t0). Note that logm0 diffmah parameter is not Mhalo(t0) when t_peak<t0.
+    logmp0 : ndarray of shape (ngals, )
+        logMhalo(t0)
+        logmp0 = logm0 when t_peak = t0
+        logmp0 < logm0 when t_peak < t0
 
     lgmu_infall : float
         Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
@@ -114,7 +116,7 @@ def mc_diffstar_sfh_singlegal(
     """
     mc_diffstar = mc_diffstar_params_singlegal(
         diffstarpop_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -139,12 +141,7 @@ def mc_diffstar_sfh_singlegal(
 
 @jjit
 def mc_diffstar_params_singlegal(
-    diffstarpop_params,
-    logm0,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
-    ran_key,
+    diffstarpop_params, logmp0, lgmu_infall, logmhost_infall, gyr_since_infall, ran_key
 ):
     """Monte Carlo realization of a single point in Diffstar parameter space.
 
@@ -153,8 +150,10 @@ def mc_diffstar_params_singlegal(
     diffstarpop_params : namedtuple
         See defaults.DEFAULT_DIFFSTARPOP_PARAMS for an example
 
-    logm0 : float
-        Mhalo(t0). Note that logm0 diffmah parameter is not Mhalo(t0) when t_peak<t0.
+    logmp0 : ndarray of shape (ngals, )
+        logMhalo(t0)
+        logmp0 = logm0 when t_peak = t0
+        logmp0 < logm0 when t_peak < t0
 
     lgmu_infall : float
         Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
@@ -198,7 +197,7 @@ def mc_diffstar_params_singlegal(
     """
     _res = mc_diffstar_u_params_singlegal_kernel(
         diffstarpop_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -213,18 +212,13 @@ def mc_diffstar_params_singlegal(
 
 @jjit
 def mc_diffstar_u_params_singlegal(
-    diffstarpop_params,
-    logm0,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
-    ran_key,
+    diffstarpop_params, logmp0, lgmu_infall, logmhost_infall, gyr_since_infall, ran_key
 ):
     """"""
 
     _res = mc_diffstar_u_params_singlegal_kernel(
         diffstarpop_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -242,19 +236,14 @@ mc_diffstar_u_params_galpop_kernel = jjit(
 
 @jjit
 def mc_diffstar_u_params_galpop(
-    diffstarpop_params,
-    logm0,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
-    ran_key,
+    diffstarpop_params, logmp0, lgmu_infall, logmhost_infall, gyr_since_infall, ran_key
 ):
     """"""
-    ngals = logm0.size
+    ngals = logmp0.size
     ran_keys = jran.split(ran_key, ngals)
     _res = mc_diffstar_u_params_galpop_kernel(
         diffstarpop_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -269,12 +258,7 @@ get_bounded_diffstar_params_galpop = jjit(vmap(get_bounded_diffstar_params, in_a
 
 @jjit
 def mc_diffstar_params_galpop(
-    diffstarpop_params,
-    logm0,
-    lgmu_infall,
-    logmhost_infall,
-    gyr_since_infall,
-    ran_key,
+    diffstarpop_params, logmp0, lgmu_infall, logmhost_infall, gyr_since_infall, ran_key
 ):
     """Monte Carlo realization of a population of points in Diffstar parameter space.
 
@@ -283,8 +267,10 @@ def mc_diffstar_params_galpop(
     diffstarpop_params : namedtuple
         See defaults.DEFAULT_DIFFSTARPOP_PARAMS for an example
 
-    logm0 :  ndarray of shape (ngals, )
-        Mhalo(t0). Note that logm0 diffmah parameter is not Mhalo(t0) when t_peak<t0.
+    logmp0 : ndarray of shape (ngals, )
+        logMhalo(t0)
+        logmp0 = logm0 when t_peak = t0
+        logmp0 < logm0 when t_peak < t0
 
     lgmu_infall : ndarray of shape (ngals, )
         Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
@@ -329,7 +315,7 @@ def mc_diffstar_params_galpop(
     """
     _res = mc_diffstar_u_params_galpop(
         diffstarpop_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -345,7 +331,7 @@ def mc_diffstar_params_galpop(
 def mc_diffstar_sfh_galpop(
     diffstarpop_params,
     mah_params,
-    logm0,
+    logmp0,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -366,8 +352,10 @@ def mc_diffstar_sfh_galpop(
         mah_params is a tuple of ndarrays of shape (ngals, )
         DiffmahParams = logmp, logtc, early_index, late_index, t_peak
 
-    logm0 : ndarray of shape (ngals, )
-        Mhalo(t0). Note that logm0 diffmah parameter is not Mhalo(t0) when t_peak<t0.
+    logmp0 : ndarray of shape (ngals, )
+        logMhalo(t0)
+        logmp0 = logm0 when t_peak = t0
+        logmp0 < logm0 when t_peak < t0
 
     lgmu_infall : ndarray of shape (ngals, )
         Base-10 log of ratio Msub(t_infall)/Mhost(t_infall)
@@ -430,7 +418,7 @@ def mc_diffstar_sfh_galpop(
     """
     _res = mc_diffstar_params_galpop(
         diffstarpop_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
