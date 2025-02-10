@@ -31,11 +31,13 @@ from fit_get_loss_helpers import (
     get_loss_data_smhm,
     get_loss_data_pdfs_mstar,
     get_loss_data_pdfs_ssfr_central,
+    get_loss_data_pdfs_ssfr_satellite,
 )
 
 from diffstarpop.loss_kernels.mstar_ssfr_loss_tpeak import (
     get_pred_mstar_data_wrapper,
     get_pred_mstar_ssfr_data_wrapper,
+    get_pred_mstar_ssfr_sat_data_wrapper,
 )
 
 BEBOP_SMHM_MEAN_DATA = "/lcrc/project/halotools/alarcon/results/"
@@ -85,9 +87,11 @@ if __name__ == "__main__":
     _, plot_data_SMHM = get_loss_data_smhm(indir, nhalos)
     _, plot_data_pdf = get_loss_data_pdfs_mstar(indir, nhalos)
     _, plot_data_pdf_ssfr_cen = get_loss_data_pdfs_ssfr_central(indir, nhalos)
+    _, plot_data_pdf_ssfr_sat = get_loss_data_pdfs_ssfr_satellite(indir, nhalos)
 
-    # Make plot SMHM ---------------------------------------------
-
+    # ============
+    # Plots SMHM
+    # ============
     print("Making SMHM plot...")
 
     (
@@ -179,7 +183,9 @@ if __name__ == "__main__":
     plt.savefig(outdir + "smhm_logsm.png", bbox_inches="tight", dpi=300)
     plt.clf()
 
-    # Make plot  Mstar PDFs ---------------------------------------------
+    # =====================================
+    # Plots for P(Mstar | Mobs, zobs)
+    # =====================================
     print("Making plot Mstar PDFs...")
 
     (
@@ -264,8 +270,10 @@ if __name__ == "__main__":
     )
     plt.clf()
 
-    # Make plot  sSFR PDFs ---------------------------------------------
-    print("Making plot sSFR PDFs...")
+    # =================================================
+    # Plots P(sSFR | Mstar, zobs) for centrals
+    # =================================================
+    print("Making plot sSFR PDFs for centrals...")
 
     (
         target_mstar_ids,
@@ -322,9 +330,81 @@ if __name__ == "__main__":
     ax[4].set_xlabel(r"$\log {\rm sSFR}(t_{\rm obs})$")
 
     fig.subplots_adjust(hspace=0.08)
-
+    fig.suptitle("Centrals", y=0.9)
     plt.savefig(
         outdir + "pdf_ssfr_centrals.png",
+        bbox_inches="tight",
+        dpi=250,
+    )
+    plt.clf()
+
+    # =================================================
+    # Plots P(sSFR | Mstar, zobs) for satellites
+    # =================================================
+
+    print("Making plot sSFR PDFs for centrals...")
+
+    (
+        target_mstar_ids,
+        logssfr_binsc_pdf,
+        target_data_sat,
+        loss_data_ssfr_sat_pred,
+    ) = plot_data_pdf_ssfr_sat
+
+    bestfit_data = get_pred_mstar_ssfr_sat_data_wrapper(
+        all_u_params, loss_data_ssfr_sat_pred
+    )
+
+    fig, ax = plt.subplots(5, 1, figsize=(12, 16), sharex=False)
+
+    colors_ssfr = plt.get_cmap("plasma")(np.linspace(0.2, 0.8, len(target_mstar_ids)))
+
+    for i in range(5):
+
+        for j in range(len(target_mstar_ids)):
+
+            ax[i].fill_between(
+                logssfr_binsc_pdf,
+                0.0,
+                target_data_sat[i, j],
+                color=colors_ssfr[j],
+                alpha=0.2,
+            )
+            ax[i].plot(
+                logssfr_binsc_pdf, bestfit_data[i, j], color=colors_ssfr[j], ls="--"
+            )
+
+        ax[i].set_ylim(0, 0.35)
+        ax[i].set_ylabel(
+            r"$P_{\rm cen}({\rm sSFR}(t_{\rm obs})| M_\star(t_{\rm obs}))$"
+        )
+        ax[i].set_title(r"${\rm Redshift}=%.1f$" % redshift_targets[i], y=0.85, x=0.9)
+        if i < 4:
+            ax[i].set_xticklabels([])
+
+    legend_elements = [
+        Patch(
+            facecolor=colors_ssfr[0],
+            edgecolor="none",
+            label=r"$M_\star(t_{\rm obs})=10$",
+            alpha=0.7,
+        ),
+        Patch(
+            facecolor=colors_ssfr[-1],
+            edgecolor="none",
+            label=r"$M_\star(t_{\rm obs})=11.5$",
+            alpha=0.7,
+        ),
+        Line2D([0], [0], color="k", ls="--", label="Diffstarpop"),
+    ]
+    ax[0].legend(handles=legend_elements, loc="upper center", fontsize=14)
+    ax[4].set_xlabel(r"$\log {\rm sSFR}(t_{\rm obs})$")
+
+    fig.subplots_adjust(hspace=0.08)
+    fig.suptitle("Satellites", y=0.9)
+
+    plt.savefig(
+        outdir + "pdf_ssfr_satellites.png",
         bbox_inches="tight",
         dpi=250,
     )
