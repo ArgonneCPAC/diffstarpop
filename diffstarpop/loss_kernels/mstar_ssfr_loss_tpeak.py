@@ -449,10 +449,10 @@ def mstar_ssfr_sat_kern_tobs(u_params, loss_data):
     nms, nsf = len(logmstar_bins) - 1, len(logssfr_bins) - 1
 
     pdfs_z0 = pred_mstar_ssfr_pdf[0:11].reshape((11, nms, nsf))
-    pdfs_z1 = pred_mstar_ssfr_pdf[11:22].reshape((11, nms, nsf))
-    pdfs_z2 = pred_mstar_ssfr_pdf[22:32].reshape((10, nms, nsf))
-    pdfs_z3 = pred_mstar_ssfr_pdf[32:42].reshape((10, nms, nsf))
-    pdfs_z4 = pred_mstar_ssfr_pdf[42:52].reshape((10, nms, nsf))
+    pdfs_z1 = pred_mstar_ssfr_pdf[11:21].reshape((10, nms, nsf))
+    pdfs_z2 = pred_mstar_ssfr_pdf[21:31].reshape((10, nms, nsf))
+    pdfs_z3 = pred_mstar_ssfr_pdf[31:40].reshape((9, nms, nsf))
+    pdfs_z4 = pred_mstar_ssfr_pdf[40:48].reshape((8, nms, nsf))
     """
     pdfs_z0 = pred_mstar_ssfr_pdf[0:8].reshape((8, nms, nsf))
     pdfs_z1 = pred_mstar_ssfr_pdf[8:16].reshape((8, nms, nsf))
@@ -461,10 +461,10 @@ def mstar_ssfr_sat_kern_tobs(u_params, loss_data):
     pdfs_z4 = pred_mstar_ssfr_pdf[31:38].reshape((7, nms, nsf))
     """
     pdfs_z0 = jnp.einsum("mab,m->ab", pdfs_z0, nmhalo_pdf[0])
-    pdfs_z1 = jnp.einsum("mab,m->ab", pdfs_z1, nmhalo_pdf[1])
+    pdfs_z1 = jnp.einsum("mab,m->ab", pdfs_z1, nmhalo_pdf[1, :-1])
     pdfs_z2 = jnp.einsum("mab,m->ab", pdfs_z2, nmhalo_pdf[2, :-1])
-    pdfs_z3 = jnp.einsum("mab,m->ab", pdfs_z3, nmhalo_pdf[3, :-1])
-    pdfs_z4 = jnp.einsum("mab,m->ab", pdfs_z4, nmhalo_pdf[4, :-1])
+    pdfs_z3 = jnp.einsum("mab,m->ab", pdfs_z3, nmhalo_pdf[3, :-2])
+    pdfs_z4 = jnp.einsum("mab,m->ab", pdfs_z4, nmhalo_pdf[4, :-3])
 
     pdfs_z0 = pdfs_z0[target_mstar_ids]
     pdfs_z1 = pdfs_z1[target_mstar_ids]
