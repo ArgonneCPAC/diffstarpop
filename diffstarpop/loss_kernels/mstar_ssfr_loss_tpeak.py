@@ -2,16 +2,14 @@
 """
 
 from collections import OrderedDict, namedtuple
-from diffmah.diffmah_kernels import mah_halopop
 from diffstar.utils import cumulative_mstar_formed
-import jax
+
 from jax import jit as jjit
 from jax import numpy as jnp
 from jax import vmap
 from jax import value_and_grad
 
 from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
-from ..sumstats.smhm import compute_smhm
 from ..kernels.defaults_tpeak import (
     get_bounded_diffstarpop_params,
     DEFAULT_DIFFSTARPOP_U_PARAMS,
@@ -20,7 +18,6 @@ from .namedtuple_utils_tpeak import (
     tuple_to_jax_array,
     array_to_tuple_new_diffstarpop_tpeak,
 )
-from diffmah import DiffmahParams
 from diffsky.diffndhist import tw_ndhist_weighted
 
 
@@ -102,8 +99,6 @@ def compute_diff_histograms_mstar_atmobs_z(
     sigma = jnp.mean(jnp.diff(logmstar_bins)) + jnp.zeros(n_halos)
     ndsig = sigma.reshape((-1, 1))
 
-    ydata = log_smh_table.reshape((-1, 1))
-
     ndbins_lo = logmstar_bins[:-1].reshape((-1, 1))
     ndbins_hi = logmstar_bins[1:].reshape((-1, 1))
 
@@ -155,9 +150,6 @@ def mstar_kern_tobs(u_params, loss_data):
     log_sfh_q = jnp.log10(sfh_q_tobs)
     log_smh_ms = jnp.log10(smh_ms_tobs)
     log_smh_q = jnp.log10(smh_q_tobs)
-
-    log_ssfrh_ms = log_sfh_ms - log_smh_ms
-    log_ssfrh_q = log_sfh_q - log_smh_q
 
     weight_q = jnp.ones_like(log_sfh_q) * frac_q
     weight_ms = jnp.ones_like(log_sfh_ms) * (1 - frac_q)

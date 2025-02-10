@@ -3,7 +3,6 @@
 
 from collections import OrderedDict, namedtuple
 
-import numpy as np
 from diffmah.diffmah_kernels import DiffmahParams
 from diffstar.utils import cumulative_mstar_formed
 from jax import jit as jjit
