@@ -170,8 +170,8 @@ SFH_PDF_FRAC_QUENCH_PDICT = OrderedDict(
 SFH_PDF_FRAC_QUENCH_BOUNDS_PDICT = OrderedDict(
     frac_quench_x0=(11.0, 13.0),
     frac_quench_k=(1.0, 5.0),
-    frac_quench_ylo=(-1.0, 0.5),
-    frac_quench_yhi=(0.5, 1.5),
+    frac_quench_ylo=(0.0, 0.5),
+    frac_quench_yhi=(0.5, 1.0),
 )
 
 SFH_PDF_QUENCH_PDICT = SFH_PDF_FRAC_QUENCH_PDICT.copy()
@@ -533,7 +533,6 @@ def _frac_quench_vs_lgm0(params, lgm0):
         params.frac_quench_ylo,
         params.frac_quench_yhi,
     )
-    frac_q = jnp.clip(frac_q, a_min=0.0, a_max=1.0)
     return frac_q
 
 
