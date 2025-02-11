@@ -1,38 +1,44 @@
+import os
+import h5py
+import numpy as np
+import jax.numpy as jnp
 import argparse
+
 from collections import OrderedDict, namedtuple
 
-import jax.numpy as jnp
-import matplotlib as mpl
-import numpy as np
-from diffmah.diffmah_kernels import DiffmahParams, mah_halopop
-from diffstar.defaults import LGT0
-from diffstar.sfh_model_tpeak import _cumulative_mstar_formed_vmap
-from fit_get_loss_helpers import (
-    get_loss_data_pdfs_mstar,
-    get_loss_data_pdfs_ssfr_central,
-    get_loss_data_smhm,
-)
 from matplotlib import pyplot as plt
-from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+from matplotlib.lines import Line2D
+import matplotlib as mpl
 
+from diffstar.defaults import TODAY, LGT0
+from diffmah.diffmah_kernels import DiffmahParams, mah_halopop
+
+from diffstar.sfh_model_tpeak import _cumulative_mstar_formed_vmap
+from diffstarpop.mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
+
+from diffstarpop.loss_kernels.namedtuple_utils_tpeak import (
+    tuple_to_array,
+    register_tuple_new_diffstarpop_tpeak,
+    array_to_tuple_new_diffstarpop_tpeak,
+)
 from diffstarpop.kernels.defaults_tpeak import (
     DEFAULT_DIFFSTARPOP_U_PARAMS,
+    DEFAULT_DIFFSTARPOP_PARAMS,
     get_bounded_diffstarpop_params,
 )
+from fit_get_loss_helpers import (
+    get_loss_data_smhm,
+    get_loss_data_pdfs_mstar,
+    get_loss_data_pdfs_ssfr_central,
+)
+
 from diffstarpop.loss_kernels.mstar_ssfr_loss_tpeak import (
     get_pred_mstar_data_wrapper,
     get_pred_mstar_ssfr_data_wrapper,
 )
-from diffstarpop.loss_kernels.namedtuple_utils_tpeak import (
-    array_to_tuple_new_diffstarpop_tpeak,
-    register_tuple_new_diffstarpop_tpeak,
-    tuple_to_array,
-)
-from diffstarpop.mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
 
 BEBOP_SMHM_MEAN_DATA = "/lcrc/project/halotools/alarcon/results/"
-
 
 if __name__ == "__main__":
 
