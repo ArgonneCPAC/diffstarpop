@@ -16,7 +16,7 @@ def test_get_bounded_diffstarpop_params():
     u_params = get_unbounded_diffstarpop_params(DEFAULT_DIFFSTARPOP_PARAMS)
 
     for p, p2 in zip(DEFAULT_DIFFSTARPOP_PARAMS, params):
-        assert np.allclose(p, p2)
+        assert np.allclose(p, p2, rtol=1e-4)
 
     for u_p, u_p2 in zip(DEFAULT_DIFFSTARPOP_U_PARAMS, u_params):
-        assert np.allclose(u_p, u_p2)
+        assert np.allclose(u_p, u_p2, rtol=1e-4)

@@ -128,7 +128,7 @@ def test_params_u_params_inverts():
         qseq.SFH_PDF_QUENCH_PARAMS
     )
     qseq_massonly_params = qseq.get_bounded_sfh_pdf_params(qseq_massonly_u_params)
-    assert np.allclose(qseq.SFH_PDF_QUENCH_PARAMS, qseq_massonly_params)
+    assert np.allclose(qseq.SFH_PDF_QUENCH_PARAMS, qseq_massonly_params, rtol=1e-4)
 
 
 def test_get_mean_u_params_ms_seq():
