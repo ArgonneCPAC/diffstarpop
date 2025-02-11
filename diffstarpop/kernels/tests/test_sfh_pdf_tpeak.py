@@ -109,9 +109,9 @@ def test_covs_are_always_covs_random_params():
             _enforce_is_cov(cov_qseq_q_block)
 
 
-def test_frac_quench_vs_lgm0():
+def test_frac_quench_vs_logmp0():
     lgmarr = np.linspace(1, 20, 100)
-    fqarr = qseq._frac_quench_vs_lgm0(qseq.SFH_PDF_QUENCH_PARAMS, lgmarr)
+    fqarr = qseq._frac_quench_vs_logmp0(qseq.SFH_PDF_QUENCH_PARAMS, lgmarr)
     assert np.all(fqarr >= 0.0)
     assert np.all(fqarr <= 1.0)
 

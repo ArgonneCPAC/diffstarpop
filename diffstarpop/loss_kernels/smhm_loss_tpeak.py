@@ -28,11 +28,7 @@ unbound_params_dict = OrderedDict(diffstarpop_u_params=DEFAULT_DIFFSTARPOP_U_PAR
 UnboundParams = namedtuple("UnboundParams", list(unbound_params_dict.keys()))
 
 
-def _calculate_obs_smh_kern(
-    tobs_target,
-    sfh_ms,
-    sfh_q,
-):
+def _calculate_obs_smh_kern(tobs_target, sfh_ms, sfh_q):
     tarr = jnp.logspace(-1, jnp.log10(tobs_target), N_TIMES)
     smh_ms = cumulative_mstar_formed_halopop(tarr, sfh_ms)
     smh_q = cumulative_mstar_formed_halopop(tarr, sfh_q)
@@ -54,7 +50,7 @@ def _mse(pred, target):
 def mean_smhm_loss_kern(diffstarpop_params, loss_data):
     (
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -66,7 +62,7 @@ def mean_smhm_loss_kern(diffstarpop_params, loss_data):
     _res = mc_diffstar_sfh_galpop(
         diffstarpop_params,
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -88,7 +84,7 @@ def mean_smhm_loss_kern(diffstarpop_params, loss_data):
 def _mc_diffstar_sfh_galpop_vmap_kern(
     diffstarpop_params,
     mah_params,
-    logm0,
+    logmp0,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -100,7 +96,7 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
     res = mc_diffstar_sfh_galpop(
         diffstarpop_params,
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -118,7 +114,7 @@ mc_diffstar_sfh_galpop_vmap = jjit(vmap(_mc_diffstar_sfh_galpop_vmap_kern, in_ax
 def mean_smhm_kern_tobs(u_params, loss_data):
     (
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -132,7 +128,7 @@ def mean_smhm_kern_tobs(u_params, loss_data):
     _res = mc_diffstar_sfh_galpop_vmap(
         diffstarpop_params,
         mah_params,
-        logm0,
+        logmp0,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,

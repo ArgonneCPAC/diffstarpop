@@ -1,20 +1,22 @@
 """
 """
 
+from collections import OrderedDict, namedtuple
+
 import numpy as np
 from diffmah.diffmah_kernels import DEFAULT_MAH_PARAMS
 from jax import random as jran
-from collections import OrderedDict, namedtuple
 
 from ...kernels.defaults_tpeak import (
-    DEFAULT_DIFFSTARPOP_U_PARAMS, DEFAULT_DIFFSTARPOP_PARAMS
-)
-from .. import smhm_loss_tpeak as smhm_loss
-from ..namedtuple_utils_tpeak import (
-    tuple_to_array,
-    register_tuple_new_diffstarpop_tpeak,
+    DEFAULT_DIFFSTARPOP_PARAMS,
+    DEFAULT_DIFFSTARPOP_U_PARAMS,
 )
 from ...mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
+from .. import smhm_loss_tpeak as smhm_loss
+from ..namedtuple_utils_tpeak import (
+    register_tuple_new_diffstarpop_tpeak,
+    tuple_to_array,
+)
 
 
 def get_test_loss_data():
@@ -30,7 +32,7 @@ def get_test_loss_data():
     ran_key_data = jran.split(ran_key, n_targets)
     t_obs_targets = np.random.uniform(low=3.0, high=13.8, size=n_targets)
     smhm_targets = np.random.uniform(low=9.0, high=11.0, size=n_targets)
-    lomg0_data = np.random.uniform(low=11.0, high=15.0, size=(n_targets, n_halos))
+    logmp0_data = np.random.uniform(low=11.0, high=15.0, size=(n_targets, n_halos))
 
     mah_params = DEFAULT_MAH_PARAMS._make([ZZ + x for x in DEFAULT_MAH_PARAMS])
     logm0 = np.random.uniform(low=11.0, high=15.0, size=(n_targets, n_halos))
@@ -40,7 +42,7 @@ def get_test_loss_data():
 
     loss_data = (
         mah_params_data,
-        lomg0_data,
+        logmp0_data,
         lgmu_infall_data,
         logmhost_infall_data,
         gyr_since_infall_data,

@@ -194,16 +194,16 @@ QseqUParams = namedtuple("QseqUParams", _UPNAMES)
 
 
 @jjit
-def _sfh_pdf_scalar_kernel(params, lgm):
-    frac_quench = _frac_quench_vs_lgm0(params, lgm)
+def _sfh_pdf_scalar_kernel(params, logmp0):
+    frac_quench = _frac_quench_vs_logmp0(params, logmp0)
 
-    mu_mseq = _get_mean_u_params_mseq(params, lgm)
+    mu_mseq = _get_mean_u_params_mseq(params, logmp0)
 
-    mu_qseq_ms_block = _get_mean_u_params_qseq_ms_block(params, lgm)
-    cov_qseq_ms_block = _get_covariance_qseq_ms_block(params, lgm)
+    mu_qseq_ms_block = _get_mean_u_params_qseq_ms_block(params, logmp0)
+    cov_qseq_ms_block = _get_covariance_qseq_ms_block(params, logmp0)
 
-    mu_qseq_q_block = _get_mean_u_params_qseq_q_block(params, lgm)
-    cov_qseq_q_block = _get_covariance_qseq_q_block(params, lgm)
+    mu_qseq_q_block = _get_mean_u_params_qseq_q_block(params, logmp0)
+    cov_qseq_q_block = _get_covariance_qseq_q_block(params, logmp0)
 
     return (
         frac_quench,
@@ -216,30 +216,30 @@ def _sfh_pdf_scalar_kernel(params, lgm):
 
 
 @jjit
-def _get_mean_u_params_mseq(params, lgm):
+def _get_mean_u_params_mseq(params, logmp0):
     ulgm = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGMCRIT_K,
         params.mean_ulgm_ms_ylo,
         params.mean_ulgm_ms_yhi,
     )
     ulgy = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.mean_ulgy_ms_ylo,
         params.mean_ulgy_ms_yhi,
     )
     ul = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.mean_ul_ms_ylo,
         params.mean_ul_ms_yhi,
     )
     utau = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.mean_utau_ms_ylo,
@@ -250,30 +250,30 @@ def _get_mean_u_params_mseq(params, lgm):
 
 
 @jjit
-def _get_mean_u_params_qseq_ms_block(params, lgm):
+def _get_mean_u_params_qseq_ms_block(params, logmp0):
     ulgm = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGMCRIT_K,
         params.mean_ulgm_quench_ylo,
         params.mean_ulgm_quench_yhi,
     )
     ulgy = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.mean_ulgy_quench_ylo,
         params.mean_ulgy_quench_yhi,
     )
     ul = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.mean_ul_quench_ylo,
         params.mean_ul_quench_yhi,
     )
     utau = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.mean_utau_quench_ylo,
@@ -284,30 +284,30 @@ def _get_mean_u_params_qseq_ms_block(params, lgm):
 
 
 @jjit
-def _get_mean_u_params_qseq_q_block(params, lgm):
+def _get_mean_u_params_qseq_q_block(params, logmp0):
     uqt = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.mean_uqt_quench_ylo,
         params.mean_uqt_quench_yhi,
     )
     uqs = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.mean_uqs_quench_ylo,
         params.mean_uqs_quench_yhi,
     )
     udrop = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.mean_udrop_quench_ylo,
         params.mean_udrop_quench_yhi,
     )
     urej = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.mean_urej_quench_ylo,
@@ -317,16 +317,16 @@ def _get_mean_u_params_qseq_q_block(params, lgm):
 
 
 @jjit
-def _get_cov_params_qseq_ms_block(params, lgm):
+def _get_cov_params_qseq_ms_block(params, logmp0):
     std_ulgm = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.std_ulgm_quench_ylo,
         params.std_ulgm_quench_yhi,
     )
     std_ulgy = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.std_ulgy_quench_ylo,
@@ -334,14 +334,14 @@ def _get_cov_params_qseq_ms_block(params, lgm):
     )
 
     std_ul = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.std_ul_quench_ylo,
         params.std_ul_quench_yhi,
     )
     std_utau = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.std_utau_quench_ylo,
@@ -349,7 +349,7 @@ def _get_cov_params_qseq_ms_block(params, lgm):
     )
 
     rho_ulgy_ulgm = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_ulgy_ulgm_quench_ylo,
@@ -357,7 +357,7 @@ def _get_cov_params_qseq_ms_block(params, lgm):
     )
 
     rho_ul_ulgm = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_ul_ulgm_quench_ylo,
@@ -365,7 +365,7 @@ def _get_cov_params_qseq_ms_block(params, lgm):
     )
 
     rho_ul_ulgy = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_ul_ulgy_quench_ylo,
@@ -373,7 +373,7 @@ def _get_cov_params_qseq_ms_block(params, lgm):
     )
 
     rho_utau_ulgm = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_utau_ulgm_quench_ylo,
@@ -381,7 +381,7 @@ def _get_cov_params_qseq_ms_block(params, lgm):
     )
 
     rho_utau_ulgy = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_utau_ulgy_quench_ylo,
@@ -389,7 +389,7 @@ def _get_cov_params_qseq_ms_block(params, lgm):
     )
 
     rho_utau_ul = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_utau_ul_quench_ylo,
@@ -409,9 +409,9 @@ def _get_cov_params_qseq_ms_block(params, lgm):
 
 
 @jjit
-def _get_cov_params_qseq_q_block(params, lgm):
+def _get_cov_params_qseq_q_block(params, logmp0):
     std_uqt = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.std_uqt_quench_ylo,
@@ -419,7 +419,7 @@ def _get_cov_params_qseq_q_block(params, lgm):
     )
 
     std_uqs = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.std_uqs_quench_ylo,
@@ -427,7 +427,7 @@ def _get_cov_params_qseq_q_block(params, lgm):
     )
 
     std_udrop = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.std_udrop_quench_ylo,
@@ -435,7 +435,7 @@ def _get_cov_params_qseq_q_block(params, lgm):
     )
 
     std_urej = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.std_urej_quench_ylo,
@@ -444,7 +444,7 @@ def _get_cov_params_qseq_q_block(params, lgm):
     diags = std_uqt, std_uqs, std_udrop, std_urej
 
     rho_uqs_uqt = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_uqs_uqt_quench_ylo,
@@ -452,7 +452,7 @@ def _get_cov_params_qseq_q_block(params, lgm):
     )
 
     rho_udrop_uqs = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_udrop_uqs_quench_ylo,
@@ -460,7 +460,7 @@ def _get_cov_params_qseq_q_block(params, lgm):
     )
 
     rho_udrop_uqt = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_udrop_uqt_quench_ylo,
@@ -468,7 +468,7 @@ def _get_cov_params_qseq_q_block(params, lgm):
     )
 
     rho_urej_uqt = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_urej_uqt_quench_ylo,
@@ -476,7 +476,7 @@ def _get_cov_params_qseq_q_block(params, lgm):
     )
 
     rho_urej_uqs = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_urej_uqs_quench_ylo,
@@ -484,7 +484,7 @@ def _get_cov_params_qseq_q_block(params, lgm):
     )
 
     rho_urej_udrop = _sigmoid(
-        lgm,
+        logmp0,
         params.mean_lgmhalo_x0,
         LGM_K,
         params.rho_urej_udrop_quench_ylo,
@@ -503,8 +503,8 @@ def _get_cov_params_qseq_q_block(params, lgm):
 
 
 @jjit
-def _get_covariance_qseq_q_block(params, lgm):
-    diags, off_diags = _get_cov_params_qseq_q_block(params, lgm)
+def _get_covariance_qseq_q_block(params, logmp0):
+    diags, off_diags = _get_cov_params_qseq_q_block(params, logmp0)
     ones = jnp.ones(len(diags))
     x = jnp.array((*ones, *off_diags))
     M = get_cholesky_from_params(x)
@@ -514,8 +514,8 @@ def _get_covariance_qseq_q_block(params, lgm):
 
 
 @jjit
-def _get_covariance_qseq_ms_block(params, lgm):
-    diags, off_diags = _get_cov_params_qseq_ms_block(params, lgm)
+def _get_covariance_qseq_ms_block(params, logmp0):
+    diags, off_diags = _get_cov_params_qseq_ms_block(params, logmp0)
     ones = jnp.ones(len(diags))
     x = jnp.array((*ones, *off_diags))
     M = get_cholesky_from_params(x)
@@ -525,9 +525,9 @@ def _get_covariance_qseq_ms_block(params, lgm):
 
 
 @jjit
-def _frac_quench_vs_lgm0(params, lgm0):
+def _frac_quench_vs_logmp0(params, logmp0):
     frac_q = _sigmoid(
-        lgm0,
+        logmp0,
         params.frac_quench_x0,
         params.frac_quench_k,
         params.frac_quench_ylo,
