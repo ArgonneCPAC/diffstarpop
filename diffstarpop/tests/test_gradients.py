@@ -67,7 +67,7 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
     z_obs = 0.01
     Lbox = 75.0
     volume_com = Lbox**3
-    subcat = mc_subhalos(subcat_key, lgmp_min, z_obs, volume_com)
+    subcat = mc_subhalos(subcat_key, z_obs, lgmp_min=lgmp_min, volume_com=volume_com)
 
     n_halos = subcat.logmhost_ult_inf.shape[0]
 
