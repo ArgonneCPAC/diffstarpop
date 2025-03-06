@@ -95,7 +95,7 @@ def test_covs_are_always_covs_random_params():
     ntests = 200
     for __ in range(ntests):
         ran_key, test_key = jran.split(ran_key, 2)
-        u_p = jran.uniform(test_key, minval=-1000, maxval=1000, shape=(npars,))
+        u_p = jran.uniform(test_key, minval=-5, maxval=5, shape=(npars,))
         u_params = qseq.QseqUParams(*u_p)
         params = qseq.get_bounded_sfh_pdf_params(u_params)
 

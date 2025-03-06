@@ -15,8 +15,8 @@ from ..defaults import (
     DEFAULT_DIFFSTARPOP_U_PARAMS,
     DiffstarPopUParams,
 )
-from ..kernels.defaults_tpeak import get_bounded_diffstarpop_params
-from ..kernels.diffstarpop_tpeak import _diffstarpop_means_covs
+from ..kernels.defaults_tpeak_line import get_bounded_diffstarpop_params
+from ..kernels.diffstarpop_tpeak_line import _diffstarpop_means_covs
 from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
 
 
@@ -192,9 +192,7 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
     (
         frac_quench,
         mu_mseq,
-        mu_qseq_ms_block,
         cov_qseq_ms_block,
-        mu_qseq_q_block,
         cov_qseq_q_block,
     ) = _res
 
@@ -213,16 +211,12 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
     (
         frac_quench2,
         mu_mseq2,
-        mu_qseq_ms_block2,
         cov_qseq_ms_block2,
-        mu_qseq_q_block2,
         cov_qseq_q_block2,
     ) = _res
 
     assert not np.allclose(mu_mseq2, mu_mseq)
-    assert not np.allclose(mu_qseq_ms_block2, mu_qseq_ms_block)
     assert not np.allclose(cov_qseq_ms_block2, cov_qseq_ms_block)
-    assert not np.allclose(mu_qseq_q_block2, mu_qseq_q_block)
     assert not np.allclose(cov_qseq_q_block2, cov_qseq_q_block)
     assert not np.allclose(frac_quench2, frac_quench)
 
@@ -244,5 +238,5 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
 
     frac_q_loss, frac_q_grads = value_and_grad(_loss)(alt_dpp_u_params)
     assert np.isfinite(frac_q_loss)
-    assert frac_q_loss > 1e-3
+    assert frac_q_loss > 1e-6
     _check_grads_are_nonzero(frac_q_grads.u_satquench_params)

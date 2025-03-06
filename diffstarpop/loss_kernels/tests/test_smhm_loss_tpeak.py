@@ -7,7 +7,7 @@ import numpy as np
 from diffmah.diffmah_kernels import DEFAULT_MAH_PARAMS
 from jax import random as jran
 
-from ...kernels.defaults_tpeak import (
+from ...kernels.defaults_tpeak_line import (
     DEFAULT_DIFFSTARPOP_PARAMS,
     DEFAULT_DIFFSTARPOP_U_PARAMS,
 )

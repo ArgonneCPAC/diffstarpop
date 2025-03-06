@@ -6,7 +6,7 @@ from diffmah.diffmah_kernels import DEFAULT_MAH_PARAMS
 from jax import random as jran
 
 from .. import mc_diffstarpop_cen_tpeak as mcdsp
-from ..kernels.defaults_tpeak import DEFAULT_DIFFSTARPOP_PARAMS
+from ..kernels.defaults_tpeak_line import DEFAULT_DIFFSTARPOP_PARAMS
 
 
 def test_mc_diffstar_params_singlegal_cen_evaluates():

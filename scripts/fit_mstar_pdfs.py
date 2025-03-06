@@ -28,7 +28,7 @@ from diffstarpop.loss_kernels.namedtuple_utils_tpeak import (
     register_tuple_new_diffstarpop_tpeak,
     array_to_tuple_new_diffstarpop_tpeak,
 )
-from diffstarpop.kernels.defaults_tpeak import (
+from diffstarpop.kernels.defaults_tpeak_line import (
     DEFAULT_DIFFSTARPOP_U_PARAMS,
     DEFAULT_DIFFSTARPOP_PARAMS,
     get_bounded_diffstarpop_params,
