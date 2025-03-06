@@ -7,197 +7,171 @@ from jax import jit as jjit
 from jax import numpy as jnp
 from jax import vmap
 
-from ..utils import (
-    _inverse_sigmoid,
-    _sigmoid,
-    covariance_from_correlation,
-    smoothly_clipped_line,
-)
-
+from ..utils import _inverse_sigmoid, _sigmoid, covariance_from_correlation
 
 TODAY = 13.8
 LGT0 = jnp.log10(TODAY)
 
-LGM_X0 = 12.5
-LGM_K = 2.0
+LGM_X0, LGM_K = 12.5, 2.0
 LGMCRIT_K = 4.0
 BOUNDING_K = 0.1
 RHO_BOUNDS = (-0.3, 0.3)
 
 SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
-    mean_ulgm_int=12.16,
-    mean_ulgm_slp=0.11,
-    mean_ulgy_int=-0.04,
-    mean_ulgy_slp=-0.17,
-    mean_ul_int=0.09,
-    mean_ul_slp=0.22,
-    mean_utau_int=1.36,
-    mean_utau_slp=-12.57,
-    mean_uqt_int=0.93,
-    mean_uqt_slp=-0.19,
-    mean_uqs_int=-0.36,
-    mean_uqs_slp=0.68,
-    mean_udrop_int=-1.84,
-    mean_udrop_slp=-0.44,
-    mean_urej_int=0.02,
-    mean_urej_slp=-1.09,
+    mean_lgmhalo_x0=13.146,
+    mean_ulgm_ms_ylo=11.871,
+    mean_ulgm_ms_yhi=11.152,
+    mean_ulgy_ms_ylo=-0.481,
+    mean_ulgy_ms_yhi=2.322,
+    mean_ul_ms_ylo=0.543,
+    mean_ul_ms_yhi=-4.995,
+    mean_utau_ms_ylo=9.437,
+    mean_utau_ms_yhi=-6.089,
+    mean_ulgm_quench_ylo=11.962,
+    mean_ulgm_quench_yhi=12.074,
+    mean_ulgy_quench_ylo=5.400,
+    mean_ulgy_quench_yhi=-0.592,
+    mean_ul_quench_ylo=-0.041,
+    mean_ul_quench_yhi=-0.809,
+    mean_utau_quench_ylo=11.339,
+    mean_utau_quench_yhi=-4.601,
+    mean_uqt_quench_ylo=1.010,
+    mean_uqt_quench_yhi=0.186,
+    mean_uqs_quench_ylo=-0.952,
+    mean_uqs_quench_yhi=0.509,
+    mean_udrop_quench_ylo=-2.971,
+    mean_udrop_quench_yhi=-1.822,
+    mean_urej_quench_ylo=0.008,
+    mean_urej_quench_yhi=-8.250,
 )
 SFH_PDF_QUENCH_MU_BOUNDS_PDICT = OrderedDict(
-    mean_ulgm_int=(11.0, 13.0),
-    mean_ulgm_slp=(-20.0, 20.0),
-    mean_ulgy_int=(-1.0, 3.5),
-    mean_ulgy_slp=(-20.0, 20.0),
-    mean_ul_int=(-3.0, 5.0),
-    mean_ul_slp=(-20.0, 20.0),
-    mean_utau_int=(-25.0, 50.0),
-    mean_utau_slp=(-20.0, 20.0),
-    mean_uqt_int=(0.0, 2.0),
-    mean_uqt_slp=(-20.0, 20.0),
-    mean_uqs_int=(-5.0, 2.0),
-    mean_uqs_slp=(-20.0, 20.0),
-    mean_udrop_int=(-3.0, 2.0),
-    mean_udrop_slp=(-20.0, 20.0),
-    mean_urej_int=(-10.0, 2.0),
-    mean_urej_slp=(-20.0, 20.0),
+    mean_lgmhalo_x0=(11.5, 13.5),
+    mean_ulgm_ms_ylo=(11.0, 13.0),
+    mean_ulgm_ms_yhi=(11.0, 13.0),
+    mean_ulgy_ms_ylo=(-1.0, 1.5),
+    mean_ulgy_ms_yhi=(-1.0, 2.5),
+    mean_ul_ms_ylo=(-3.0, 5.0),
+    mean_ul_ms_yhi=(-5.0, 2.5),
+    mean_utau_ms_ylo=(-25.0, 50.0),
+    mean_utau_ms_yhi=(-25.0, 50.0),
+    mean_ulgm_quench_ylo=(11.5, 13.0),
+    mean_ulgm_quench_yhi=(11.5, 13.0),
+    mean_ulgy_quench_ylo=(0.0, 5.5),
+    mean_ulgy_quench_yhi=(-2.0, 0.5),
+    mean_ul_quench_ylo=(-1.0, 3.0),
+    mean_ul_quench_yhi=(-10.0, 3.0),
+    mean_utau_quench_ylo=(-25.0, 50.0),
+    mean_utau_quench_yhi=(-25.0, 50.0),
+    mean_uqt_quench_ylo=(0.0, 2.0),
+    mean_uqt_quench_yhi=(0.0, 2.0),
+    mean_uqs_quench_ylo=(-5.0, 2.0),
+    mean_uqs_quench_yhi=(-5.0, 2.0),
+    mean_udrop_quench_ylo=(-3.0, 2.0),
+    mean_udrop_quench_yhi=(-3.0, 2.0),
+    mean_urej_quench_ylo=(-10.0, 2.0),
+    mean_urej_quench_yhi=(-10.0, 2.0),
 )
 
 SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT = OrderedDict(
-    std_ulgm_int=0.22,
-    std_ulgm_slp=0.11,
-    std_ulgy_int=0.32,
-    std_ulgy_slp=0.03,
-    std_ul_int=0.32,
-    std_ul_slp=0.10,
-    std_utau_int=6.85,
-    std_utau_slp=0.96,
-    rho_ulgy_ulgm_int=0.001,
-    rho_ulgy_ulgm_slp=0.001,
-    rho_ul_ulgm_int=0.001,
-    rho_ul_ulgm_slp=0.001,
-    rho_ul_ulgy_int=0.001,
-    rho_ul_ulgy_slp=0.001,
-    rho_utau_ulgm_int=0.001,
-    rho_utau_ulgm_slp=0.001,
-    rho_utau_ulgy_int=0.001,
-    rho_utau_ulgy_slp=0.001,
-    rho_utau_ul_int=0.001,
-    rho_utau_ul_slp=0.001,
+    std_ulgm_quench_ylo=0.257,
+    std_ulgm_quench_yhi=0.249,
+    std_ulgy_quench_ylo=0.316,
+    std_ulgy_quench_yhi=0.120,
+    std_ul_quench_ylo=0.368,
+    std_ul_quench_yhi=0.259,
+    std_utau_quench_ylo=1.752,
+    std_utau_quench_yhi=2.324,
+    rho_ulgy_ulgm_quench_ylo=0.028,
+    rho_ulgy_ulgm_quench_yhi=-0.296,
+    rho_ul_ulgm_quench_ylo=-0.160,
+    rho_ul_ulgm_quench_yhi=-0.281,
+    rho_ul_ulgy_quench_ylo=0.209,
+    rho_ul_ulgy_quench_yhi=0.256,
+    rho_utau_ulgm_quench_ylo=-0.278,
+    rho_utau_ulgm_quench_yhi=0.293,
+    rho_utau_ulgy_quench_ylo=0.286,
+    rho_utau_ulgy_quench_yhi=0.296,
+    rho_utau_ul_quench_ylo=-0.298,
+    rho_utau_ul_quench_yhi=-0.106,
 )
 SFH_PDF_QUENCH_COV_MS_BLOCK_BOUNDS_PDICT = OrderedDict(
-    std_ulgm_int=(0.01, 1.0),
-    std_ulgm_slp=(-1.00, 1.0),
-    std_ulgy_int=(0.01, 1.0),
-    std_ulgy_slp=(-1.00, 1.0),
-    std_ul_int=(0.01, 1.0),
-    std_ul_slp=(-1.00, 1.0),
-    std_utau_int=(1.00, 12.0),
-    std_utau_slp=(-3.00, 3.0),
-    rho_ulgy_ulgm_int=(-20.0, 20.0),
-    rho_ulgy_ulgm_slp=(-20.0, 20.0),
-    rho_ul_ulgm_int=(-20.0, 20.0),
-    rho_ul_ulgm_slp=(-20.0, 20.0),
-    rho_ul_ulgy_int=(-20.0, 20.0),
-    rho_ul_ulgy_slp=(-20.0, 20.0),
-    rho_utau_ulgm_int=(-20.0, 20.0),
-    rho_utau_ulgm_slp=(-20.0, 20.0),
-    rho_utau_ulgy_int=(-20.0, 20.0),
-    rho_utau_ulgy_slp=(-20.0, 20.0),
-    rho_utau_ul_int=(-20.0, 20.0),
-    rho_utau_ul_slp=(-20.0, 20.0),
+    std_ulgm_quench_ylo=(0.1, 1.0),
+    std_ulgm_quench_yhi=(0.1, 1.0),
+    std_ulgy_quench_ylo=(0.1, 1.0),
+    std_ulgy_quench_yhi=(0.1, 1.0),
+    std_ul_quench_ylo=(0.25, 3.0),
+    std_ul_quench_yhi=(0.25, 3.0),
+    std_utau_quench_ylo=(1.0, 8.0),
+    std_utau_quench_yhi=(1.0, 8.0),
+    rho_ulgy_ulgm_quench_ylo=RHO_BOUNDS,
+    rho_ulgy_ulgm_quench_yhi=RHO_BOUNDS,
+    rho_ul_ulgm_quench_ylo=RHO_BOUNDS,
+    rho_ul_ulgm_quench_yhi=RHO_BOUNDS,
+    rho_ul_ulgy_quench_ylo=RHO_BOUNDS,
+    rho_ul_ulgy_quench_yhi=RHO_BOUNDS,
+    rho_utau_ulgm_quench_ylo=RHO_BOUNDS,
+    rho_utau_ulgm_quench_yhi=RHO_BOUNDS,
+    rho_utau_ulgy_quench_ylo=RHO_BOUNDS,
+    rho_utau_ulgy_quench_yhi=RHO_BOUNDS,
+    rho_utau_ul_quench_ylo=RHO_BOUNDS,
+    rho_utau_ul_quench_yhi=RHO_BOUNDS,
 )
 
 SFH_PDF_QUENCH_COV_Q_BLOCK_PDICT = OrderedDict(
-    std_uqt_int=0.09,
-    std_uqt_slp=0.02,
-    std_uqs_int=0.55,
-    std_uqs_slp=0.02,
-    std_udrop_int=0.73,
-    std_udrop_slp=-0.07,
-    std_urej_int=1.12,
-    std_urej_slp=-0.26,
-    rho_uqs_uqt_int=0.001,
-    rho_uqs_uqt_slp=0.001,
-    rho_udrop_uqt_int=0.001,
-    rho_udrop_uqt_slp=0.001,
-    rho_udrop_uqs_int=0.001,
-    rho_udrop_uqs_slp=0.001,
-    rho_urej_uqt_int=0.001,
-    rho_urej_uqt_slp=0.001,
-    rho_urej_uqs_int=0.001,
-    rho_urej_uqs_slp=0.001,
-    rho_urej_udrop_int=0.001,
-    rho_urej_udrop_slp=0.001,
+    std_uqt_quench_ylo=0.100,
+    std_uqt_quench_yhi=0.063,
+    std_uqs_quench_ylo=0.117,
+    std_uqs_quench_yhi=0.803,
+    std_udrop_quench_ylo=0.422,
+    std_udrop_quench_yhi=0.692,
+    std_urej_quench_ylo=0.427,
+    std_urej_quench_yhi=0.944,
+    rho_uqs_uqt_quench_ylo=0.221,
+    rho_uqs_uqt_quench_yhi=0.178,
+    rho_udrop_uqt_quench_ylo=0.011,
+    rho_udrop_uqt_quench_yhi=-0.070,
+    rho_udrop_uqs_quench_ylo=-0.039,
+    rho_udrop_uqs_quench_yhi=0.107,
+    rho_urej_uqt_quench_ylo=-0.214,
+    rho_urej_uqt_quench_yhi=-0.142,
+    rho_urej_uqs_quench_ylo=0.234,
+    rho_urej_uqs_quench_yhi=0.238,
+    rho_urej_udrop_quench_ylo=0.216,
+    rho_urej_udrop_quench_yhi=0.259,
 )
 SFH_PDF_QUENCH_COV_Q_BLOCK_BOUNDS_PDICT = OrderedDict(
-    std_uqt_int=(0.01, 0.5),
-    std_uqt_slp=(-1.00, 1.0),
-    std_uqs_int=(0.01, 1.0),
-    std_uqs_slp=(-1.00, 1.0),
-    std_udrop_int=(0.01, 2.0),
-    std_udrop_slp=(-1.00, 1.0),
-    std_urej_int=(0.01, 2.0),
-    std_urej_slp=(-1.00, 1.0),
-    rho_uqs_uqt_int=(-20.0, 20.0),
-    rho_uqs_uqt_slp=(-20.0, 20.0),
-    rho_udrop_uqt_int=(-20.0, 20.0),
-    rho_udrop_uqt_slp=(-20.0, 20.0),
-    rho_udrop_uqs_int=(-20.0, 20.0),
-    rho_udrop_uqs_slp=(-20.0, 20.0),
-    rho_urej_uqt_int=(-20.0, 20.0),
-    rho_urej_uqt_slp=(-20.0, 20.0),
-    rho_urej_uqs_int=(-20.0, 20.0),
-    rho_urej_uqs_slp=(-20.0, 20.0),
-    rho_urej_udrop_int=(-20.0, 20.0),
-    rho_urej_udrop_slp=(-20.0, 20.0),
+    std_uqt_quench_ylo=(0.01, 0.5),
+    std_uqt_quench_yhi=(0.01, 0.5),
+    std_uqs_quench_ylo=(0.01, 1.0),
+    std_uqs_quench_yhi=(0.01, 1.0),
+    std_udrop_quench_ylo=(0.01, 1.0),
+    std_udrop_quench_yhi=(0.01, 1.0),
+    std_urej_quench_ylo=(0.01, 1.0),
+    std_urej_quench_yhi=(0.01, 1.0),
+    rho_uqs_uqt_quench_ylo=RHO_BOUNDS,
+    rho_uqs_uqt_quench_yhi=RHO_BOUNDS,
+    rho_udrop_uqt_quench_ylo=RHO_BOUNDS,
+    rho_udrop_uqt_quench_yhi=RHO_BOUNDS,
+    rho_udrop_uqs_quench_ylo=RHO_BOUNDS,
+    rho_udrop_uqs_quench_yhi=RHO_BOUNDS,
+    rho_urej_uqt_quench_ylo=RHO_BOUNDS,
+    rho_urej_uqt_quench_yhi=RHO_BOUNDS,
+    rho_urej_uqs_quench_ylo=RHO_BOUNDS,
+    rho_urej_uqs_quench_yhi=RHO_BOUNDS,
+    rho_urej_udrop_quench_ylo=RHO_BOUNDS,
+    rho_urej_udrop_quench_yhi=RHO_BOUNDS,
 )
 SFH_PDF_FRAC_QUENCH_PDICT = OrderedDict(
-    frac_quench_x0=12.07,
-    frac_quench_k=2.87,
-    frac_quench_ylo=0.01,
-    frac_quench_yhi=0.99,
+    frac_quench_x0=12.176,
+    frac_quench_k=2.576,
+    frac_quench_ylo=0.077,
+    frac_quench_yhi=0.728,
 )
 SFH_PDF_FRAC_QUENCH_BOUNDS_PDICT = OrderedDict(
-    frac_quench_x0=(10.0, 13.0),
-    frac_quench_k=(0.01, 5.0),
+    frac_quench_x0=(11.0, 13.0),
+    frac_quench_k=(1.0, 5.0),
     frac_quench_ylo=(0.0, 0.5),
     frac_quench_yhi=(0.5, 1.0),
-)
-
-BOUNDING_MEAN_VALS_PDICT = OrderedDict(
-    mean_ulgm=(11.0, 13.0),
-    mean_ulgy=(-1.0, 3.5),
-    mean_ul=(-3.0, 5.0),
-    mean_utau=(-25.0, 50.0),
-    mean_uqt=(0.0, 2.0),
-    mean_uqs=(-5.0, 2.0),
-    mean_udrop=(-3.0, 2.0),
-    mean_urej=(-10.0, 2.0),
-)
-
-BOUNDING_STD_VALS_PDICT = OrderedDict(
-    std_ulgm=(0.01, 1.0),
-    std_ulgy=(0.01, 1.0),
-    std_ul=(0.01, 1.0),
-    std_utau=(1.00, 12.0),
-    std_uqt=(0.01, 0.5),
-    std_uqs=(0.01, 1.0),
-    std_udrop=(0.01, 2.0),
-    std_urej=(0.01, 2.0),
-)
-
-BOUNDING_RHO_VALS_PDICT = OrderedDict(
-    rho_ulgy_ulgm=RHO_BOUNDS,
-    rho_ul_ulgm=RHO_BOUNDS,
-    rho_ul_ulgy=RHO_BOUNDS,
-    rho_utau_ulgm=RHO_BOUNDS,
-    rho_utau_ulgy=RHO_BOUNDS,
-    rho_utau_ul=RHO_BOUNDS,
-    rho_uqs_uqt=RHO_BOUNDS,
-    rho_udrop_uqt=RHO_BOUNDS,
-    rho_udrop_uqs=RHO_BOUNDS,
-    rho_urej_uqt=RHO_BOUNDS,
-    rho_urej_uqs=RHO_BOUNDS,
-    rho_urej_udrop=RHO_BOUNDS,
 )
 
 SFH_PDF_QUENCH_PDICT = SFH_PDF_FRAC_QUENCH_PDICT.copy()
@@ -210,9 +184,6 @@ SFH_PDF_QUENCH_BOUNDS_PDICT.update(SFH_PDF_QUENCH_MU_BOUNDS_PDICT)
 SFH_PDF_QUENCH_BOUNDS_PDICT.update(SFH_PDF_QUENCH_COV_MS_BLOCK_BOUNDS_PDICT)
 SFH_PDF_QUENCH_BOUNDS_PDICT.update(SFH_PDF_QUENCH_COV_Q_BLOCK_BOUNDS_PDICT)
 
-BOUNDING_VALS_PDICT = BOUNDING_MEAN_VALS_PDICT.copy()
-BOUNDING_VALS_PDICT.update(BOUNDING_STD_VALS_PDICT.copy())
-BOUNDING_VALS_PDICT.update(BOUNDING_RHO_VALS_PDICT.copy())
 
 QseqParams = namedtuple("QseqParams", list(SFH_PDF_QUENCH_PDICT.keys()))
 SFH_PDF_QUENCH_PARAMS = QseqParams(**SFH_PDF_QUENCH_PDICT)
@@ -221,162 +192,208 @@ SFH_PDF_QUENCH_PBOUNDS = QseqParams(**SFH_PDF_QUENCH_BOUNDS_PDICT)
 _UPNAMES = ["u_" + key for key in QseqParams._fields]
 QseqUParams = namedtuple("QseqUParams", _UPNAMES)
 
-BoundingParams = namedtuple("BoundingParams", list(BOUNDING_VALS_PDICT.keys()))
-BOUNDING_VALS = BoundingParams(**BOUNDING_VALS_PDICT)
-
-
-def line_model(x, y0, m, y_lo, y_hi):
-    return smoothly_clipped_line(x, LGM_X0, y0, m, y_lo, y_hi)
-
 
 @jjit
 def _sfh_pdf_scalar_kernel(params, logmp0):
     frac_quench = _frac_quench_vs_logmp0(params, logmp0)
 
-    mu = _get_mean_u_params(params, logmp0)
+    mu_mseq = _get_mean_u_params_mseq(params, logmp0)
+
+    mu_qseq_ms_block = _get_mean_u_params_qseq_ms_block(params, logmp0)
     cov_qseq_ms_block = _get_covariance_qseq_ms_block(params, logmp0)
+
+    mu_qseq_q_block = _get_mean_u_params_qseq_q_block(params, logmp0)
     cov_qseq_q_block = _get_covariance_qseq_q_block(params, logmp0)
 
     return (
         frac_quench,
-        mu,
+        mu_mseq,
+        mu_qseq_ms_block,
         cov_qseq_ms_block,
+        mu_qseq_q_block,
         cov_qseq_q_block,
     )
 
 
 @jjit
-def _get_mean_u_params(params, logmp0):
-
-    ulgm = line_model(
+def _get_mean_u_params_mseq(params, logmp0):
+    ulgm = _sigmoid(
         logmp0,
-        params.mean_ulgm_int,
-        params.mean_ulgm_slp,
-        *BOUNDING_VALS.mean_ulgm,
+        params.mean_lgmhalo_x0,
+        LGMCRIT_K,
+        params.mean_ulgm_ms_ylo,
+        params.mean_ulgm_ms_yhi,
+    )
+    ulgy = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_ulgy_ms_ylo,
+        params.mean_ulgy_ms_yhi,
+    )
+    ul = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_ul_ms_ylo,
+        params.mean_ul_ms_yhi,
+    )
+    utau = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_utau_ms_ylo,
+        params.mean_utau_ms_yhi,
     )
 
-    ulgy = line_model(
+    return (ulgm, ulgy, ul, utau)
+
+
+@jjit
+def _get_mean_u_params_qseq_ms_block(params, logmp0):
+    ulgm = _sigmoid(
         logmp0,
-        params.mean_ulgy_int,
-        params.mean_ulgy_slp,
-        *BOUNDING_VALS.mean_ulgy,
+        params.mean_lgmhalo_x0,
+        LGMCRIT_K,
+        params.mean_ulgm_quench_ylo,
+        params.mean_ulgm_quench_yhi,
+    )
+    ulgy = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_ulgy_quench_ylo,
+        params.mean_ulgy_quench_yhi,
+    )
+    ul = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_ul_quench_ylo,
+        params.mean_ul_quench_yhi,
+    )
+    utau = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_utau_quench_ylo,
+        params.mean_utau_quench_yhi,
     )
 
-    ul = line_model(
-        logmp0,
-        params.mean_ul_int,
-        params.mean_ul_slp,
-        *BOUNDING_VALS.mean_ul,
-    )
+    return (ulgm, ulgy, ul, utau)
 
-    utau = line_model(
-        logmp0,
-        params.mean_utau_int,
-        params.mean_utau_slp,
-        *BOUNDING_VALS.mean_utau,
-    )
 
-    uqt = line_model(
+@jjit
+def _get_mean_u_params_qseq_q_block(params, logmp0):
+    uqt = _sigmoid(
         logmp0,
-        params.mean_uqt_int,
-        params.mean_uqt_slp,
-        *BOUNDING_VALS.mean_uqt,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_uqt_quench_ylo,
+        params.mean_uqt_quench_yhi,
     )
-
-    uqs = line_model(
+    uqs = _sigmoid(
         logmp0,
-        params.mean_uqs_int,
-        params.mean_uqs_slp,
-        *BOUNDING_VALS.mean_uqs,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_uqs_quench_ylo,
+        params.mean_uqs_quench_yhi,
     )
-
-    udrop = line_model(
+    udrop = _sigmoid(
         logmp0,
-        params.mean_udrop_int,
-        params.mean_udrop_slp,
-        *BOUNDING_VALS.mean_udrop,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_udrop_quench_ylo,
+        params.mean_udrop_quench_yhi,
     )
-
-    urej = line_model(
+    urej = _sigmoid(
         logmp0,
-        params.mean_urej_int,
-        params.mean_urej_slp,
-        *BOUNDING_VALS.mean_urej,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.mean_urej_quench_ylo,
+        params.mean_urej_quench_yhi,
     )
-    return (ulgm, ulgy, ul, utau, uqt, uqs, udrop, urej)
+    return uqt, uqs, udrop, urej
 
 
 @jjit
 def _get_cov_params_qseq_ms_block(params, logmp0):
-
-    std_ulgm = line_model(
+    std_ulgm = _sigmoid(
         logmp0,
-        params.std_ulgm_int,
-        params.std_ulgm_slp,
-        *BOUNDING_VALS.std_ulgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_ulgm_quench_ylo,
+        params.std_ulgm_quench_yhi,
+    )
+    std_ulgy = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_ulgy_quench_ylo,
+        params.std_ulgy_quench_yhi,
     )
 
-    std_ulgy = line_model(
+    std_ul = _sigmoid(
         logmp0,
-        params.std_ulgy_int,
-        params.std_ulgy_slp,
-        *BOUNDING_VALS.std_ulgy,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_ul_quench_ylo,
+        params.std_ul_quench_yhi,
+    )
+    std_utau = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_utau_quench_ylo,
+        params.std_utau_quench_yhi,
     )
 
-    std_ul = line_model(
+    rho_ulgy_ulgm = _sigmoid(
         logmp0,
-        params.std_ul_int,
-        params.std_ul_slp,
-        *BOUNDING_VALS.std_ul,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_ulgy_ulgm_quench_ylo,
+        params.rho_ulgy_ulgm_quench_yhi,
     )
 
-    std_utau = line_model(
+    rho_ul_ulgm = _sigmoid(
         logmp0,
-        params.std_utau_int,
-        params.std_utau_slp,
-        *BOUNDING_VALS.std_utau,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_ul_ulgm_quench_ylo,
+        params.rho_ul_ulgm_quench_yhi,
     )
 
-    rho_ulgy_ulgm = line_model(
+    rho_ul_ulgy = _sigmoid(
         logmp0,
-        params.rho_ulgy_ulgm_int,
-        params.rho_ulgy_ulgm_slp,
-        *BOUNDING_VALS.rho_ulgy_ulgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_ul_ulgy_quench_ylo,
+        params.rho_ul_ulgy_quench_yhi,
     )
 
-    rho_ul_ulgm = line_model(
+    rho_utau_ulgm = _sigmoid(
         logmp0,
-        params.rho_ul_ulgm_int,
-        params.rho_ul_ulgm_slp,
-        *BOUNDING_VALS.rho_ul_ulgm,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_utau_ulgm_quench_ylo,
+        params.rho_utau_ulgm_quench_yhi,
     )
 
-    rho_ul_ulgy = line_model(
+    rho_utau_ulgy = _sigmoid(
         logmp0,
-        params.rho_ul_ulgy_int,
-        params.rho_ul_ulgy_slp,
-        *BOUNDING_VALS.rho_ul_ulgy,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_utau_ulgy_quench_ylo,
+        params.rho_utau_ulgy_quench_yhi,
     )
 
-    rho_utau_ulgm = line_model(
+    rho_utau_ul = _sigmoid(
         logmp0,
-        params.rho_utau_ulgm_int,
-        params.rho_utau_ulgm_slp,
-        *BOUNDING_VALS.rho_utau_ulgm,
-    )
-
-    rho_utau_ulgy = line_model(
-        logmp0,
-        params.rho_utau_ulgy_int,
-        params.rho_utau_ulgy_slp,
-        *BOUNDING_VALS.rho_utau_ulgy,
-    )
-
-    rho_utau_ul = line_model(
-        logmp0,
-        params.rho_utau_ul_int,
-        params.rho_utau_ul_slp,
-        *BOUNDING_VALS.rho_utau_ul,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_utau_ul_quench_ylo,
+        params.rho_utau_ul_quench_yhi,
     )
 
     diags = std_ulgm, std_ulgy, std_ul, std_utau
@@ -393,78 +410,86 @@ def _get_cov_params_qseq_ms_block(params, logmp0):
 
 @jjit
 def _get_cov_params_qseq_q_block(params, logmp0):
-
-    std_uqt = line_model(
+    std_uqt = _sigmoid(
         logmp0,
-        params.std_uqt_int,
-        params.std_uqt_slp,
-        *BOUNDING_VALS.std_uqt,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_uqt_quench_ylo,
+        params.std_uqt_quench_yhi,
     )
 
-    std_uqs = line_model(
+    std_uqs = _sigmoid(
         logmp0,
-        params.std_uqs_int,
-        params.std_uqs_slp,
-        *BOUNDING_VALS.std_uqs,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_uqs_quench_ylo,
+        params.std_uqs_quench_yhi,
     )
 
-    std_udrop = line_model(
+    std_udrop = _sigmoid(
         logmp0,
-        params.std_udrop_int,
-        params.std_udrop_slp,
-        *BOUNDING_VALS.std_udrop,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_udrop_quench_ylo,
+        params.std_udrop_quench_yhi,
     )
 
-    std_urej = line_model(
+    std_urej = _sigmoid(
         logmp0,
-        params.std_urej_int,
-        params.std_urej_slp,
-        *BOUNDING_VALS.std_urej,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.std_urej_quench_ylo,
+        params.std_urej_quench_yhi,
     )
-
-    rho_uqs_uqt = line_model(
-        logmp0,
-        params.rho_uqs_uqt_int,
-        params.rho_uqs_uqt_slp,
-        *BOUNDING_VALS.rho_uqs_uqt,
-    )
-
-    rho_udrop_uqt = line_model(
-        logmp0,
-        params.rho_udrop_uqt_int,
-        params.rho_udrop_uqt_slp,
-        *BOUNDING_VALS.rho_udrop_uqt,
-    )
-
-    rho_udrop_uqs = line_model(
-        logmp0,
-        params.rho_udrop_uqs_int,
-        params.rho_udrop_uqs_slp,
-        *BOUNDING_VALS.rho_udrop_uqs,
-    )
-
-    rho_urej_uqt = line_model(
-        logmp0,
-        params.rho_urej_uqt_int,
-        params.rho_urej_uqt_slp,
-        *BOUNDING_VALS.rho_urej_uqt,
-    )
-
-    rho_urej_uqs = line_model(
-        logmp0,
-        params.rho_urej_uqs_int,
-        params.rho_urej_uqs_slp,
-        *BOUNDING_VALS.rho_urej_uqs,
-    )
-
-    rho_urej_udrop = line_model(
-        logmp0,
-        params.rho_urej_udrop_int,
-        params.rho_urej_udrop_slp,
-        *BOUNDING_VALS.rho_urej_udrop,
-    )
-
     diags = std_uqt, std_uqs, std_udrop, std_urej
+
+    rho_uqs_uqt = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_uqs_uqt_quench_ylo,
+        params.rho_uqs_uqt_quench_yhi,
+    )
+
+    rho_udrop_uqs = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_udrop_uqs_quench_ylo,
+        params.rho_udrop_uqs_quench_yhi,
+    )
+
+    rho_udrop_uqt = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_udrop_uqt_quench_ylo,
+        params.rho_udrop_uqt_quench_yhi,
+    )
+
+    rho_urej_uqt = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_urej_uqt_quench_ylo,
+        params.rho_urej_uqt_quench_yhi,
+    )
+
+    rho_urej_uqs = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_urej_uqs_quench_ylo,
+        params.rho_urej_uqs_quench_yhi,
+    )
+
+    rho_urej_udrop = _sigmoid(
+        logmp0,
+        params.mean_lgmhalo_x0,
+        LGM_K,
+        params.rho_urej_udrop_quench_ylo,
+        params.rho_urej_udrop_quench_yhi,
+    )
     off_diags = (
         rho_uqs_uqt,
         rho_udrop_uqt,
