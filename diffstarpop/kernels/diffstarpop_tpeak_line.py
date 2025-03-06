@@ -8,7 +8,7 @@ from jax import numpy as jnp
 from jax import random as jran
 
 from .satquenchpop_model import get_qprob_sat
-from .sfh_pdf_tpeak import _sfh_pdf_scalar_kernel
+from .sfh_pdf_tpeak_line import _sfh_pdf_scalar_kernel
 
 
 @jjit

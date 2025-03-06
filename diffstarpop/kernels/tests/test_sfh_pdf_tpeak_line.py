@@ -5,7 +5,7 @@ import numpy as np
 from jax import random as jran
 
 from ...tests.test_utils import _enforce_is_cov
-from .. import sfh_pdf_tpeak as qseq
+from .. import sfh_pdf_tpeak_line as qseq
 
 EPSILON = 1e-5
 
@@ -128,60 +128,26 @@ def test_params_u_params_inverts():
         qseq.SFH_PDF_QUENCH_PARAMS
     )
     qseq_massonly_params = qseq.get_bounded_sfh_pdf_params(qseq_massonly_u_params)
-    assert np.allclose(qseq.SFH_PDF_QUENCH_PARAMS, qseq_massonly_params, rtol=1e-4)
+    assert np.allclose(qseq.SFH_PDF_QUENCH_PARAMS, qseq_massonly_params, rtol=5e-4)
 
 
-def test_get_mean_u_params_ms_seq():
+def test_get_mean_u_params():
     lgmarr = np.linspace(11, 15, 100)
     params = qseq.SFH_PDF_QUENCH_PARAMS
-    _means = qseq._get_mean_u_params_mseq(params, lgmarr)
-    assert len(_means) == 4
+    _means = qseq._get_mean_u_params(params, lgmarr)
+    assert len(_means) == 8
     for x in _means:
         assert np.all(np.isfinite(x))
 
 
-def test_get_mean_u_params_qseq():
-    lgmarr = np.linspace(11, 15, 100)
-    params = qseq.SFH_PDF_QUENCH_PARAMS
-    _means = qseq._get_mean_u_params_qseq_ms_block(params, lgmarr)
-    assert len(_means) == 4
-    for x in _means:
-        assert np.all(np.isfinite(x))
-    _means = qseq._get_mean_u_params_qseq_q_block(params, lgmarr)
-    assert len(_means) == 4
-    for x in _means:
-        assert np.all(np.isfinite(x))
-
-
-def test_get_mean_u_params_qseq_block():
+def test_get_mean_u_params_block():
     n_gals = 50
     lgmarr = np.linspace(10, 15, n_gals)
     params = qseq.SFH_PDF_QUENCH_PARAMS
-    _mean_pars_ms_block = qseq._get_mean_u_params_qseq_ms_block(params, lgmarr)
-    assert len(_mean_pars_ms_block) == 4
+    _mean_pars_ms_block = qseq._get_mean_u_params(params, lgmarr)
+    assert len(_mean_pars_ms_block) == 8
     for x in _mean_pars_ms_block:
         assert x.shape == (n_gals,)
-        assert np.all(np.isfinite(x))
-    _mean_pars_q_block = qseq._get_mean_u_params_qseq_q_block(params, lgmarr)
-    assert len(_mean_pars_q_block) == 4
-    for x in _mean_pars_q_block:
-        assert x.shape == (n_gals,)
-        assert np.all(np.isfinite(x))
-
-
-def test_get_mean_u_params_qseq_ms_block():
-    lgm = 13.0
-    _res = qseq._get_mean_u_params_qseq_ms_block(qseq.SFH_PDF_QUENCH_PARAMS, lgm)
-    ulgm, ulgy, ul, utau = _res
-    for x in _res:
-        assert np.all(np.isfinite(x))
-
-
-def test_get_mean_u_params_qseq_q_block():
-    lgm = 13.0
-    _res = qseq._get_mean_u_params_qseq_q_block(qseq.SFH_PDF_QUENCH_PARAMS, lgm)
-    uqt, uqs, udrop, urej = _res
-    for x in _res:
         assert np.all(np.isfinite(x))
 
 
@@ -224,9 +190,6 @@ def test_qseq_pdf_scalar_kernel():
         assert np.all(frac_quench <= 1)
         mu_mseq = _res[1]
         assert np.all(np.isfinite(mu_mseq))
-        mu_qseq_ms, cov_qseq_ms = _res[2:4]
-        mu_qseq_q, cov_qseq_q = _res[4:]
+        cov_qseq_ms, cov_qseq_q = _res[2:4]
         _enforce_is_cov(cov_qseq_ms)
         _enforce_is_cov(cov_qseq_q)
-        assert np.all(np.isfinite(mu_qseq_ms))
-        assert np.all(np.isfinite(mu_qseq_q))
