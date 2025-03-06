@@ -22,16 +22,19 @@ def mc_diffstar_u_params_singlegal_kernel(
     u_indx_hi = DEFAULT_DIFFSTAR_U_PARAMS.u_ms_params.u_indx_hi
 
     frac_quench = means_covs[0]
-    mu_mseq = means_covs[1]
+    mu = means_covs[1]
+    mu_ms_block = mu[:4]
+    mu_qseq_block = mu[4:]
+    cov_qseq_ms_block = means_covs[2]
+    cov_qseq_q_block = means_covs[3]
+
     q_key_ms_block, q_key_q_block, frac_q_key = jran.split(ran_key, 3)
-    mu_qseq_ms_block, cov_qseq_ms_block = means_covs[2:4]
-    mu_qseq_q_block, cov_qseq_q_block = means_covs[4:]
 
     u_params_qseq_ms_block = jran.multivariate_normal(
-        q_key_ms_block, jnp.array(mu_qseq_ms_block), cov_qseq_ms_block, shape=()
+        q_key_ms_block, jnp.array(mu_ms_block), cov_qseq_ms_block, shape=()
     )
     u_params_qseq_q_block = jran.multivariate_normal(
-        q_key_q_block, jnp.array(mu_qseq_q_block), cov_qseq_q_block, shape=()
+        q_key_q_block, jnp.array(mu_qseq_block), cov_qseq_q_block, shape=()
     )
     u_params_q = jnp.array(
         (
@@ -43,15 +46,11 @@ def mc_diffstar_u_params_singlegal_kernel(
     )
     u_params_q = DiffstarUParams(MSUParams(*u_params_q[:5]), QUParams(*u_params_q[5:]))
 
-    # Do not use a new MC realization for the main sequence
-    # Instead, shift the MC draws of the quenched sequence to reduce noise
-    delta_mu_mseq = jnp.array([x - y for x, y in zip(mu_mseq, mu_qseq_ms_block)])
-    u_params_ms_ms_block = u_params_qseq_ms_block + delta_mu_mseq
     u_params_ms = jnp.array(
         (
-            *u_params_ms_ms_block[:3],
+            *u_params_qseq_ms_block[:3],
             u_indx_hi,
-            u_params_ms_ms_block[3],
+            u_params_qseq_ms_block[3],
             *DEFAULT_Q_U_PARAMS_UNQUENCHED,
         )
     )
@@ -98,16 +97,19 @@ def mc_diffstar_u_params_singlegal_kernel_cen(diffstarpop_params, logmp0, ran_ke
     u_indx_hi = DEFAULT_DIFFSTAR_U_PARAMS.u_ms_params.u_indx_hi
 
     frac_quench = means_covs[0]
-    mu_mseq = means_covs[1]
+    mu = means_covs[1]
+    mu_ms_block = mu[:4]
+    mu_qseq_block = mu[4:]
+    cov_qseq_ms_block = means_covs[2]
+    cov_qseq_q_block = means_covs[3]
+
     q_key_ms_block, q_key_q_block, frac_q_key = jran.split(ran_key, 3)
-    mu_qseq_ms_block, cov_qseq_ms_block = means_covs[2:4]
-    mu_qseq_q_block, cov_qseq_q_block = means_covs[4:]
 
     u_params_qseq_ms_block = jran.multivariate_normal(
-        q_key_ms_block, jnp.array(mu_qseq_ms_block), cov_qseq_ms_block, shape=()
+        q_key_ms_block, jnp.array(mu_ms_block), cov_qseq_ms_block, shape=()
     )
     u_params_qseq_q_block = jran.multivariate_normal(
-        q_key_q_block, jnp.array(mu_qseq_q_block), cov_qseq_q_block, shape=()
+        q_key_q_block, jnp.array(mu_qseq_block), cov_qseq_q_block, shape=()
     )
     u_params_q = jnp.array(
         (
@@ -119,15 +121,11 @@ def mc_diffstar_u_params_singlegal_kernel_cen(diffstarpop_params, logmp0, ran_ke
     )
     u_params_q = DiffstarUParams(MSUParams(*u_params_q[:5]), QUParams(*u_params_q[5:]))
 
-    # Do not use a new MC realization for the main sequence
-    # Instead, shift the MC draws of the quenched sequence to reduce noise
-    delta_mu_mseq = jnp.array([x - y for x, y in zip(mu_mseq, mu_qseq_ms_block)])
-    u_params_ms_ms_block = u_params_qseq_ms_block + delta_mu_mseq
     u_params_ms = jnp.array(
         (
-            *u_params_ms_ms_block[:3],
+            *u_params_qseq_ms_block[:3],
             u_indx_hi,
-            u_params_ms_ms_block[3],
+            u_params_qseq_ms_block[3],
             *DEFAULT_Q_U_PARAMS_UNQUENCHED,
         )
     )
