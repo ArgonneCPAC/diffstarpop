@@ -315,7 +315,7 @@ if __name__ == "__main__":
         Patch(
             facecolor=colors_ssfr[0],
             edgecolor="none",
-            label=r"$M_\star(t_{\rm obs})=10$",
+            label=r"$M_\star(t_{\rm obs})=9.0$",
             alpha=0.7,
         ),
         Patch(
@@ -386,7 +386,7 @@ if __name__ == "__main__":
         Patch(
             facecolor=colors_ssfr[0],
             edgecolor="none",
-            label=r"$M_\star(t_{\rm obs})=10$",
+            label=r"$M_\star(t_{\rm obs})=9.0$",
             alpha=0.7,
         ),
         Patch(

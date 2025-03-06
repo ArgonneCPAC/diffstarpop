@@ -418,7 +418,8 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
             logmp0_data.append(log_mah_fit[:, -1])
         # break
     # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
-    target_mstar_ids = np.array([14, 17, 19, 22])
+    target_mstar_ids = np.array([9, 14, 17, 19, 22])
+    # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
     target_data = np.zeros((5, len(target_mstar_ids), len(logssfr_binsc_pdf)))
     for i in range(len(age_targets)):
@@ -512,7 +513,8 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
             dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
             logmp0_data.append(log_mah_fit[:, -1])
         # break
-    target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
+    # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
+    target_mstar_ids = np.array([9, 14, 17, 19, 22])
     # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
     target_data = np.zeros((5, len(target_mstar_ids), len(logssfr_binsc_pdf)))
@@ -673,7 +675,8 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
             logmp0_data.append(log_mah_fit[:, -1])
         # break
     # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
-    target_mstar_ids = np.array([14, 17, 19, 22])
+    target_mstar_ids = np.array([9, 14, 17, 19, 22])
+    # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
     target_data_sat = np.zeros((5, len(target_mstar_ids), len(logssfr_binsc_pdf)))
     for i in range(len(age_targets)):
@@ -764,7 +767,8 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
             dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
             logmp0_data.append(log_mah_fit[:, -1])
         # break
-    target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
+    # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
+    target_mstar_ids = np.array([9, 14, 17, 19, 22])
     # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
     target_data_sat = np.zeros((5, len(target_mstar_ids), len(logssfr_binsc_pdf)))
