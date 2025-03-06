@@ -22,7 +22,7 @@ from diffstarpop.loss_kernels.namedtuple_utils_tpeak import (
     register_tuple_new_diffstarpop_tpeak,
     array_to_tuple_new_diffstarpop_tpeak,
 )
-from diffstarpop.kernels.defaults_tpeak import (
+from diffstarpop.kernels.defaults_tpeak_line import (
     DEFAULT_DIFFSTARPOP_U_PARAMS,
     DEFAULT_DIFFSTARPOP_PARAMS,
     get_bounded_diffstarpop_params,
@@ -315,7 +315,7 @@ if __name__ == "__main__":
         Patch(
             facecolor=colors_ssfr[0],
             edgecolor="none",
-            label=r"$M_\star(t_{\rm obs})=10$",
+            label=r"$M_\star(t_{\rm obs})=9.0$",
             alpha=0.7,
         ),
         Patch(
@@ -386,7 +386,7 @@ if __name__ == "__main__":
         Patch(
             facecolor=colors_ssfr[0],
             edgecolor="none",
-            label=r"$M_\star(t_{\rm obs})=10$",
+            label=r"$M_\star(t_{\rm obs})=9.0$",
             alpha=0.7,
         ),
         Patch(

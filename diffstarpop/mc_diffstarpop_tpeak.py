@@ -10,7 +10,7 @@ from jax import jit as jjit
 from jax import random as jran
 from jax import vmap
 
-from .kernels.diffstarpop_tpeak import mc_diffstar_u_params_singlegal_kernel
+from .kernels.diffstarpop_tpeak_line import mc_diffstar_u_params_singlegal_kernel
 
 _mcdp_keys = ("diffstar_params_ms", "diffstar_params_q", "frac_q", "mc_is_q")
 MCDiffstarParams = namedtuple("MCDiffstarParams", _mcdp_keys)
