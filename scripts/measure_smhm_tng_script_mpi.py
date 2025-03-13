@@ -14,6 +14,7 @@ import tng_smhm_utils as smhm_utils
 
 from mpi4py import MPI
 
+TMP_OUTPATH = "_tmp_subvol_{0}_tng_smhm.h5"
 
 if __name__ == "__main__":
     comm = MPI.COMM_WORLD
@@ -81,7 +82,7 @@ if __name__ == "__main__":
         rank, redshift_targets, diffmah_drn=diffmah_drn, diffstar_drn=diffstar_drn
     )
 
-    fnout = os.path.join(outdrn, "_tmp_subvol_%d_tng_smhm.h5" % rank)
+    fnout = os.path.join(outdrn, TMP_OUTPATH.format(rank))
     with h5py.File(fnout, "w") as hdfout:
         hdfout["wcounts_i"] = wcounts_i
         hdfout["whist_i"] = whist_i
@@ -132,7 +133,7 @@ if __name__ == "__main__":
         mstar_ssfr_wcounts_sat = np.zeros((nz, nm, nmstar, nssfr))
 
         for i in range(smhm_utils.NCHUNKS):
-            fnout = os.path.join(outdrn, "_tmp_subvol_%d_smdpl_smhm.h5" % i)
+            fnout = os.path.join(outdrn, TMP_OUTPATH.format(i))
             with h5py.File(fnout, "r") as hdfout:
                 wcounts = wcounts + hdfout["wcounts_i"][:]
                 whist = whist + hdfout["whist_i"][:]
