@@ -308,7 +308,7 @@ def create_target_data(
         counts_zid[i] = _res[0]
         hist_zid[i] = _res[1]
 
-        is_central = upid[:, tids_tng[i]] == -1
+        is_central = upid[:, tids_tng[i]] == 1
         counts_zid_cen[i] = compute_histograms_atz(
             logmh_bins,
             log_mah_table[:, tid][is_central],
@@ -514,7 +514,9 @@ def create_pdf_target_data(
     mstar_ssfr_wcounts_sat = np.zeros((nz, nm, nmstar, nssfr))
 
     for i, tid in enumerate(tids):
-        is_central = upid[:, tids_tng[i]] == -1
+        is_central = upid[:, tids_tng[i]] == 1
+        is_satell = upid[:, tids_tng[i]] == 0
+
         for j in range(nm):
             mobs_sel = (log_mah_table[:, tid] > logmh_bins[j]) & (
                 log_mah_table[:, tid] < logmh_bins[j + 1]
@@ -537,7 +539,7 @@ def create_pdf_target_data(
             )
             mstar_ssfr_wcounts_cent[i, j] = _res.reshape((nmstar, nssfr))
 
-            mobs_sel_sat = mobs_sel & (~is_central)
+            mobs_sel_sat = mobs_sel & is_satell
             _res = compute_diff_histograms_mstar_ssfr_atz(
                 log_smh_table[mobs_sel_sat][:, tid],
                 log_ssfrh_table[mobs_sel_sat][:, tid],
