@@ -34,6 +34,20 @@ N_HALOS_MAX = 20_000
 N_HALOS_PER_SUBVOL = N_HALOS_MAX // NCHUNKS
 
 
+def load_tng_chunk_data(subvol, indir=BEBOP_TNG):
+
+    fn = os.path.join(indir, "tng_diffmah.npy")
+    halos = np.load(fn)
+    upid = halos["cen1_sat0"]
+
+    nhalos_tot = len(upid)
+
+    _a = np.arange(0, nhalos_tot).astype("i8")
+    indx = np.array_split(_a, NCHUNKS)[subvol]
+
+    return upid[indx]
+
+
 def _load_flat_hdf5(fn):
     data = dict()
     with h5py.File(fn, "r") as hdf:
@@ -266,9 +280,7 @@ def create_target_data(
         q_params,
     ) = _res
 
-    fn = os.path.join(BEBOP_TNG, "tng_diffmah.npy")
-    halos = np.load(fn)
-    upid = halos["cen1_sat0"]
+    upid = load_tng_chunk_data(subvol)
     tng_t = np.load(os.path.join(BEBOP_TNG, "tng_cosmic_time.npy"))
 
     tids = return_target_redshfit_index(t_table, redshift_targets)
@@ -460,7 +472,6 @@ def create_pdf_target_data(
 ):
     _res = load_diffstar_sfh_tables(
         subvol,
-        n_subvol_tot=n_subvol_tot,
         diffmah_drn=diffmah_drn,
         diffstar_drn=diffstar_drn,
         lgt0=lgt0,
@@ -477,9 +488,8 @@ def create_pdf_target_data(
 
     log_ssfrh_table = np.clip(log_ssfrh_table, -12.0, None)
 
-    fn = os.path.join(BEBOP_TNG, "tng_diffmah.npy")
-    halos = np.load(fn)
-    upid = halos["cen1_sat0"]
+    upid = load_tng_chunk_data(subvol)
+
     tng_t = np.load(os.path.join(BEBOP_TNG, "tng_cosmic_time.npy"))
 
     tids = return_target_redshfit_index(t_table, redshift_targets)

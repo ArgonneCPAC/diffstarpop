@@ -30,8 +30,10 @@ if __name__ == "__main__":
         default=smhm_utils.BEBOP_TNG_SFH,
     )
 
-    parser.add_argument("-outdrn", help="output directory", type=str, default="")
-    parser.add_argument("-nchunks", help="Number of chunks", type=int, default=NCHUNKS)
+    parser.add_argument("-outdrn", help="output directory", type=str)
+    parser.add_argument(
+        "-nchunks", help="Number of chunks", type=int, default=smhm_utils.NCHUNKS
+    )
 
     args = parser.parse_args()
 
@@ -40,87 +42,75 @@ if __name__ == "__main__":
     diffstar_drn = args.diffstar_drn
     nchunks = args.nchunks
 
-    # redshift_targets = np.concatenate((np.arange(0,1,0.1), np.arange(1, 2.1, 0.5)))
     redshift_targets = smhm_utils.Z_BINS
     nz, nm = len(redshift_targets), smhm_utils.LOGMH_BINS.size - 1
     nmstar = len(smhm_utils.LOGMSTAR_BINS_PDF) - 1
     nssfr = len(smhm_utils.LOGSSFR_BINS_PDF) - 1
 
-    subvol_used = np.zeros(n_subvol_max).astype(int)
-
-    subvols = np.arange(istart, iend)
-    subvols_arr = np.array_split(subvols, nranks)[rank]
-
     haloes_data = []
     print("Beginning loop over subvolumes...\n")
 
-    for i in subvols_arr:
-        gc.collect()
-        try:
-            start = time()
-            _res = smhm_utils.create_target_data(
-                i, redshift_targets, diffmah_drn=diffmah_drn, diffstar_drn=diffstar_drn
-            )
-            (
-                wcounts_i,
-                whist_i,
-                counts_i,
-                hist_i,
-                age_targets,
-                haloes,
-                counts_cen_i,
-                counts_sat_i,
-            ) = _res
+    start = time()
+    _res = smhm_utils.create_target_data(
+        rank, redshift_targets, diffmah_drn=diffmah_drn, diffstar_drn=diffstar_drn
+    )
+    (
+        wcounts_i,
+        whist_i,
+        counts_i,
+        hist_i,
+        age_targets,
+        haloes,
+        counts_cen_i,
+        counts_sat_i,
+    ) = _res
 
-            (
-                logmh_id,
-                logmh_val,
-                mah_params_samp,
-                ms_params_samp,
-                q_params_samp,
-                upid_samp,
-                tobs_id,
-                tobs_val,
-                redshift_val,
-            ) = haloes
+    (
+        logmh_id,
+        logmh_val,
+        mah_params_samp,
+        ms_params_samp,
+        q_params_samp,
+        upid_samp,
+        tobs_id,
+        tobs_val,
+        redshift_val,
+    ) = haloes
 
-            _res = smhm_utils.create_pdf_target_data(
-                i, redshift_targets, diffmah_drn=diffmah_drn, diffstar_drn=diffstar_drn
-            )
+    _res = smhm_utils.create_pdf_target_data(
+        rank, redshift_targets, diffmah_drn=diffmah_drn, diffstar_drn=diffstar_drn
+    )
 
-            fnout = os.path.join(outdrn, "_tmp_subvol_%d_smdpl_smhm.h5" % i)
-            with h5py.File(fnout, "w") as hdfout:
-                hdfout["wcounts_i"] = wcounts_i
-                hdfout["whist_i"] = whist_i
-                hdfout["counts_i"] = counts_i
-                hdfout["hist_i"] = hist_i
-                hdfout["age_targets"] = age_targets
-                hdfout["counts_cen_i"] = counts_cen_i
-                hdfout["counts_sat_i"] = counts_sat_i
-                hdfout["mstar_wcounts_i"] = _res[0]
-                hdfout["mstar_counts_i"] = _res[1]
-                hdfout["mstar_ssfr_wcounts_cent_i"] = _res[2]
-                hdfout["mstar_ssfr_wcounts_sat_i"] = _res[3]
+    fnout = os.path.join(outdrn, "_tmp_subvol_%d_tng_smhm.h5" % rank)
+    with h5py.File(fnout, "w") as hdfout:
+        hdfout["wcounts_i"] = wcounts_i
+        hdfout["whist_i"] = whist_i
+        hdfout["counts_i"] = counts_i
+        hdfout["hist_i"] = hist_i
+        hdfout["age_targets"] = age_targets
+        hdfout["counts_cen_i"] = counts_cen_i
+        hdfout["counts_sat_i"] = counts_sat_i
+        hdfout["mstar_wcounts_i"] = _res[0]
+        hdfout["mstar_counts_i"] = _res[1]
+        hdfout["mstar_ssfr_wcounts_cent_i"] = _res[2]
+        hdfout["mstar_ssfr_wcounts_sat_i"] = _res[3]
 
-                hdfout["logmh_id"] = logmh_id
-                hdfout["logmh_val"] = logmh_val
-                hdfout["mah_params_samp"] = mah_params_samp
-                hdfout["ms_params_samp"] = ms_params_samp
-                hdfout["q_params_samp"] = q_params_samp
-                hdfout["upid_samp"] = upid_samp
-                hdfout["tobs_id"] = tobs_id
-                hdfout["tobs_val"] = tobs_val
-                hdfout["redshift_val"] = redshift_val
+        hdfout["logmh_id"] = logmh_id
+        hdfout["logmh_val"] = logmh_val
+        hdfout["mah_params_samp"] = mah_params_samp
+        hdfout["ms_params_samp"] = ms_params_samp
+        hdfout["q_params_samp"] = q_params_samp
+        hdfout["upid_samp"] = upid_samp
+        hdfout["tobs_id"] = tobs_id
+        hdfout["tobs_val"] = tobs_val
+        hdfout["redshift_val"] = redshift_val
 
-            end = time()
-            runtime = end - start
-            print(
-                f"...computed sumstat counts for subvolume {i}",
-                "Time: %.2f seconds." % (end - start),
-            )
-        except FileNotFoundError:
-            print(f"...NO sumstat counts for subvolume {i}")
-            pass
+    end = time()
+    runtime = end - start
+    print(
+        f"...computed sumstat counts for subvolume {i}",
+        "Time: %.2f seconds." % (end - start),
+    )
 
     comm.Barrier()
 
@@ -141,7 +131,7 @@ if __name__ == "__main__":
         mstar_ssfr_wcounts_cent = np.zeros((nz, nm, nmstar, nssfr))
         mstar_ssfr_wcounts_sat = np.zeros((nz, nm, nmstar, nssfr))
 
-        for i in subvols:
+        for i in range(smhm_utils.NCHUNKS):
             fnout = os.path.join(outdrn, "_tmp_subvol_%d_smdpl_smhm.h5" % i)
             with h5py.File(fnout, "r") as hdfout:
                 wcounts = wcounts + hdfout["wcounts_i"][:]
@@ -150,7 +140,6 @@ if __name__ == "__main__":
                 hist = hist + hdfout["hist_i"][:]
                 counts_cen = counts_cen + hdfout["counts_cen_i"][:]
                 counts_sat = counts_sat + hdfout["counts_sat_i"][:]
-                subvol_used[i] = 1
                 mstar_wcounts += hdfout["mstar_wcounts_i"][:]
                 mstar_counts += hdfout["mstar_counts_i"][:]
                 mstar_ssfr_wcounts_cent += hdfout["mstar_ssfr_wcounts_cent_i"][:]
@@ -188,7 +177,6 @@ if __name__ == "__main__":
             hdfout["smhm_diff"] = whist / wcounts
             hdfout["smhm"] = hist / counts
             hdfout["logmh_bins"] = smhm_utils.LOGMH_BINS
-            hdfout["subvol_used"] = subvol_used
             hdfout["redshift_targets"] = redshift_targets
             hdfout["age_targets"] = age_targets
 
@@ -227,8 +215,6 @@ if __name__ == "__main__":
             hdfout["logssfr_bins_pdf"] = smhm_utils.LOGSSFR_BINS_PDF
             hdfout["redshift_targets"] = redshift_targets
             hdfout["age_targets"] = age_targets
-
-        n_used = subvol_used.sum()
 
         # clean up all temporary data
         bnpat = os.path.join(outdrn, "_tmp_subvol_*")
