@@ -295,6 +295,9 @@ def create_target_data(
     counts_zid_cen = np.zeros((nz, nm))
     counts_zid_sat = np.zeros((nz, nm))
 
+    is_central = upid[:, -1] == 1
+    is_satell = upid[:, -1] == 0
+
     for i, tid in enumerate(tids):
         _res = compute_diff_histograms_atz(
             logmh_bins, log_mah_table[:, tid], log_smh_table[:, tid]
@@ -308,19 +311,23 @@ def create_target_data(
         counts_zid[i] = _res[0]
         hist_zid[i] = _res[1]
 
-        is_central = upid[:, tids_tng[i]] == 1
+        # is_central = upid[:, tids_tng[i]] == 1
         counts_zid_cen[i] = compute_histograms_atz(
             logmh_bins,
             log_mah_table[:, tid][is_central],
             log_smh_table[:, tid][is_central],
         )[0]
+        # is_satell = upid[:, tids_tng[i]] == 0
         counts_zid_sat[i] = compute_histograms_atz(
             logmh_bins,
-            log_mah_table[:, tid][~is_central],
-            log_smh_table[:, tid][~is_central],
+            log_mah_table[:, tid][is_satell],
+            log_smh_table[:, tid][is_satell],
         )[0]
 
     data = []
+
+    final_upid = upid[:, -1].copy()
+    final_upid[is_central] = -1
 
     for i, tid in enumerate(tids):
         _res = sample_halos(
@@ -330,7 +337,7 @@ def create_target_data(
             mah_params,
             ms_params,
             q_params,
-            upid,
+            final_upid,
         )
         data.append(
             (
@@ -513,9 +520,11 @@ def create_pdf_target_data(
     mstar_ssfr_wcounts_cent = np.zeros((nz, nm, nmstar, nssfr))
     mstar_ssfr_wcounts_sat = np.zeros((nz, nm, nmstar, nssfr))
 
+    is_central = upid[:, -1] == 1
+    is_satell = upid[:, -1] == 0
     for i, tid in enumerate(tids):
-        is_central = upid[:, tids_tng[i]] == 1
-        is_satell = upid[:, tids_tng[i]] == 0
+        # is_central = upid[:, tids_tng[i]] == 1
+        # is_satell = upid[:, tids_tng[i]] == 0
 
         for j in range(nm):
             mobs_sel = (log_mah_table[:, tid] > logmh_bins[j]) & (
