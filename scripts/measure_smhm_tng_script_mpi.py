@@ -108,7 +108,7 @@ if __name__ == "__main__":
     end = time()
     runtime = end - start
     print(
-        f"...computed sumstat counts for subvolume {i}",
+        f"...computed sumstat counts for subvolume {rank}",
         "Time: %.2f seconds." % (end - start),
     )
 
