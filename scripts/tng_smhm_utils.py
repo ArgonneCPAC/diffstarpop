@@ -56,19 +56,15 @@ def _load_flat_hdf5(fn):
     return data
 
 
-def load_diffstar_subvolume(
-    subvol,
+def load_diffdata(
     diffmah_drn=BEBOP_TNG_MAH,
     diffstar_drn=BEBOP_TNG_SFH,
 ):
-    nchar_subvol = len(str(NCHUNKS))
-    diffstar_bnpat = "chunk_{}_tmp_sfh.hdf5"
-    subvol_str = f"{subvol:0{nchar_subvol}d}"
-    diffstar_bn = diffstar_bnpat.format(subvol_str)
+    diffstar_bn = "diffstar_tng_fits.hdf5"
     diffstar_fn = os.path.join(diffstar_drn, diffstar_bn)
     diffstar_data = _load_flat_hdf5(diffstar_fn)
 
-    diffmah_bn = diffstar_bn.replace("sfh", "mah")
+    diffmah_bn = diffstar_bn.replace("diffstar", "diffmah")
     diffmah_fn = os.path.join(diffmah_drn, diffmah_bn)
     diffmah_data = _load_flat_hdf5(diffmah_fn)
 
@@ -82,20 +78,23 @@ def load_diffstar_sfh_tables(
     lgt0=LGT0,
     n_times=200,
 ):
-    diffmah_data, diffstar_data = load_diffstar_subvolume(
-        subvol,
+    diffmah_data, diffstar_data = load_diffdata(
         diffmah_drn=diffmah_drn,
         diffstar_drn=diffstar_drn,
     )
+    nhalos_tot = len(diffmah_data["logm0"][...])
+    _a = np.arange(0, nhalos_tot).astype("i8")
+    indx = np.array_split(_a, NCHUNKS)[subvol]
+
     mah_params = DEFAULT_MAH_PARAMS._make(
-        [diffmah_data[key] for key in DEFAULT_MAH_PARAMS._fields]
+        [diffmah_data[key][indx] for key in DEFAULT_MAH_PARAMS._fields]
     )
 
     ms_params = DEFAULT_DIFFSTAR_PARAMS.ms_params._make(
-        [diffstar_data[key] for key in DEFAULT_DIFFSTAR_PARAMS.ms_params._fields]
+        [diffstar_data[key][indx] for key in DEFAULT_DIFFSTAR_PARAMS.ms_params._fields]
     )
     q_params = DEFAULT_DIFFSTAR_PARAMS.q_params._make(
-        [diffstar_data[key] for key in DEFAULT_DIFFSTAR_PARAMS.q_params._fields]
+        [diffstar_data[key][indx] for key in DEFAULT_DIFFSTAR_PARAMS.q_params._fields]
     )
     sfh_params = DEFAULT_DIFFSTAR_PARAMS._make((ms_params, q_params))
 
