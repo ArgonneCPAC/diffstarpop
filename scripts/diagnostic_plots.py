@@ -112,6 +112,8 @@ if __name__ == "__main__":
     mstar_plot = np.zeros((len(age_targets), len(logmh_binsc)))
     mstar_plot_grad = np.zeros((len(age_targets), len(logmh_binsc)))
 
+    smhm_plot = smhm.copy()
+
     for i in range(len(age_targets)):
         t_target = age_targets[i]
         print("Age target:", t_target)
@@ -120,6 +122,11 @@ if __name__ == "__main__":
         for j in range(len(logmh_binsc)):
 
             sel = (tobs_id == i) & (logmh_id == j)
+            if sel.sum() < 50:
+                smhm_plot[i, j] = np.nan
+                mstar_plot[i, j] = np.nan
+                continue
+
             mah_pars_ntuple = DiffmahParams(*mah_params_samp[:, sel])
             dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
             lomg0_vals = log_mah_fit[:, -1]
@@ -161,7 +168,7 @@ if __name__ == "__main__":
 
     fig, ax = plt.subplots(1, 1, figsize=(6, 4))
     for i in range(len(smhm)):
-        ax.plot(10**logmh_binsc, 10 ** smhm[i], color=cmap[i])
+        ax.plot(10**logmh_binsc, 10 ** smhm_plot[i], color=cmap[i])
         ax.plot(10**logmh_binsc, 10 ** mstar_plot[i], color=cmap[i], ls="--")
 
     norm = mpl.colors.Normalize(vmin=0, vmax=2)
@@ -219,9 +226,11 @@ if __name__ == "__main__":
 
     colors_mstar = plt.get_cmap("viridis")(np.linspace(0, 1, 11))
 
-    for i in range(5):
-
-        for j in range(11):
+    for i in range(len(age_targets)):
+        for j in range(len(logmh_binsc)):
+            sel = (tobs_id == i) & (logmh_id == j)
+            if sel.sum() < 50:
+                continue
             ax[i].fill_between(
                 logmstar_bins_pdf[1:],
                 0.0,
