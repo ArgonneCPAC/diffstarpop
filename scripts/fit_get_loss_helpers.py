@@ -396,9 +396,14 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
     )
 
     tarr_logm0 = np.logspace(-1, LGT0, 50)
+
+    index_mhalo = []
+    indx_pdf = []
+    _run_indx = 0
     for i in range(len(age_targets)):
         t_target = age_targets[i]
-
+        index_mhalo_atz = []
+        indx_pdf_atz = []
         for j in range(len(logmh_binsc)):
             sel = (tobs_id == i) & (logmh_id == j) & (upid_samp == -1)
 
@@ -416,6 +421,13 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
             mah_pars_ntuple = DiffmahParams(*mah_params_samp[:, arange_sel])
             dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
             logmp0_data.append(log_mah_fit[:, -1])
+
+            index_mhalo_atz.append(j)
+            indx_pdf_atz.append(_run_indx)
+            _run_indx += 1
+
+        index_mhalo.append(np.array(index_mhalo_atz))
+        indx_pdf.append(np.array(indx_pdf_atz))
         # break
     # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
     target_mstar_ids = np.array([9, 14, 17, 19, 22])
@@ -459,6 +471,8 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
         logmstar_bins_pdf,
         logssfr_bins_pdf,
         mhalo_pdf_cen,
+        index_mhalo,
+        indx_pdf,
         target_mstar_ids,
         target_data,
     )
@@ -492,9 +506,13 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
         "zmab,zm->zab", mstar_ssfr_pdfs_cent, mhalo_pdf_cen
     )
 
+    index_mhalo = []
+    indx_pdf = []
+    _run_indx = 0
     for i in range(len(age_targets)):
         t_target = age_targets[i]
-
+        index_mhalo_atz = []
+        indx_pdf_atz = []
         for j in range(len(logmh_binsc)):
             sel = (tobs_id == i) & (logmh_id == j) & (upid_samp == -1)
 
@@ -512,6 +530,13 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
             mah_pars_ntuple = DiffmahParams(*mah_params_samp[:, arange_sel])
             dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
             logmp0_data.append(log_mah_fit[:, -1])
+
+            index_mhalo_atz.append(j)
+            indx_pdf_atz.append(_run_indx)
+            _run_indx += 1
+
+        index_mhalo.append(np.array(index_mhalo_atz))
+        indx_pdf.append(np.array(indx_pdf_atz))
         # break
     # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
     target_mstar_ids = np.array([9, 14, 17, 19, 22])
@@ -555,6 +580,8 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
         logmstar_bins_pdf,
         logssfr_bins_pdf,
         mhalo_pdf_cen,
+        index_mhalo,
+        indx_pdf,
         target_mstar_ids,
         target_data,
     )
@@ -652,10 +679,15 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
     )
     mstar_ssfr_pdfs_sat = np.einsum("zmab,zm->zab", mstar_ssfr_pdfs_sat, mhalo_pdf_sat)
 
+    index_mhalo = []
+    indx_pdf = []
+    _run_indx = 0
+
     tarr_logm0 = np.logspace(-1, LGT0, 50)
     for i in range(len(age_targets)):
         t_target = age_targets[i]
-
+        index_mhalo_atz = []
+        indx_pdf_atz = []
         for j in range(len(logmh_binsc)):
             sel = (tobs_id == i) & (logmh_id == j) & (upid_samp != -1)
 
@@ -673,6 +705,14 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
             mah_pars_ntuple = DiffmahParams(*mah_params_samp[:, arange_sel])
             dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
             logmp0_data.append(log_mah_fit[:, -1])
+
+            index_mhalo_atz.append(j)
+            indx_pdf_atz.append(_run_indx)
+            _run_indx += 1
+
+        index_mhalo.append(np.array(index_mhalo_atz))
+        indx_pdf.append(np.array(indx_pdf_atz))
+
         # break
     # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
     target_mstar_ids = np.array([9, 14, 17, 19, 22])
@@ -716,6 +756,8 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
         logmstar_bins_pdf,
         logssfr_bins_pdf,
         mhalo_pdf_sat,
+        index_mhalo,
+        indx_pdf,
         target_mstar_ids,
         target_data_sat,
     )
@@ -746,9 +788,14 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
     )
     mstar_ssfr_pdfs_sat = np.einsum("zmab,zm->zab", mstar_ssfr_pdfs_sat, mhalo_pdf_sat)
 
+    index_mhalo = []
+    indx_pdf = []
+    _run_indx = 0
+
     for i in range(len(age_targets)):
         t_target = age_targets[i]
-
+        index_mhalo_atz = []
+        indx_pdf_atz = []
         for j in range(len(logmh_binsc)):
             sel = (tobs_id == i) & (logmh_id == j) & (upid_samp != -1)
 
@@ -766,6 +813,13 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
             mah_pars_ntuple = DiffmahParams(*mah_params_samp[:, arange_sel])
             dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
             logmp0_data.append(log_mah_fit[:, -1])
+
+            index_mhalo_atz.append(j)
+            indx_pdf_atz.append(_run_indx)
+            _run_indx += 1
+
+        index_mhalo.append(np.array(index_mhalo_atz))
+        indx_pdf.append(np.array(indx_pdf_atz))
         # break
     # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
     target_mstar_ids = np.array([9, 14, 17, 19, 22])
@@ -809,6 +863,8 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
         logmstar_bins_pdf,
         logssfr_bins_pdf,
         mhalo_pdf_sat,
+        index_mhalo,
+        indx_pdf,
         target_mstar_ids,
         target_data_sat,
     )
