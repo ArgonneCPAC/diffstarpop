@@ -590,3 +590,40 @@ def loss_combined_3loss_wrapper(
     grads = tuple_to_jax_array(grads)
 
     return loss, grads
+
+
+# =================================================
+# Loss functions that combine p(Mstar|Mhalo) for cen and sat
+# =================================================
+
+
+@jjit
+def loss_combined_4loss_kern(
+    u_params,
+    loss_data_mstar_cen,
+    loss_data_mstar_sat,
+    loss_data_ssfr_cen,
+    loss_data_ssfr_sat,
+):
+    loss_mstar_ssfr_val_cen = loss_mstar_ssfr_kern_tobs(u_params, loss_data_ssfr_cen)
+    loss_mstar_ssfr_val_sat = loss_mstar_ssfr_sat_kern_tobs(
+        u_params, loss_data_ssfr_sat
+    )
+    loss_mstar_val_cen = loss_mstar_kern_tobs(u_params, loss_data_mstar_cen)
+    loss_mstar_val_sat = loss_mstar_kern_tobs(u_params, loss_data_mstar_sat)
+
+    losses = jnp.array(
+        [
+            loss_mstar_ssfr_val_cen,
+            loss_mstar_val_cen,
+            loss_mstar_val_sat,
+            loss_mstar_ssfr_val_sat,
+        ]
+    )
+
+    return jnp.sum(losses)
+
+
+loss_combined_4loss_grad_kern = jjit(
+    value_and_grad(loss_combined_4loss_kern, argnums=(0,))
+)
