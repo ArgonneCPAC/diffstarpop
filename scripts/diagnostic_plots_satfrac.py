@@ -106,6 +106,7 @@ if __name__ == "__main__":
         redshift_targets,
         smhm,
         mah_params_samp,
+        upid_samp,
     ) = plot_data_SMHM
 
     mstar_plot = np.zeros((len(age_targets), len(logmh_binsc)))
@@ -129,10 +130,12 @@ if __name__ == "__main__":
             mah_pars_ntuple = DiffmahParams(*mah_params_samp[:, sel])
             dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, tarr_logm0, LGT0)
             lomg0_vals = log_mah_fit[:, -1]
+            upid_vals = upid_samp[sel]
             res = mc_diffstar_sfh_galpop(
                 diffstarpop_params,
                 mah_pars_ntuple,
                 lomg0_vals,
+                upid_vals,
                 np.ones(sel.sum()) * lgmu_infall,
                 np.ones(sel.sum()) * logmhost_infall,
                 np.ones(sel.sum()) * gyr_since_infall,
