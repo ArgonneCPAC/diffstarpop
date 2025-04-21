@@ -210,6 +210,7 @@ def return_target_redshfit_index(t_table, redshift_targets):
 
 
 def sample_halos(
+    n_subvol_smdpl,
     logmh_bins,
     log_mah,
     log_smh,
@@ -232,9 +233,11 @@ def sample_halos(
     ms_params = np.array(ms_params).T
     q_params = np.array(q_params).T
 
+    n_halos_per_subvol = N_HALOS_MAX // n_subvol_smdpl
+
     for i in range(len(ndbins_lo)):
         sel = (log_mah >= ndbins_lo[i]) & (log_mah < ndbins_hi[i])
-        sel_num = int(min(N_HALOS_PER_SUBVOL, sel.sum()))
+        sel_num = int(min(n_halos_per_subvol, sel.sum()))
         sel = np.random.choice(arange_arr[sel], sel_num, replace=False)
         logmh_id.append(np.ones_like(sel) * i)
         logmh_val.append(np.ones_like(sel) * ((ndbins_lo[i] + ndbins_hi[i]) / 2.0))
@@ -266,6 +269,7 @@ def sample_halos(
 
 def create_target_data(
     subvol,
+    n_subvol_smdpl,
     redshift_targets=Z_BINS,
     n_subvol_tot=N_SUBVOL_SMDPL,
     binaries_drn=LCRC_NOMERGING_BINARIES_DRN,
@@ -340,6 +344,7 @@ def create_target_data(
 
     for i, tid in enumerate(tids):
         _res = sample_halos(
+            n_subvol_smdpl,
             logmh_bins,
             log_mah_table[:, tid],
             log_smh_table[:, tid],

@@ -83,7 +83,7 @@ if __name__ == "__main__":
     subvols = [x.split("_")[-1].split(".")[0] for x in matching_files]
     subvols = np.sort(np.array(subvols).astype(int))
     subvols_arr = np.array_split(subvols, nranks)[rank]
-
+    n_subvol_smdpl = len(subvols)
     subvol_used = np.zeros(n_subvol_max).astype(int)
 
     haloes_data = []
@@ -95,7 +95,8 @@ if __name__ == "__main__":
             start = time()
             _res = smhm_utils.create_target_data(
                 i,
-                redshift_targets,
+                n_subvol_smdpl,
+                redshift_targets=redshift_targets,
                 binaries_drn=binaries_drn,
                 diffmah_drn=diffmah_drn,
                 diffstar_drn=diffstar_drn,
