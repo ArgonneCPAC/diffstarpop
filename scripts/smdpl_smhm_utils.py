@@ -1,7 +1,7 @@
 """ """
 
 import os
-
+import re
 import h5py
 import numpy as np
 from diffmah.diffmah_kernels import DEFAULT_MAH_PARAMS, mah_halopop
@@ -55,6 +55,21 @@ def _load_flat_hdf5(fn):
     return data
 
 
+def return_subvol_str(subvol, diffstar_drn, diffstar_bnpat):
+    regex_str = re.escape(diffstar_bnpat).replace(r"\{\}", r"(\d{1,3})")
+    pattern = re.compile(f"^{regex_str}$")
+    matching_files = [f for f in os.listdir(diffstar_drn) if pattern.match(f)]
+    subvols = [x.split("_")[-1].split(".")[0] for x in matching_files]
+    subvols_len = np.array([len(x) for x in subvols])
+
+    if np.any(subvols_len == 1):
+        subvol_str = f"{subvol:d}"
+    elif np.all(subvols_len == subvols_len.max()):
+        nchar_subvol = subvols_len.max()
+        subvol_str = f"{subvol:0{nchar_subvol}d}"
+    return subvol_str
+
+
 def load_diffstar_subvolume(
     subvol,
     n_subvol_tot=N_SUBVOL_SMDPL,
@@ -62,8 +77,8 @@ def load_diffstar_subvolume(
     diffstar_drn=TASSO_DIFFSTAR_DRN,
     diffstar_bnpat=LCRC_NOMERGING_diffstar_bnpat,
 ):
-    nchar_subvol = len(str(n_subvol_tot))
-    subvol_str = f"{subvol:0{nchar_subvol}d}"
+    # nchar_subvol = len(str(n_subvol_tot))
+    subvol_str = return_subvol_str(subvol, diffstar_drn, diffstar_bnpat)
     diffstar_bn = diffstar_bnpat.format(subvol_str)
     diffstar_fn = os.path.join(diffstar_drn, diffstar_bn)
     diffstar_data = _load_flat_hdf5(diffstar_fn)
