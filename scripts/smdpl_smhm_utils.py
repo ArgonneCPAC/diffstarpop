@@ -106,15 +106,22 @@ def load_diffstar_sfh_tables(
         diffstar_drn=diffstar_drn,
         diffstar_bnpat=diffstar_bnpat,
     )
+    has_fit = (diffmah_data["loss"] > 0.0) & (diffstar_data["loss"] > 0.0)
     mah_params = DEFAULT_MAH_PARAMS._make(
-        [diffmah_data[key] for key in DEFAULT_MAH_PARAMS._fields]
+        [diffmah_data[key][has_fit] for key in DEFAULT_MAH_PARAMS._fields]
     )
 
     ms_params = DEFAULT_DIFFSTAR_PARAMS.ms_params._make(
-        [diffstar_data[key] for key in DEFAULT_DIFFSTAR_PARAMS.ms_params._fields]
+        [
+            diffstar_data[key][has_fit]
+            for key in DEFAULT_DIFFSTAR_PARAMS.ms_params._fields
+        ]
     )
     q_params = DEFAULT_DIFFSTAR_PARAMS.q_params._make(
-        [diffstar_data[key] for key in DEFAULT_DIFFSTAR_PARAMS.q_params._fields]
+        [
+            diffstar_data[key][has_fit]
+            for key in DEFAULT_DIFFSTAR_PARAMS.q_params._fields
+        ]
     )
     sfh_params = DEFAULT_DIFFSTAR_PARAMS._make((ms_params, q_params))
 
@@ -138,6 +145,7 @@ def load_diffstar_sfh_tables(
         mah_params,
         ms_params,
         q_params,
+        has_fit,
     )
 
     return out
@@ -310,13 +318,14 @@ def create_target_data(
         mah_params,
         ms_params,
         q_params,
+        has_fit,
     ) = _res
 
     galprops = ["halo_id", "upid"]
     halos = load_mock_from_binaries(
         np.atleast_1d(subvol), root_dirname=binaries_drn, galprops=galprops
     )
-    upid = np.array(halos["upid"])
+    upid = np.array(halos["upid"])[has_fit]
 
     tids = return_target_redshfit_index(t_table, redshift_targets)
 
@@ -524,6 +533,7 @@ def create_pdf_target_data(
         mah_params,
         ms_params,
         q_params,
+        has_fit,
     ) = _res
 
     log_ssfrh_table = np.clip(log_ssfrh_table, -12.0, None)
@@ -532,7 +542,7 @@ def create_pdf_target_data(
     halos = load_mock_from_binaries(
         np.atleast_1d(subvol), root_dirname=binaries_drn, galprops=galprops
     )
-    upid = np.array(halos["upid"])
+    upid = np.array(halos["upid"])[has_fit]
     is_central = upid == -1
 
     tids = return_target_redshfit_index(t_table, redshift_targets)
