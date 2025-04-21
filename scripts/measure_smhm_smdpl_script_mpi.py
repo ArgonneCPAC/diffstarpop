@@ -1,5 +1,4 @@
-"""This module tabulates <logMstar | logMhalo, z=0> for SMDPL
-"""
+"""This module tabulates <logMstar | logMhalo, z=0> for SMDPL"""
 
 import argparse
 import os
@@ -9,6 +8,7 @@ import subprocess
 import h5py
 import numpy as np
 import gc
+import re
 
 import smdpl_smhm_utils as smhm_utils
 
@@ -20,13 +20,6 @@ if __name__ == "__main__":
     rank, nranks = comm.Get_rank(), comm.Get_size()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-istart", help="start of subvolume loop", type=int, default=0)
-    parser.add_argument(
-        "-iend",
-        help="end of subvolume loop",
-        type=int,
-        default=smhm_utils.N_SUBVOL_SMDPL,
-    )
     parser.add_argument(
         "-n_subvol_max",
         help="Last subvolume",
@@ -34,7 +27,10 @@ if __name__ == "__main__":
         default=smhm_utils.N_SUBVOL_SMDPL,
     )
     parser.add_argument(
-        "-diffmah_drn", help="input drn", type=str, default=smhm_utils.LCRC_DIFFMAH_DRN
+        "-diffmah_drn",
+        help="input drn",
+        type=str,
+        default=smhm_utils.LCRC_NOMERGING_DIFFMAH_DRN,
     )
     parser.add_argument(
         "-diffstar_drn",
@@ -42,15 +38,34 @@ if __name__ == "__main__":
         type=str,
         default=smhm_utils.LCRC_DIFFSTAR_DRN,
     )
+    parser.add_argument(
+        "-sim_name",
+        help="Simulation name",
+        choices=["DR1", "DR1_nomerging", "other"],
+        default="DR1_nomerging",
+    )
 
     parser.add_argument("-outdrn", help="output directory", type=str, default="")
     args = parser.parse_args()
-    istart = args.istart
-    iend = args.iend
     n_subvol_max = args.n_subvol_max
     outdrn = args.outdrn
-    diffmah_drn = args.diffmah_drn
-    diffstar_drn = args.diffstar_drn
+    sim_name = args.sim_name
+
+    if sim_name == "DR1_nomerging":
+        diffmah_drn = smhm_utils.LCRC_NOMERGING_DIFFMAH_DRN
+        diffstar_drn = smhm_utils.LCRC_NOMERGING_DIFFSTAR_DRN
+        binaries_drn = smhm_utils.LCRC_NOMERGING_BINARIES_DRN
+        diffstar_bnpat = smhm_utils.LCRC_NOMERGING_diffstar_bnpat
+    elif sim_name == "DR1":
+        diffmah_drn = smhm_utils.LCRC_DR1_DIFFMAH_DRN
+        diffstar_drn = smhm_utils.LCRC_DR1_DIFFSTAR_DRN
+        binaries_drn = smhm_utils.LCRC_DR1_BINARIES_DRN
+        diffstar_bnpat = smhm_utils.LCRC_DR1_diffstar_bnpat
+    else:
+        diffmah_drn = args.diffmah_drn
+        diffstar_drn = args.diffstar_drn
+        binaries_drn = smhm_utils.LCRC_NOMERGING_BINARIES_DRN
+        diffstar_bnpat = smhm_utils.LCRC_NOMERGING_diffstar_bnpat
 
     # redshift_targets = np.concatenate((np.arange(0,1,0.1), np.arange(1, 2.1, 0.5)))
     redshift_targets = smhm_utils.Z_BINS
@@ -58,10 +73,18 @@ if __name__ == "__main__":
     nmstar = len(smhm_utils.LOGMSTAR_BINS_PDF) - 1
     nssfr = len(smhm_utils.LOGSSFR_BINS_PDF) - 1
 
-    subvol_used = np.zeros(n_subvol_max).astype(int)
-
-    subvols = np.arange(istart, iend)
+    # see which subvolumes are available
+    # Replace the '{}' with regex to match 1 to 3 digits
+    # Match filenames that have the 'pattern'
+    regex_str = re.escape(diffstar_bnpat).replace(r"\{\}", r"(\d{1,3})")
+    pattern = re.compile(f"^{regex_str}$")
+    matching_files = [f for f in os.listdir(diffstar_drn) if pattern.match(f)]
+    subvol_avail = len(matching_files)
+    subvols = [x.split("_")[-1].split(".")[0] for x in matching_files]
+    subvols = np.sort(np.array(subvols).astype(int))
     subvols_arr = np.array_split(subvols, nranks)[rank]
+
+    subvol_used = np.zeros(n_subvol_max).astype(int)
 
     haloes_data = []
     print("Beginning loop over subvolumes...\n")
@@ -71,7 +94,12 @@ if __name__ == "__main__":
         try:
             start = time()
             _res = smhm_utils.create_target_data(
-                i, redshift_targets, diffmah_drn=diffmah_drn, diffstar_drn=diffstar_drn
+                i,
+                redshift_targets,
+                binaries_drn=binaries_drn,
+                diffmah_drn=diffmah_drn,
+                diffstar_drn=diffstar_drn,
+                diffstar_bnpat=diffstar_bnpat,
             )
             (
                 wcounts_i,
@@ -97,7 +125,12 @@ if __name__ == "__main__":
             ) = haloes
 
             _res = smhm_utils.create_pdf_target_data(
-                i, redshift_targets, diffmah_drn=diffmah_drn, diffstar_drn=diffstar_drn
+                i,
+                redshift_targets,
+                binaries_drn=binaries_drn,
+                diffmah_drn=diffmah_drn,
+                diffstar_drn=diffstar_drn,
+                diffstar_bnpat=diffstar_bnpat,
             )
 
             fnout = os.path.join(outdrn, "_tmp_subvol_%d_smdpl_smhm.h5" % i)

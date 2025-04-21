@@ -1,5 +1,4 @@
-"""
-"""
+""" """
 
 import os
 
@@ -13,16 +12,25 @@ from scipy.stats import binned_statistic
 from astropy.cosmology import Planck13
 from umachine_pyio.load_mock import load_mock_from_binaries
 
-LCRC_DIFFSTAR_DRN = (
-    "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/diffstar_tpeak_fits"
+LCRC_NOMERGING_DIFFSTAR_DRN = (
+    "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/diffstar_tpeak_fits/"
 )
-LCRC_DIFFMAH_DRN = (
-    "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/diffmah_tpeak_fits"
+LCRC_NOMERGING_DIFFMAH_DRN = (
+    "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/diffmah_tpeak_fits/"
 )
-LCRC_BINARIES_DRN = (
+LCRC_NOMERGING_BINARIES_DRN = (
     "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/sfh_binary_catalogs/a_1.000000/"
 )
-TASSO_DIFFSTAR_DRN = "/Users/aphearin/work/DATA/diffstar_data/SMDPL"
+
+LCRC_DR1_DIFFSTAR_DRN = "/lcrc/project/halotools/SMDPL/diffstar_fits_DR1/"
+LCRC_DR1_DIFFMAH_DRN = "/lcrc/project/halotools/UniverseMachine/SMDPL/sfh_binaries_dr1_bestfit/diffmah_tpeak_fits/"
+LCRC_DR1_BINARIES_DRN = (
+    "/lcrc/project/halotools/UniverseMachine/SMDPL/sfh_binaries_dr1_bestfit/a_1.000000/"
+)
+LCRC_NOMERGING_diffstar_bnpat = "subvol_{}_diffstar_fits.h5"
+LCRC_DR1_diffstar_bnpat = "diffstar_fits_subvol_{}.hdf5"
+
+TASSO_DIFFSTAR_DRN = "/Users/aphearin/work/DATA/diffstar_data/SMDPL/"
 N_SUBVOL_SMDPL = 576
 
 LGMH_MIN, LGMH_MAX = 11, 14.75
@@ -52,9 +60,9 @@ def load_diffstar_subvolume(
     n_subvol_tot=N_SUBVOL_SMDPL,
     diffmah_drn=TASSO_DIFFSTAR_DRN,
     diffstar_drn=TASSO_DIFFSTAR_DRN,
+    diffstar_bnpat=LCRC_NOMERGING_diffstar_bnpat,
 ):
     nchar_subvol = len(str(n_subvol_tot))
-    diffstar_bnpat = "subvol_{}_diffstar_fits.h5"
     subvol_str = f"{subvol:0{nchar_subvol}d}"
     diffstar_bn = diffstar_bnpat.format(subvol_str)
     diffstar_fn = os.path.join(diffstar_drn, diffstar_bn)
@@ -72,6 +80,7 @@ def load_diffstar_sfh_tables(
     n_subvol_tot=N_SUBVOL_SMDPL,
     diffmah_drn=TASSO_DIFFSTAR_DRN,
     diffstar_drn=TASSO_DIFFSTAR_DRN,
+    diffstar_bnpat=LCRC_NOMERGING_diffstar_bnpat,
     lgt0=LGT0,
     n_times=200,
 ):
@@ -80,6 +89,7 @@ def load_diffstar_sfh_tables(
         n_subvol_tot=n_subvol_tot,
         diffmah_drn=diffmah_drn,
         diffstar_drn=diffstar_drn,
+        diffstar_bnpat=diffstar_bnpat,
     )
     mah_params = DEFAULT_MAH_PARAMS._make(
         [diffmah_data[key] for key in DEFAULT_MAH_PARAMS._fields]
@@ -123,6 +133,7 @@ def compute_weighted_histograms_z0(
     n_subvol_tot=N_SUBVOL_SMDPL,
     diffmah_drn=TASSO_DIFFSTAR_DRN,
     diffstar_drn=TASSO_DIFFSTAR_DRN,
+    diffstar_bnpat=LCRC_NOMERGING_diffstar_bnpat,
     lgt0=LGT0,
     logmh_bins=LOGMH_BINS,
 ):
@@ -131,6 +142,7 @@ def compute_weighted_histograms_z0(
         n_subvol_tot=n_subvol_tot,
         diffmah_drn=diffmah_drn,
         diffstar_drn=diffstar_drn,
+        diffstar_bnpat=diffstar_bnpat,
         lgt0=lgt0,
     )
     t_table, log_mah_table, log_smh_table, log_ssfrh_table = _res[:4]
@@ -256,8 +268,10 @@ def create_target_data(
     subvol,
     redshift_targets=Z_BINS,
     n_subvol_tot=N_SUBVOL_SMDPL,
-    diffmah_drn=LCRC_DIFFMAH_DRN,
-    diffstar_drn=LCRC_DIFFSTAR_DRN,
+    binaries_drn=LCRC_NOMERGING_BINARIES_DRN,
+    diffmah_drn=LCRC_NOMERGING_DIFFMAH_DRN,
+    diffstar_drn=LCRC_NOMERGING_DIFFSTAR_DRN,
+    diffstar_bnpat=LCRC_NOMERGING_diffstar_bnpat,
     lgt0=LGT0,
     logmh_bins=LOGMH_BINS,
 ):
@@ -266,6 +280,7 @@ def create_target_data(
         n_subvol_tot=n_subvol_tot,
         diffmah_drn=diffmah_drn,
         diffstar_drn=diffstar_drn,
+        diffstar_bnpat=diffstar_bnpat,
         lgt0=lgt0,
     )
     (
@@ -280,7 +295,7 @@ def create_target_data(
 
     galprops = ["halo_id", "upid"]
     halos = load_mock_from_binaries(
-        np.atleast_1d(subvol), root_dirname=LCRC_BINARIES_DRN, galprops=galprops
+        np.atleast_1d(subvol), root_dirname=binaries_drn, galprops=galprops
     )
     upid = np.array(halos["upid"])
 
@@ -464,8 +479,10 @@ def create_pdf_target_data(
     subvol,
     redshift_targets=Z_BINS,
     n_subvol_tot=N_SUBVOL_SMDPL,
-    diffmah_drn=LCRC_DIFFMAH_DRN,
-    diffstar_drn=LCRC_DIFFSTAR_DRN,
+    binaries_drn=LCRC_NOMERGING_BINARIES_DRN,
+    diffmah_drn=LCRC_NOMERGING_DIFFMAH_DRN,
+    diffstar_drn=LCRC_NOMERGING_DIFFSTAR_DRN,
+    diffstar_bnpat=LCRC_NOMERGING_diffstar_bnpat,
     lgt0=LGT0,
     logmh_bins=LOGMH_BINS,
     logmstar_bins_pdf=LOGMSTAR_BINS_PDF,
@@ -476,6 +493,7 @@ def create_pdf_target_data(
         n_subvol_tot=n_subvol_tot,
         diffmah_drn=diffmah_drn,
         diffstar_drn=diffstar_drn,
+        diffstar_bnpat=diffstar_bnpat,
         lgt0=lgt0,
     )
     (
@@ -492,7 +510,7 @@ def create_pdf_target_data(
 
     galprops = ["halo_id", "upid"]
     halos = load_mock_from_binaries(
-        np.atleast_1d(subvol), root_dirname=LCRC_BINARIES_DRN, galprops=galprops
+        np.atleast_1d(subvol), root_dirname=binaries_drn, galprops=galprops
     )
     upid = np.array(halos["upid"])
     is_central = upid == -1
