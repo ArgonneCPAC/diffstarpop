@@ -36,7 +36,7 @@ if __name__ == "__main__":
         "-diffstar_drn",
         help="input drn",
         type=str,
-        default=smhm_utils.LCRC_DIFFSTAR_DRN,
+        default=smhm_utils.LCRC_NOMERGING_DIFFSTAR_DRN,
     )
     parser.add_argument(
         "-sim_name",
