@@ -106,7 +106,7 @@ def load_diffstar_sfh_tables(
         diffstar_drn=diffstar_drn,
         diffstar_bnpat=diffstar_bnpat,
     )
-    has_fit = (diffmah_data["loss"] > 0.0) & (diffstar_data["loss"] > 0.0)
+    has_fit = (diffmah_data["loss"] > 0.0) & (diffstar_data["success"] == 1)
     mah_params = DEFAULT_MAH_PARAMS._make(
         [diffmah_data[key][has_fit] for key in DEFAULT_MAH_PARAMS._fields]
     )
