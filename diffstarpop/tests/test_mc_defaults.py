@@ -23,3 +23,9 @@ def test_mc_diffstar_params_galpop():
         gyr_since_infall,
         ran_key,
     )
+    diffstar_params_ms, diffstar_params_q, frac_q, mc_is_q = _res
+    assert np.all(np.isfinite(frac_q))
+    assert np.all(frac_q >= 0)
+    assert np.all(frac_q <= 1)
+    assert mc_is_q.mean() > 0
+    assert mc_is_q.mean() < 1
