@@ -8,7 +8,7 @@ from .defaults import (
     DiffstarPopParams,
     DiffstarPopUParams,
 )
-from .kernels.defaults_tpeak import (
+from .kernels.defaults_tpeak_line_sepms_satfrac import (
     get_bounded_diffstarpop_params,
     get_unbounded_diffstarpop_params,
 )

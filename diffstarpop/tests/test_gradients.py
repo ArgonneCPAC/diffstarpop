@@ -10,14 +10,13 @@ from jax import numpy as jnp
 from jax import random as jran
 from jax import value_and_grad
 
+from .. import get_bounded_diffstarpop_params, mc_diffstar_sfh_galpop
 from ..defaults import (
     DEFAULT_DIFFSTARPOP_PARAMS,
     DEFAULT_DIFFSTARPOP_U_PARAMS,
     DiffstarPopUParams,
 )
-from ..kernels.defaults_tpeak_line import get_bounded_diffstarpop_params
-from ..kernels.diffstarpop_tpeak_line import _diffstarpop_means_covs
-from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
+from ..kernels.diffstarpop_tpeak_line_sepms_satfrac import _diffstarpop_means_covs
 
 
 @jjit
@@ -78,13 +77,13 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
     tarr = np.linspace(T_TABLE_MIN, 13.7, ntimes)
 
     dmhdt_fit, log_mah_fit = mah_halopop(subcat.mah_params, tarr, LGT0)
-    lomg0_vals = log_mah_fit[:, -1]
 
     # compute SFHs for the default galaxy population
     args = (
         DEFAULT_DIFFSTARPOP_PARAMS,
         subcat.mah_params,
-        lomg0_vals,
+        subcat.logmp0,
+        subcat.upids,
         lgmu_infall,
         subcat.logmhost_ult_inf,
         gyr_since_infall,
@@ -118,7 +117,8 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
     args = (
         alt_dpp_params,
         subcat.mah_params,
-        lomg0_vals,
+        subcat.logmp0,
+        subcat.upids,
         lgmu_infall,
         subcat.logmhost_ult_inf,
         gyr_since_infall,
@@ -144,7 +144,8 @@ def test_all_diffstarpop_u_param_gradients_are_nonzero():
         args = (
             dpp,
             subcat.mah_params,
-            lomg0_vals,
+            subcat.logmp0,
+            subcat.upids,
             lgmu_infall,
             subcat.logmhost_ult_inf,
             gyr_since_infall,
@@ -189,12 +190,15 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
         gyr_since_infall,
     )
     _res = _diffstarpop_means_covs(*args)
+    frac_quench = _res[0]
     (
-        frac_quench,
+        frac_quench_sat,
         mu_mseq,
+        mu_qseq,
+        cov_mseq_ms_block,
         cov_qseq_ms_block,
         cov_qseq_q_block,
-    ) = _res
+    ) = _res[1:]
 
     # Generate an alternate galpop at some other point in param space
     ran_params_key, ran_key = jran.split(ran_key, 2)
@@ -208,12 +212,15 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
         gyr_since_infall,
     )
     _res = _diffstarpop_means_covs(*args)
+    frac_quench2 = _res[0]
     (
-        frac_quench2,
+        frac_quench_sat2,
         mu_mseq2,
+        mu_qseq2,
+        cov_mseq_ms_block2,
         cov_qseq_ms_block2,
         cov_qseq_q_block2,
-    ) = _res
+    ) = _res[1:]
 
     assert not np.allclose(mu_mseq2, mu_mseq)
     assert not np.allclose(cov_qseq_ms_block2, cov_qseq_ms_block)
