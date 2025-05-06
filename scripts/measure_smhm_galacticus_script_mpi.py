@@ -134,7 +134,7 @@ if __name__ == "__main__":
         mstar_ssfr_wcounts_cent = np.zeros((nz, nm, nmstar, nssfr))
         mstar_ssfr_wcounts_sat = np.zeros((nz, nm, nmstar, nssfr))
 
-        for i in range(smhm_utils.NCHUNKS):
+        for i in range(1):
             fnout = os.path.join(outdrn, TMP_OUTPATH.format(i))
             with h5py.File(fnout, "r") as hdfout:
                 wcounts = wcounts + hdfout["wcounts_i"][:]
