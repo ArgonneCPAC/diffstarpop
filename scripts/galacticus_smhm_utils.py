@@ -167,7 +167,8 @@ def sample_halos(
 
     for i in range(len(ndbins_lo)):
         sel = (log_mah >= ndbins_lo[i]) & (log_mah < ndbins_hi[i])
-        sel = np.random.choice(arange_arr[sel], N_HALOS_MAX, replace=False)
+        replace = True if sel.sum() < N_HALOS_MAX else False
+        sel = np.random.choice(arange_arr[sel], N_HALOS_MAX, replace=replace)
         logmh_id.append(np.ones_like(sel) * i)
         logmh_val.append(np.ones_like(sel) * ((ndbins_lo[i] + ndbins_hi[i]) / 2.0))
         mah_params_samp.append(mah_params[sel])
