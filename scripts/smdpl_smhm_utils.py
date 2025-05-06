@@ -1,8 +1,7 @@
-"""
-"""
+""" """
 
 import os
-
+import re
 import h5py
 import numpy as np
 from diffmah.diffmah_kernels import DEFAULT_MAH_PARAMS, mah_halopop
@@ -13,23 +12,32 @@ from scipy.stats import binned_statistic
 from astropy.cosmology import Planck13
 from umachine_pyio.load_mock import load_mock_from_binaries
 
-LCRC_DIFFSTAR_DRN = (
-    "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/diffstar_tpeak_fits"
+LCRC_NOMERGING_DIFFSTAR_DRN = (
+    "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/diffstar_tpeak_fits/"
 )
-LCRC_DIFFMAH_DRN = (
-    "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/diffmah_tpeak_fits"
+LCRC_NOMERGING_DIFFMAH_DRN = (
+    "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/diffmah_tpeak_fits/"
 )
-LCRC_BINARIES_DRN = (
+LCRC_NOMERGING_BINARIES_DRN = (
     "/lcrc/project/halotools/SMDPL/dr1_no_merging_upidh/sfh_binary_catalogs/a_1.000000/"
 )
-TASSO_DIFFSTAR_DRN = "/Users/aphearin/work/DATA/diffstar_data/SMDPL"
+
+LCRC_DR1_DIFFSTAR_DRN = "/lcrc/project/halotools/SMDPL/diffstar_fits_DR1/"
+LCRC_DR1_DIFFMAH_DRN = "/lcrc/project/halotools/UniverseMachine/SMDPL/sfh_binaries_dr1_bestfit/diffmah_tpeak_fits/"
+LCRC_DR1_BINARIES_DRN = (
+    "/lcrc/project/halotools/UniverseMachine/SMDPL/sfh_binaries_dr1_bestfit/a_1.000000/"
+)
+LCRC_NOMERGING_diffstar_bnpat = "subvol_{}_diffstar_fits.h5"
+LCRC_DR1_diffstar_bnpat = "diffstar_fits_subvol_{}.hdf5"
+
+TASSO_DIFFSTAR_DRN = "/Users/aphearin/work/DATA/diffstar_data/SMDPL/"
 N_SUBVOL_SMDPL = 576
 
 LGMH_MIN, LGMH_MAX = 11, 14.75
 N_LGM_BINS = 12
 LOGMH_BINS = np.linspace(LGMH_MIN, LGMH_MAX, N_LGM_BINS)
-LOGMSTAR_BINS_PDF = np.linspace(7, 12, 26)
-LOGSSFR_BINS_PDF = np.linspace(-13, -8, 30)
+LOGMSTAR_BINS_PDF = np.linspace(7.0, 13.0, 26)
+LOGSSFR_BINS_PDF = np.linspace(-13.0, -8.0, 30)
 
 Z_BINS = [0.0, 0.5, 1.0, 1.5, 2.0]
 
@@ -47,15 +55,30 @@ def _load_flat_hdf5(fn):
     return data
 
 
+def return_subvol_str(subvol, diffstar_drn, diffstar_bnpat):
+    regex_str = re.escape(diffstar_bnpat).replace(r"\{\}", r"(\d{1,3})")
+    pattern = re.compile(f"^{regex_str}$")
+    matching_files = [f for f in os.listdir(diffstar_drn) if pattern.match(f)]
+    subvols = [x.split("_")[-1].split(".")[0] for x in matching_files]
+    subvols_len = np.array([len(x) for x in subvols])
+
+    if np.any(subvols_len == 1):
+        subvol_str = f"{subvol:d}"
+    elif np.all(subvols_len == subvols_len.max()):
+        nchar_subvol = subvols_len.max()
+        subvol_str = f"{subvol:0{nchar_subvol}d}"
+    return subvol_str
+
+
 def load_diffstar_subvolume(
     subvol,
     n_subvol_tot=N_SUBVOL_SMDPL,
     diffmah_drn=TASSO_DIFFSTAR_DRN,
     diffstar_drn=TASSO_DIFFSTAR_DRN,
+    diffstar_bnpat=LCRC_NOMERGING_diffstar_bnpat,
 ):
-    nchar_subvol = len(str(n_subvol_tot))
-    diffstar_bnpat = "subvol_{}_diffstar_fits.h5"
-    subvol_str = f"{subvol:0{nchar_subvol}d}"
+    # nchar_subvol = len(str(n_subvol_tot))
+    subvol_str = return_subvol_str(subvol, diffstar_drn, diffstar_bnpat)
     diffstar_bn = diffstar_bnpat.format(subvol_str)
     diffstar_fn = os.path.join(diffstar_drn, diffstar_bn)
     diffstar_data = _load_flat_hdf5(diffstar_fn)
@@ -72,6 +95,7 @@ def load_diffstar_sfh_tables(
     n_subvol_tot=N_SUBVOL_SMDPL,
     diffmah_drn=TASSO_DIFFSTAR_DRN,
     diffstar_drn=TASSO_DIFFSTAR_DRN,
+    diffstar_bnpat=LCRC_NOMERGING_diffstar_bnpat,
     lgt0=LGT0,
     n_times=200,
 ):
@@ -80,16 +104,24 @@ def load_diffstar_sfh_tables(
         n_subvol_tot=n_subvol_tot,
         diffmah_drn=diffmah_drn,
         diffstar_drn=diffstar_drn,
+        diffstar_bnpat=diffstar_bnpat,
     )
+    has_fit = (diffmah_data["loss"] > 0.0) & (diffstar_data["success"] == 1)
     mah_params = DEFAULT_MAH_PARAMS._make(
-        [diffmah_data[key] for key in DEFAULT_MAH_PARAMS._fields]
+        [diffmah_data[key][has_fit] for key in DEFAULT_MAH_PARAMS._fields]
     )
 
     ms_params = DEFAULT_DIFFSTAR_PARAMS.ms_params._make(
-        [diffstar_data[key] for key in DEFAULT_DIFFSTAR_PARAMS.ms_params._fields]
+        [
+            diffstar_data[key][has_fit]
+            for key in DEFAULT_DIFFSTAR_PARAMS.ms_params._fields
+        ]
     )
     q_params = DEFAULT_DIFFSTAR_PARAMS.q_params._make(
-        [diffstar_data[key] for key in DEFAULT_DIFFSTAR_PARAMS.q_params._fields]
+        [
+            diffstar_data[key][has_fit]
+            for key in DEFAULT_DIFFSTAR_PARAMS.q_params._fields
+        ]
     )
     sfh_params = DEFAULT_DIFFSTAR_PARAMS._make((ms_params, q_params))
 
@@ -113,6 +145,7 @@ def load_diffstar_sfh_tables(
         mah_params,
         ms_params,
         q_params,
+        has_fit,
     )
 
     return out
@@ -123,6 +156,7 @@ def compute_weighted_histograms_z0(
     n_subvol_tot=N_SUBVOL_SMDPL,
     diffmah_drn=TASSO_DIFFSTAR_DRN,
     diffstar_drn=TASSO_DIFFSTAR_DRN,
+    diffstar_bnpat=LCRC_NOMERGING_diffstar_bnpat,
     lgt0=LGT0,
     logmh_bins=LOGMH_BINS,
 ):
@@ -131,6 +165,7 @@ def compute_weighted_histograms_z0(
         n_subvol_tot=n_subvol_tot,
         diffmah_drn=diffmah_drn,
         diffstar_drn=diffstar_drn,
+        diffstar_bnpat=diffstar_bnpat,
         lgt0=lgt0,
     )
     t_table, log_mah_table, log_smh_table, log_ssfrh_table = _res[:4]
@@ -198,6 +233,7 @@ def return_target_redshfit_index(t_table, redshift_targets):
 
 
 def sample_halos(
+    n_subvol_smdpl,
     logmh_bins,
     log_mah,
     log_smh,
@@ -220,9 +256,11 @@ def sample_halos(
     ms_params = np.array(ms_params).T
     q_params = np.array(q_params).T
 
+    n_halos_per_subvol = N_HALOS_MAX // n_subvol_smdpl
+
     for i in range(len(ndbins_lo)):
         sel = (log_mah >= ndbins_lo[i]) & (log_mah < ndbins_hi[i])
-        sel_num = int(min(N_HALOS_PER_SUBVOL, sel.sum()))
+        sel_num = int(min(n_halos_per_subvol, sel.sum()))
         sel = np.random.choice(arange_arr[sel], sel_num, replace=False)
         logmh_id.append(np.ones_like(sel) * i)
         logmh_val.append(np.ones_like(sel) * ((ndbins_lo[i] + ndbins_hi[i]) / 2.0))
@@ -254,10 +292,13 @@ def sample_halos(
 
 def create_target_data(
     subvol,
+    n_subvol_smdpl,
     redshift_targets=Z_BINS,
     n_subvol_tot=N_SUBVOL_SMDPL,
-    diffmah_drn=LCRC_DIFFMAH_DRN,
-    diffstar_drn=LCRC_DIFFSTAR_DRN,
+    binaries_drn=LCRC_NOMERGING_BINARIES_DRN,
+    diffmah_drn=LCRC_NOMERGING_DIFFMAH_DRN,
+    diffstar_drn=LCRC_NOMERGING_DIFFSTAR_DRN,
+    diffstar_bnpat=LCRC_NOMERGING_diffstar_bnpat,
     lgt0=LGT0,
     logmh_bins=LOGMH_BINS,
 ):
@@ -266,6 +307,7 @@ def create_target_data(
         n_subvol_tot=n_subvol_tot,
         diffmah_drn=diffmah_drn,
         diffstar_drn=diffstar_drn,
+        diffstar_bnpat=diffstar_bnpat,
         lgt0=lgt0,
     )
     (
@@ -276,13 +318,14 @@ def create_target_data(
         mah_params,
         ms_params,
         q_params,
+        has_fit,
     ) = _res
 
     galprops = ["halo_id", "upid"]
     halos = load_mock_from_binaries(
-        np.atleast_1d(subvol), root_dirname=LCRC_BINARIES_DRN, galprops=galprops
+        np.atleast_1d(subvol), root_dirname=binaries_drn, galprops=galprops
     )
-    upid = np.array(halos["upid"])
+    upid = np.array(halos["upid"])[has_fit]
 
     tids = return_target_redshfit_index(t_table, redshift_targets)
 
@@ -325,6 +368,7 @@ def create_target_data(
 
     for i, tid in enumerate(tids):
         _res = sample_halos(
+            n_subvol_smdpl,
             logmh_bins,
             log_mah_table[:, tid],
             log_smh_table[:, tid],
@@ -464,8 +508,10 @@ def create_pdf_target_data(
     subvol,
     redshift_targets=Z_BINS,
     n_subvol_tot=N_SUBVOL_SMDPL,
-    diffmah_drn=LCRC_DIFFMAH_DRN,
-    diffstar_drn=LCRC_DIFFSTAR_DRN,
+    binaries_drn=LCRC_NOMERGING_BINARIES_DRN,
+    diffmah_drn=LCRC_NOMERGING_DIFFMAH_DRN,
+    diffstar_drn=LCRC_NOMERGING_DIFFSTAR_DRN,
+    diffstar_bnpat=LCRC_NOMERGING_diffstar_bnpat,
     lgt0=LGT0,
     logmh_bins=LOGMH_BINS,
     logmstar_bins_pdf=LOGMSTAR_BINS_PDF,
@@ -476,6 +522,7 @@ def create_pdf_target_data(
         n_subvol_tot=n_subvol_tot,
         diffmah_drn=diffmah_drn,
         diffstar_drn=diffstar_drn,
+        diffstar_bnpat=diffstar_bnpat,
         lgt0=lgt0,
     )
     (
@@ -486,15 +533,16 @@ def create_pdf_target_data(
         mah_params,
         ms_params,
         q_params,
+        has_fit,
     ) = _res
 
     log_ssfrh_table = np.clip(log_ssfrh_table, -12.0, None)
 
     galprops = ["halo_id", "upid"]
     halos = load_mock_from_binaries(
-        np.atleast_1d(subvol), root_dirname=LCRC_BINARIES_DRN, galprops=galprops
+        np.atleast_1d(subvol), root_dirname=binaries_drn, galprops=galprops
     )
-    upid = np.array(halos["upid"])
+    upid = np.array(halos["upid"])[has_fit]
     is_central = upid == -1
 
     tids = return_target_redshfit_index(t_table, redshift_targets)
