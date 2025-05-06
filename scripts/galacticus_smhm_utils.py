@@ -15,7 +15,7 @@ from umachine_pyio.load_mock import load_mock_from_binaries
 
 BEBOP_GALAC = "/lcrc/project/halotools/Galacticus/diffstarpop_data/"
 
-LGMH_MIN, LGMH_MAX = 11, 14.75
+LGMH_MIN, LGMH_MAX = 11, 14.50
 N_LGM_BINS = 12
 LOGMH_BINS = np.linspace(LGMH_MIN, LGMH_MAX, N_LGM_BINS)
 LOGMSTAR_BINS_PDF = np.linspace(7, 12, 26)
