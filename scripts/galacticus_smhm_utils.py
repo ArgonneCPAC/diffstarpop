@@ -168,16 +168,24 @@ def sample_halos(
     for i in range(len(ndbins_lo)):
         sel = (log_mah >= ndbins_lo[i]) & (log_mah < ndbins_hi[i])
         if sel.sum() == 0:
-            continue
-
-        replace = True if sel.sum() < N_HALOS_MAX else False
-        sel = np.random.choice(arange_arr[sel], N_HALOS_MAX, replace=replace)
-        logmh_id.append(np.ones_like(sel) * i)
-        logmh_val.append(np.ones_like(sel) * ((ndbins_lo[i] + ndbins_hi[i]) / 2.0))
-        mah_params_samp.append(mah_params[sel])
-        ms_params_samp.append(ms_params[sel])
-        q_params_samp.append(q_params[sel])
-        upid_samp.append(upid[sel])
+            # if there are no haloes, fill arrays with nans.
+            logmh_id.append(np.ones(N_HALOS_MAX) * i)
+            logmh_val.append(
+                np.ones(N_HALOS_MAX) * ((ndbins_lo[i] + ndbins_hi[i]) / 2.0)
+            )
+            mah_params_samp.append(np.nan * np.ones((N_HALOS_MAX, mah_params.shape[1])))
+            ms_params_samp.append(np.nan * np.ones((N_HALOS_MAX, ms_params.shape[1])))
+            q_params_samp.append(np.nan * np.ones((N_HALOS_MAX, q_params.shape[1])))
+            upid_samp.append(np.nan * np.ones(N_HALOS_MAX))
+        else:
+            replace = True if sel.sum() < N_HALOS_MAX else False
+            sel = np.random.choice(arange_arr[sel], N_HALOS_MAX, replace=replace)
+            logmh_id.append(np.ones_like(sel) * i)
+            logmh_val.append(np.ones_like(sel) * ((ndbins_lo[i] + ndbins_hi[i]) / 2.0))
+            mah_params_samp.append(mah_params[sel])
+            ms_params_samp.append(ms_params[sel])
+            q_params_samp.append(q_params[sel])
+            upid_samp.append(upid[sel])
 
     logmh_id = np.concatenate(logmh_id)
     logmh_val = np.concatenate(logmh_val)
