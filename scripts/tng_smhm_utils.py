@@ -1,5 +1,4 @@
-"""
-"""
+""" """
 
 import os
 
@@ -21,7 +20,7 @@ BEBOP_TNG_SFH = "/lcrc/project/halotools/alarcon/results/tng_diffstar_tpeak/"
 LGMH_MIN, LGMH_MAX = 11, 14.75
 N_LGM_BINS = 12
 LOGMH_BINS = np.linspace(LGMH_MIN, LGMH_MAX, N_LGM_BINS)
-LOGMSTAR_BINS_PDF = np.linspace(7, 12, 26)
+LOGMSTAR_BINS_PDF = np.linspace(7, 13, 26)
 LOGSSFR_BINS_PDF = np.linspace(-13, -8, 30)
 
 Z_BINS = [0.0, 0.5, 1.0, 1.5, 2.0]
