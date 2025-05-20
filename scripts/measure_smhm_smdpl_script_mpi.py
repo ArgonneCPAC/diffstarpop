@@ -98,6 +98,7 @@ if __name__ == "__main__":
             start = time()
             _res = smhm_utils.create_target_data(
                 i,
+                sim_name,
                 n_subvol_smdpl,
                 redshift_targets=redshift_targets,
                 binaries_drn=binaries_drn,
@@ -130,6 +131,7 @@ if __name__ == "__main__":
 
             _res = smhm_utils.create_pdf_target_data(
                 i,
+                sim_name,
                 redshift_targets,
                 binaries_drn=binaries_drn,
                 diffmah_drn=diffmah_drn,
