@@ -444,7 +444,8 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
         indx_pdf.append(np.array(indx_pdf_atz))
         # break
     # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
-    target_mstar_ids = np.array([9, 14, 17, 19, 22])
+    # target_mstar_ids = np.array([9, 14, 17, 19, 22])
+    target_mstar_ids = np.array([8, 10, 13, 16, 19])
     # target_mstar_ids = np.array([9, 12, 15, 17, 19])
     # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
@@ -558,7 +559,8 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
         indx_pdf.append(np.array(indx_pdf_atz))
         # break
     # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
-    target_mstar_ids = np.array([9, 14, 17, 19, 22])
+    # target_mstar_ids = np.array([9, 14, 17, 19, 22])
+    target_mstar_ids = np.array([8, 10, 13, 16, 19])
     # target_mstar_ids = np.array([9, 12, 15, 17, 19])
     # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
@@ -739,7 +741,8 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
 
         # break
     # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
-    target_mstar_ids = np.array([9, 14, 17, 19, 22])
+    # target_mstar_ids = np.array([9, 14, 17, 19, 22])
+    target_mstar_ids = np.array([8, 10, 13, 16, 19])
     # target_mstar_ids = np.array([9, 12, 15, 17])
     # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
@@ -851,7 +854,8 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
         indx_pdf.append(np.array(indx_pdf_atz))
         # break
     # target_mstar_ids = np.array([4, 9, 14, 17, 19, 22])
-    target_mstar_ids = np.array([9, 14, 17, 19, 22])
+    # target_mstar_ids = np.array([9, 14, 17, 19, 22])
+    target_mstar_ids = np.array([8, 10, 13, 16, 19])
     # target_mstar_ids = np.array([9, 12, 15, 17])
     # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
