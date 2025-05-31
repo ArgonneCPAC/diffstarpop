@@ -249,7 +249,7 @@ if __name__ == "__main__":
             )
 
         ax[i].set_ylim(0, 0.3)
-        ax[i].set_xlim(7, 12.0)
+        ax[i].set_xlim(7, 13.0)
         ax[i].set_ylabel(r"$P(M_\star(t_{\rm obs})| M_{\rm halo}(t_{\rm obs}))$")
         ax[i].set_title(r"${\rm Redshift}=%.1f$" % redshift_targets[i], y=0.85, x=0.9)
         if i < 4:
