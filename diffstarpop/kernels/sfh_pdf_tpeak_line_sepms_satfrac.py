@@ -146,12 +146,12 @@ SFH_PDF_FRAC_QUENCH_PDICT = OrderedDict(
 SFH_PDF_FRAC_QUENCH_BOUNDS_PDICT = OrderedDict(
     frac_quench_cen_x0=(10.0, 13.0),
     frac_quench_cen_k=(0.01, 5.0),
-    frac_quench_cen_ylo=(0.0, 0.5),
-    frac_quench_cen_yhi=(0.5, 1.0),
+    frac_quench_cen_ylo=(0.0, 1.0),
+    frac_quench_cen_yhi=(0.0, 1.0),
     frac_quench_sat_x0=(10.0, 13.0),
     frac_quench_sat_k=(0.01, 5.0),
-    frac_quench_sat_ylo=(0.0, 0.5),
-    frac_quench_sat_yhi=(0.5, 1.0),
+    frac_quench_sat_ylo=(0.0, 1.0),
+    frac_quench_sat_yhi=(0.0, 1.0),
 )
 
 BOUNDING_MEAN_VALS_PDICT = OrderedDict(
