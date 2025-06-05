@@ -13,7 +13,7 @@ from ..defaults_tpeak_line_sepms_satfrac import get_unbounded_diffstarpop_params
 
 SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
     [
-        ("mean_ulgm_mseq_int", 12.187),
+        ("mean_ulgm_mseq_int", 11.700),
         ("mean_ulgm_mseq_slp", 0.081),
         ("mean_ulgy_mseq_int", -0.025),
         ("mean_ulgy_mseq_slp", -0.181),
@@ -21,7 +21,7 @@ SFH_PDF_QUENCH_MU_PDICT = OrderedDict(
         ("mean_ul_mseq_slp", 0.241),
         ("mean_utau_mseq_int", -0.239),
         ("mean_utau_mseq_slp", -15.541),
-        ("mean_ulgm_qseq_int", 12.238),
+        ("mean_ulgm_qseq_int", 11.700),
         ("mean_ulgm_qseq_slp", 0.595),
         ("mean_ulgy_qseq_int", -0.079),
         ("mean_ulgy_qseq_slp", 0.045),
@@ -57,7 +57,7 @@ SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT = OrderedDict(
         ("std_ul_qseq_int", 0.359),
         ("std_ul_qseq_slp", 0.176),
         ("std_utau_qseq_int", 8.357),
-        ("std_utau_qseq_slp", 0.01),
+        ("std_utau_qseq_slp", 2.700),
     ]
 )
 
