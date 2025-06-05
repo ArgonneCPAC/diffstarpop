@@ -57,7 +57,7 @@ SFH_PDF_QUENCH_COV_MS_BLOCK_PDICT = OrderedDict(
         ("std_ul_qseq_int", 0.359),
         ("std_ul_qseq_slp", 0.176),
         ("std_utau_qseq_int", 8.357),
-        ("std_utau_qseq_slp", 0.0),
+        ("std_utau_qseq_slp", 0.01),
     ]
 )
 
