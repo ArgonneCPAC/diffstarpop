@@ -41,7 +41,9 @@ from fit_get_loss_helpers_sepms_satfrac_sigslope import (
     get_loss_data_pdfs_ssfr_central,
     get_loss_data_pdfs_ssfr_satellite,
 )
-
+from diffstarpop.kernels.params import (
+    DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac_sigslope,
+)
 
 BEBOP_SMHM_MEAN_DATA = "/lcrc/project/halotools/alarcon/results/"
 
@@ -132,6 +134,11 @@ if __name__ == "__main__":
 
     if params_path is None:
         all_u_params = tuple_to_array(DEFAULT_DIFFSTARPOP_U_PARAMS)
+    elif params_path.startswith("diffstarfits"):
+        sim_name = params_path.split("_")[1:]
+        sim_name = ("_").join(sim_name)
+        params_tuple = DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac[sim_name]
+        all_u_params = tuple_to_array(params_tuple)
     else:
         params = np.load(params_path)
         all_u_params = params["diffstarpop_u_params"]
