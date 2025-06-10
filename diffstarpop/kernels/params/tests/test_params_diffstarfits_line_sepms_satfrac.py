@@ -23,6 +23,12 @@ from ..params_diffstarfits_line_sepms_satfrac_smdpl_DR1 import (
     DIFFSTARFITS_SMDPL_DR1_DIFFSTARPOP_U_PARAMS as U_PARAMS_SMDPL_DR1,
 )
 
+# TNG
+from ..params_diffstarfits_line_sepms_satfrac_tng import (
+    DIFFSTARFITS_TNG_DIFFSTARPOP_PARAMS as PARAMS_TNG,
+    DIFFSTARFITS_TNG_DIFFSTARPOP_U_PARAMS as U_PARAMS_TNG,
+)
+
 
 def test_smdpl():
     arr_params = tuple_to_array(PARAMS_SMDPL)
@@ -52,5 +58,21 @@ def test_smdpl_dr1():
     assert np.allclose(arr_params, arr_u_params_bound, rtol=1e-4, atol=1e-4)
 
     arr_params_unbound = get_unbounded_diffstarpop_params(PARAMS_SMDPL_DR1)
+    arr_params_unbound = tuple_to_array(arr_params_unbound)
+    assert np.allclose(arr_u_params, arr_params_unbound, rtol=1e-4, atol=1e-4)
+
+
+def test_tng():
+    arr_params = tuple_to_array(PARAMS_TNG)
+    arr_u_params = tuple_to_array(U_PARAMS_TNG)
+
+    assert np.all(np.isfinite(arr_params))
+    assert np.all(np.isfinite(arr_u_params))
+
+    arr_u_params_bound = get_bounded_diffstarpop_params(U_PARAMS_TNG)
+    arr_u_params_bound = tuple_to_array(arr_u_params_bound)
+    assert np.allclose(arr_params, arr_u_params_bound, rtol=1e-4, atol=1e-4)
+
+    arr_params_unbound = get_unbounded_diffstarpop_params(PARAMS_TNG)
     arr_params_unbound = tuple_to_array(arr_params_unbound)
     assert np.allclose(arr_u_params, arr_params_unbound, rtol=1e-4, atol=1e-4)
