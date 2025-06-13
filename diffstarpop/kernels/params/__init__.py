@@ -49,6 +49,16 @@ from .params_diffstarfits_line_sepms_satfrac_sigslope_galacticus_in_situ import 
     DIFFSTARFITS_GALACTICUS_IN_DIFFSTARPOP_U_PARAMS as DIFFSTARFITS_GALACTICUS_IN_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope,
 )
 
+# Glacticus in plus ex situ
+from .params_diffstarfits_line_sepms_satfrac_galacticus_in_plus_ex_situ import (
+    DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS as DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS_line_sepms_satfrac,
+    DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS as DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac,
+)
+
+from .params_diffstarfits_line_sepms_satfrac_sigslope_galacticus_in_plus_ex_situ import (
+    DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS as DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope,
+    DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS as DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope,
+)
 
 sim_name_list = [
     "smdpl",
@@ -64,12 +74,14 @@ DiffstarPop_Params_Diffstarfits_line_sepms_satfrac = OrderedDict(
     smdpl_dr1=DIFFSTARFITS_SMDPL_DR1_DIFFSTARPOP_PARAMS_line_sepms_satfrac,
     tng=DIFFSTARFITS_TNG_DIFFSTARPOP_PARAMS_line_sepms_satfrac,
     galacticus_in_situ=DIFFSTARFITS_GALACTICUS_IN_DIFFSTARPOP_PARAMS_line_sepms_satfrac,
+    galacticus_in_plus_ex_situ=DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS_line_sepms_satfrac,
 )
 DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac = OrderedDict(
     smdpl=DIFFSTARFITS_SMDPL_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac,
     smdpl_dr1=DIFFSTARFITS_SMDPL_DR1_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac,
     tng=DIFFSTARFITS_TNG_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac,
     galacticus_in_situ=DIFFSTARFITS_GALACTICUS_IN_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac,
+    galacticus_in_plus_ex_situ=DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac,
 )
 
 DiffstarPop_Params_Diffstarfits_line_sepms_satfrac_sigslope = OrderedDict(
@@ -77,10 +89,12 @@ DiffstarPop_Params_Diffstarfits_line_sepms_satfrac_sigslope = OrderedDict(
     smdpl_dr1=DIFFSTARFITS_SMDPL_DR1_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope,
     tng=DIFFSTARFITS_TNG_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope,
     galacticus_in_situ=DIFFSTARFITS_GALACTICUS_IN_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope,
+    galacticus_in_plus_ex_situ=DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope,
 )
 DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac_sigslope = OrderedDict(
     smdpl=DIFFSTARFITS_SMDPL_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope,
     smdpl_dr1=DIFFSTARFITS_SMDPL_DR1_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope,
     tng=DIFFSTARFITS_TNG_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope,
     galacticus_in_situ=DIFFSTARFITS_GALACTICUS_IN_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope,
+    galacticus_in_plus_ex_situ=DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope,
 )

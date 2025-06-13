@@ -35,6 +35,12 @@ from ..params_diffstarfits_line_sepms_satfrac_galacticus_in_situ import (
     DIFFSTARFITS_GALACTICUS_IN_DIFFSTARPOP_U_PARAMS as U_PARAMS_GALACTICUS_IN,
 )
 
+# Galacticus INPLUSEX
+from ..params_diffstarfits_line_sepms_satfrac_galacticus_in_plus_ex_situ import (
+    DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS as PARAMS_GALACTICUS_INPLUSEX,
+    DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS as U_PARAMS_GALACTICUS_INPLUSEX,
+)
+
 
 def test_smdpl():
     arr_params = tuple_to_array(PARAMS_SMDPL)
@@ -96,5 +102,21 @@ def test_galacticus_in():
     assert np.allclose(arr_params, arr_u_params_bound, rtol=1e-4, atol=1e-4)
 
     arr_params_unbound = get_unbounded_diffstarpop_params(PARAMS_GALACTICUS_IN)
+    arr_params_unbound = tuple_to_array(arr_params_unbound)
+    assert np.allclose(arr_u_params, arr_params_unbound, rtol=1e-4, atol=1e-4)
+
+
+def test_galacticus_inplusex():
+    arr_params = tuple_to_array(PARAMS_GALACTICUS_INPLUSEX)
+    arr_u_params = tuple_to_array(U_PARAMS_GALACTICUS_INPLUSEX)
+
+    assert np.all(np.isfinite(arr_params))
+    assert np.all(np.isfinite(arr_u_params))
+
+    arr_u_params_bound = get_bounded_diffstarpop_params(U_PARAMS_GALACTICUS_INPLUSEX)
+    arr_u_params_bound = tuple_to_array(arr_u_params_bound)
+    assert np.allclose(arr_params, arr_u_params_bound, rtol=1e-4, atol=1e-4)
+
+    arr_params_unbound = get_unbounded_diffstarpop_params(PARAMS_GALACTICUS_INPLUSEX)
     arr_params_unbound = tuple_to_array(arr_params_unbound)
     assert np.allclose(arr_u_params, arr_params_unbound, rtol=1e-4, atol=1e-4)
