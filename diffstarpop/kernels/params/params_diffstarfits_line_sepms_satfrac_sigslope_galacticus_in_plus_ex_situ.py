@@ -33,7 +33,7 @@ SFH_PDF_QUENCH_MU_PDICT = OrderedDict([
     ('mean_utau_qseq_int', 6.554),
     ('mean_utau_qseq_slp', 5.760),
     ('mean_uqt_int', 0.992),
-    ('mean_uqt_slp', 0.000),
+    ('mean_uqt_slp', 0.010),
     ('mean_uqs_int', 0.546),
     ('mean_uqs_slp', -4.458),
     ('mean_udrop_int', -1.181),
