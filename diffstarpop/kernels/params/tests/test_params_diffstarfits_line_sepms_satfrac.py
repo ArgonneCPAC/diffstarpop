@@ -2,8 +2,6 @@ import numpy as np
 
 from ....loss_kernels.namedtuple_utils_tpeak_sepms_satfrac import (
     tuple_to_array,
-    register_tuple_new_diffstarpop_tpeak,
-    array_to_tuple_new_diffstarpop_tpeak,
 )
 
 from ...defaults_tpeak_line_sepms_satfrac import (
