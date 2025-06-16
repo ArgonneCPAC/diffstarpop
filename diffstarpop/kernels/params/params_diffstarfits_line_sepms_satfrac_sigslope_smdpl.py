@@ -1,13 +1,10 @@
 from collections import OrderedDict, namedtuple
 
 import typing
-from jax import jit as jjit
 from jax import numpy as jnp
 
 from ..satquenchpop_model import (
     DEFAULT_SATQUENCHPOP_PARAMS,
-    get_bounded_satquenchpop_params,
-    get_unbounded_satquenchpop_params,
 )
 from ..defaults_tpeak_line_sepms_satfrac_sigslope import (
     get_unbounded_diffstarpop_params,
