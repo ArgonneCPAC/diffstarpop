@@ -10,39 +10,39 @@ from ...defaults_tpeak_line_sepms_satfrac_sigslope import (
 )
 
 # SMDPL
-from ..params_diffstarfits_line_sepms_satfrac_sigslope_smdpl import (
-    DIFFSTARFITS_SMDPL_DIFFSTARPOP_PARAMS as PARAMS_SMDPL,
-    DIFFSTARFITS_SMDPL_DIFFSTARPOP_U_PARAMS as U_PARAMS_SMDPL,
+from ..params_diffstarpopfits_line_sepms_satfrac_sigslope_smdpl import (
+    DIFFSTARPOP_FITS_SMDPL_DIFFSTARPOP_PARAMS as PARAMS_SMDPL,
+    DIFFSTARPOP_FITS_SMDPL_DIFFSTARPOP_U_PARAMS as U_PARAMS_SMDPL,
 )
 
 # SMDPL DR1
-from ..params_diffstarfits_line_sepms_satfrac_sigslope_smdpl_DR1 import (
-    DIFFSTARFITS_SMDPL_DR1_DIFFSTARPOP_PARAMS as PARAMS_SMDPL_DR1,
-    DIFFSTARFITS_SMDPL_DR1_DIFFSTARPOP_U_PARAMS as U_PARAMS_SMDPL_DR1,
+from ..params_diffstarpopfits_line_sepms_satfrac_sigslope_smdpl_dr1 import (
+    DIFFSTARPOP_FITS_SMDPL_DR1_DIFFSTARPOP_PARAMS as PARAMS_SMDPL_DR1,
+    DIFFSTARPOP_FITS_SMDPL_DR1_DIFFSTARPOP_U_PARAMS as U_PARAMS_SMDPL_DR1,
 )
 
 # TNG
-from ..params_diffstarfits_line_sepms_satfrac_sigslope_tng import (
-    DIFFSTARFITS_TNG_DIFFSTARPOP_PARAMS as PARAMS_TNG,
-    DIFFSTARFITS_TNG_DIFFSTARPOP_U_PARAMS as U_PARAMS_TNG,
+from ..params_diffstarpopfits_line_sepms_satfrac_sigslope_tng import (
+    DIFFSTARPOP_FITS_TNG_DIFFSTARPOP_PARAMS as PARAMS_TNG,
+    DIFFSTARPOP_FITS_TNG_DIFFSTARPOP_U_PARAMS as U_PARAMS_TNG,
 )
 
 # Galacticus IN
-from ..params_diffstarfits_line_sepms_satfrac_sigslope_galacticus_in_situ import (
-    DIFFSTARFITS_GALACTICUS_IN_DIFFSTARPOP_PARAMS as PARAMS_GALACTICUS_IN,
-    DIFFSTARFITS_GALACTICUS_IN_DIFFSTARPOP_U_PARAMS as U_PARAMS_GALACTICUS_IN,
+from ..params_diffstarpopfits_line_sepms_satfrac_sigslope_galacticus_in_situ import (
+    DIFFSTARPOP_FITS_GALACTICUS_IN_DIFFSTARPOP_PARAMS as PARAMS_GALACTICUS_IN,
+    DIFFSTARPOP_FITS_GALACTICUS_IN_DIFFSTARPOP_U_PARAMS as U_PARAMS_GALACTICUS_IN,
 )
 
 # Galacticus INPLUSEX
-from ..params_diffstarfits_line_sepms_satfrac_sigslope_galacticus_in_plus_ex_situ import (
-    DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS as PARAMS_GALACTICUS_INPLUSEX,
-    DIFFSTARFITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS as U_PARAMS_GALACTICUS_INPLUSEX,
+from ..params_diffstarpopfits_line_sepms_satfrac_sigslope_galacticus_in_plus_ex_situ import (
+    DIFFSTARPOP_FITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS as PARAMS_GALACTICUS_INPLUSEX,
+    DIFFSTARPOP_FITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS as U_PARAMS_GALACTICUS_INPLUSEX,
 )
 
 # All simulations
-from ..params_diffstarfits_line_sepms_satfrac_sigslope import (
-    DiffstarPop_Params_Diffstarfits_line_sepms_satfrac_sigslope,
-    DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac_sigslope,
+from ..params_diffstarpopfits_line_sepms_satfrac_sigslope import (
+    DiffstarPop_Params_Diffstarpop_fits_line_sepms_satfrac_sigslope,
+    DiffstarPop_UParams_Diffstarpop_fits_line_sepms_satfrac_sigslope,
     sim_name_list,
 )
 
@@ -68,8 +68,10 @@ def _test_onesim(params, uparams):
 
 def test_allsims():
     for sim_name in sim_name_list:
-        _params = DiffstarPop_Params_Diffstarfits_line_sepms_satfrac_sigslope[sim_name]
-        _uparams = DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac_sigslope[
+        _params = DiffstarPop_Params_Diffstarpop_fits_line_sepms_satfrac_sigslope[
+            sim_name
+        ]
+        _uparams = DiffstarPop_UParams_Diffstarpop_fits_line_sepms_satfrac_sigslope[
             sim_name
         ]
         _test_onesim(_params, _uparams)

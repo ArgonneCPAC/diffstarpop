@@ -40,6 +40,40 @@ from ..params_diffstarfits_line_sepms_satfrac_galacticus_in_plus_ex_situ import 
 )
 
 
+# All simulations
+from ..params_diffstarfits_line_sepms_satfrac import (
+    DiffstarPop_Params_Diffstarfits_line_sepms_satfrac,
+    DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac,
+    sim_name_list,
+)
+
+
+def _test_onesim(params, uparams):
+    arr_params = tuple_to_array(params)
+    arr_u_params = tuple_to_array(uparams)
+
+    assert np.all(np.isfinite(arr_params))
+    assert np.all(np.isfinite(arr_u_params))
+
+    arr_u_params_bound = get_bounded_diffstarpop_params(uparams)
+    arr_u_params_bound = tuple_to_array(arr_u_params_bound)
+    assert np.allclose(arr_params, arr_u_params_bound, rtol=1e-4, atol=1e-4)
+
+    arr_params_unbound = get_unbounded_diffstarpop_params(params)
+    arr_params_unbound = tuple_to_array(arr_params_unbound)
+    assert np.allclose(arr_u_params, arr_params_unbound, rtol=1e-4, atol=1e-4)
+
+    grad_val = _add_params_grad(arr_u_params)
+    assert np.all(np.isfinite(grad_val))
+
+
+def test_allsims():
+    for sim_name in sim_name_list:
+        _params = DiffstarPop_Params_Diffstarfits_line_sepms_satfrac[sim_name]
+        _uparams = DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac[sim_name]
+        _test_onesim(_params, _uparams)
+
+
 def _add_params(params):
     return jnp.sum(params) ** 2
 
