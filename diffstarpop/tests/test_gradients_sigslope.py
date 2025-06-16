@@ -10,13 +10,16 @@ from jax import numpy as jnp
 from jax import random as jran
 from jax import value_and_grad
 
-from .. import get_bounded_diffstarpop_params, mc_diffstar_sfh_galpop
-from ..defaults import (
+from ..mc_diffstarpop_tpeak_sepms_satfrac_sigslope import mc_diffstar_sfh_galpop
+from ..kernels.defaults_tpeak_line_sepms_satfrac_sigslope import (
     DEFAULT_DIFFSTARPOP_PARAMS,
     DEFAULT_DIFFSTARPOP_U_PARAMS,
     DiffstarPopUParams,
+    get_bounded_diffstarpop_params,
 )
-from ..kernels.diffstarpop_tpeak_line_sepms_satfrac import _diffstarpop_means_covs
+from ..kernels.diffstarpop_tpeak_line_sepms_satfrac_sigslope import (
+    _diffstarpop_means_covs,
+)
 
 
 @jjit
