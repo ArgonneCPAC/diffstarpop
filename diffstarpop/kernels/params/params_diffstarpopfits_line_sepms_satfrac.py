@@ -1,5 +1,4 @@
-import typing
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict
 
 # SMDPL
 from .params_diffstarpopfits_line_sepms_satfrac_smdpl import (
