@@ -1,5 +1,5 @@
 import numpy as np
-
+from jax import numpy as jnp, jit as jjit, grad
 from ....loss_kernels.namedtuple_utils_tpeak_sepms_satfrac import (
     tuple_to_array,
 )
@@ -40,6 +40,13 @@ from ..params_diffstarfits_line_sepms_satfrac_galacticus_in_plus_ex_situ import 
 )
 
 
+def _add_params(params):
+    return jnp.sum(params) ** 2
+
+
+_add_params_grad = jjit(grad(_add_params, argnums=0))
+
+
 def test_smdpl():
     arr_params = tuple_to_array(PARAMS_SMDPL)
     arr_u_params = tuple_to_array(U_PARAMS_SMDPL)
@@ -54,6 +61,9 @@ def test_smdpl():
     arr_params_unbound = get_unbounded_diffstarpop_params(PARAMS_SMDPL)
     arr_params_unbound = tuple_to_array(arr_params_unbound)
     assert np.allclose(arr_u_params, arr_params_unbound, rtol=1e-4, atol=1e-4)
+
+    grad_val = _add_params_grad(arr_u_params)
+    assert np.all(np.isfinite(grad_val))
 
 
 def test_smdpl_dr1():
@@ -71,6 +81,9 @@ def test_smdpl_dr1():
     arr_params_unbound = tuple_to_array(arr_params_unbound)
     assert np.allclose(arr_u_params, arr_params_unbound, rtol=1e-4, atol=1e-4)
 
+    grad_val = _add_params_grad(arr_u_params)
+    assert np.all(np.isfinite(grad_val))
+
 
 def test_tng():
     arr_params = tuple_to_array(PARAMS_TNG)
@@ -86,6 +99,9 @@ def test_tng():
     arr_params_unbound = get_unbounded_diffstarpop_params(PARAMS_TNG)
     arr_params_unbound = tuple_to_array(arr_params_unbound)
     assert np.allclose(arr_u_params, arr_params_unbound, rtol=1e-4, atol=1e-4)
+
+    grad_val = _add_params_grad(arr_u_params)
+    assert np.all(np.isfinite(grad_val))
 
 
 def test_galacticus_in():
@@ -103,6 +119,9 @@ def test_galacticus_in():
     arr_params_unbound = tuple_to_array(arr_params_unbound)
     assert np.allclose(arr_u_params, arr_params_unbound, rtol=1e-4, atol=1e-4)
 
+    grad_val = _add_params_grad(arr_u_params)
+    assert np.all(np.isfinite(grad_val))
+
 
 def test_galacticus_inplusex():
     arr_params = tuple_to_array(PARAMS_GALACTICUS_INPLUSEX)
@@ -118,3 +137,6 @@ def test_galacticus_inplusex():
     arr_params_unbound = get_unbounded_diffstarpop_params(PARAMS_GALACTICUS_INPLUSEX)
     arr_params_unbound = tuple_to_array(arr_params_unbound)
     assert np.allclose(arr_u_params, arr_params_unbound, rtol=1e-4, atol=1e-4)
+
+    grad_val = _add_params_grad(arr_u_params)
+    assert np.all(np.isfinite(grad_val))
