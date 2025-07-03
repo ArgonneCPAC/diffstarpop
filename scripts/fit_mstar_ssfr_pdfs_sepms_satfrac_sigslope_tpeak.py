@@ -137,9 +137,9 @@ if __name__ == "__main__":
     elif params_path.startswith("diffstarfits"):
         sim_name = params_path.split("_")[1:]
         sim_name = ("_").join(sim_name)
-        params_tuple = DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac_sigslope[
-            sim_name
-        ]
+        params_tuple = (
+            DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac_sigslope_tpeak[sim_name]
+        )
         all_u_params = tuple_to_array(params_tuple)
     else:
         params = np.load(params_path)
