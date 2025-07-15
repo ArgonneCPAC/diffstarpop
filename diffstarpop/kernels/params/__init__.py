@@ -14,6 +14,10 @@ from .params_diffstarfits_line_sepms_satfrac_sigslope import (
     DiffstarPop_Params_Diffstarfits_line_sepms_satfrac_sigslope,
     DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac_sigslope,
 )
+from .params_diffstarfits_line_sepms_satfrac_sigslope_tpeak import (
+    DiffstarPop_Params_Diffstarfits_line_sepms_satfrac_sigslope_tpeak,
+    DiffstarPop_UParams_Diffstarfits_line_sepms_satfrac_sigslope_tpeak,
+)
 
 # Import diffstarpop best fits
 from .params_diffstarpopfits_line_sepms_satfrac import (
@@ -23,4 +27,8 @@ from .params_diffstarpopfits_line_sepms_satfrac import (
 from .params_diffstarpopfits_line_sepms_satfrac_sigslope import (
     DiffstarPop_Params_Diffstarpop_fits_line_sepms_satfrac_sigslope,
     DiffstarPop_UParams_Diffstarpop_fits_line_sepms_satfrac_sigslope,
+)
+from .params_diffstarpopfits_line_sepms_satfrac_sigslope_tpeak import (
+    DiffstarPop_Params_Diffstarpop_fits_line_sepms_satfrac_sigslope_tpeak,
+    DiffstarPop_UParams_Diffstarpop_fits_line_sepms_satfrac_sigslope_tpeak,
 )

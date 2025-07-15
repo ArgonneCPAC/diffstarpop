@@ -1,0 +1,62 @@
+""" """
+
+# flake8: noqa
+
+import typing
+from collections import namedtuple, OrderedDict
+
+# SMDPL
+from .params_diffstarpopfits_line_sepms_satfrac_sigslope_tpeak_smdpl import (
+    DIFFSTARPOP_FITS_SMDPL_DIFFSTARPOP_PARAMS as DIFFSTARPOP_FITS_SMDPL_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    DIFFSTARPOP_FITS_SMDPL_DIFFSTARPOP_U_PARAMS as DIFFSTARPOP_FITS_SMDPL_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+)
+
+# SMDPL DR1
+
+from .params_diffstarpopfits_line_sepms_satfrac_sigslope_tpeak_smdpl_dr1 import (
+    DIFFSTARPOP_FITS_SMDPL_DR1_DIFFSTARPOP_PARAMS as DIFFSTARPOP_FITS_SMDPL_DR1_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    DIFFSTARPOP_FITS_SMDPL_DR1_DIFFSTARPOP_U_PARAMS as DIFFSTARPOP_FITS_SMDPL_DR1_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+)
+
+# TNG
+
+from .params_diffstarpopfits_line_sepms_satfrac_sigslope_tpeak_tng import (
+    DIFFSTARPOP_FITS_TNG_DIFFSTARPOP_PARAMS as DIFFSTARPOP_FITS_TNG_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    DIFFSTARPOP_FITS_TNG_DIFFSTARPOP_U_PARAMS as DIFFSTARPOP_FITS_TNG_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+)
+
+# Glacticus in situ
+
+from .params_diffstarpopfits_line_sepms_satfrac_sigslope_tpeak_galacticus_in_situ import (
+    DIFFSTARPOP_FITS_GALACTICUS_IN_DIFFSTARPOP_PARAMS as DIFFSTARPOP_FITS_GALACTICUS_IN_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    DIFFSTARPOP_FITS_GALACTICUS_IN_DIFFSTARPOP_U_PARAMS as DIFFSTARPOP_FITS_GALACTICUS_IN_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+)
+
+# Glacticus in plus ex situ
+from .params_diffstarpopfits_line_sepms_satfrac_sigslope_tpeak_galacticus_in_plus_ex_situ import (
+    DIFFSTARPOP_FITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS as DIFFSTARPOP_FITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    DIFFSTARPOP_FITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS as DIFFSTARPOP_FITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+)
+
+sim_name_list = [
+    "smdpl",
+    "smdpl_dr1",
+    "tng",
+    "galacticus_in_situ",
+    "galacticus_in_plus_ex_situ",
+]
+
+DiffstarPop_Params_Diffstarpop_fits_line_sepms_satfrac_sigslope_tpeak = OrderedDict(
+    smdpl=DIFFSTARPOP_FITS_SMDPL_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    smdpl_dr1=DIFFSTARPOP_FITS_SMDPL_DR1_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    tng=DIFFSTARPOP_FITS_TNG_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    galacticus_in_situ=DIFFSTARPOP_FITS_GALACTICUS_IN_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    galacticus_in_plus_ex_situ=DIFFSTARPOP_FITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+)
+DiffstarPop_UParams_Diffstarpop_fits_line_sepms_satfrac_sigslope_tpeak = OrderedDict(
+    smdpl=DIFFSTARPOP_FITS_SMDPL_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    smdpl_dr1=DIFFSTARPOP_FITS_SMDPL_DR1_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    tng=DIFFSTARPOP_FITS_TNG_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    galacticus_in_situ=DIFFSTARPOP_FITS_GALACTICUS_IN_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+    galacticus_in_plus_ex_situ=DIFFSTARPOP_FITS_GALACTICUS_INPLUSEX_DIFFSTARPOP_U_PARAMS_line_sepms_satfrac_sigslope_tpeak,
+)
