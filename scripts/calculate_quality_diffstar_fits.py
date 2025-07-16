@@ -249,7 +249,7 @@ def calculate_plot_smdpl_dr1(mpeak_bins):
 
     print(n_subvol_smdpl)
 
-    for subvol in range(n_subvol_smdpl):
+    for subvol in subvols:
 
         print(subvol)
 
