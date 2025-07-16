@@ -143,7 +143,9 @@ def calculate_plot_smdpl_nomerging(mpeak_bins):
 
     ngals = np.zeros(len(mpeak_binsc))
 
-    for subvol in range(20):
+    for subvol in range(576):
+
+        print(subvol)
 
         out = smdpl_smhm_utils.load_diffstar_sfh_tables(
             subvol,
