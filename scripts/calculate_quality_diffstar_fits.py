@@ -21,6 +21,7 @@ plt.rc("text", usetex=False)
 plt.rc("text.latex", preamble=r"\usepackage{amsmath}")  # necessary to use \dfrac
 
 import smdpl_smhm_utils
+import tng_smhm_utils
 from smdpl_smhm_utils import load_diffstar_sfh_tables
 
 from diffstar.data_loaders.load_smah_data import (
@@ -29,6 +30,7 @@ from diffstar.data_loaders.load_smah_data import (
     load_smdpl_diffmah_fits,
     load_SMDPL_DR1_data,
     load_SMDPL_nomerging_data,
+    load_tng_data,
 )
 
 from jax import vmap, jit as jjit, numpy as jnp
@@ -274,7 +276,7 @@ def calculate_plot_smdpl_dr1(mpeak_bins):
 
         log_sfh_table = log_ssfrh_table + log_smh_table
 
-        out = load_SMDPL_nomerging_data([subvol], binaries_drn)
+        out = load_SMDPL_DR1_data([subvol], binaries_drn)
         (halo_ids, log_smahs, sfrh, SMDPL_t, log_mahs, logmp0) = out
         log_sfrh = np.where(sfrh > 0.0, np.log10(sfrh), 0.0)
 
@@ -320,6 +322,107 @@ def calculate_plot_smdpl_dr1(mpeak_bins):
         mpeak_bins,
         mpeak_binsc,
         SMDPL_t,
+        mstar_data_mean,
+        mstar_fit_mean,
+        sfr_data_mean,
+        sfr_fit_mean,
+    )
+
+    return out
+
+
+def calculate_plot_tng(mpeak_bins):
+    diffmah_drn = tng_smhm_utils.BEBOP_TNG_MAH
+    diffstar_drn = tng_smhm_utils.BEBOP_TNG_SFH
+    binaries_drn = tng_smhm_utils.BEBOP_TNG
+    diffstar_bnpat = tng_smhm_utils.LCRC_DR1_diffstar_bnpat
+
+    mpeak_binsc = 0.5 * (mpeak_bins[1:] + mpeak_bins[:-1])
+    out = load_tng_data(binaries_drn)
+    (halo_ids, log_smahs, sfrh, tng_t, log_mahs, logmp0) = out
+    nt = len(tng_t)
+    n_subvol_smdpl = 20
+
+    nhalos_tot = len(halo_ids)
+
+    _a = np.arange(0, nhalos_tot).astype("i8")
+
+    mstar_data_mean = np.zeros((len(mpeak_binsc), nt))
+    mstar_fit_mean = np.zeros((len(mpeak_binsc), nt))
+    sfr_data_mean = np.zeros((len(mpeak_binsc), nt))
+    sfr_fit_mean = np.zeros((len(mpeak_binsc), nt))
+
+    ngals = np.zeros(len(mpeak_binsc))
+
+    print(n_subvol_smdpl)
+
+    for subvol in range(20):
+
+        print(subvol)
+
+        indx = np.array_split(_a, n_subvol_smdpl)[subvol]
+
+        out = tng_smhm_utils.load_diffstar_sfh_tables(
+            subvol,
+            diffmah_drn,
+            diffstar_drn,
+        )
+        (
+            t_table,
+            log_mah_table,
+            log_smh_table,
+            log_ssfrh_table,
+            mah_params,
+            ms_params,
+            q_params,
+        ) = out
+
+        log_sfh_table = log_ssfrh_table + log_smh_table
+
+        log_sfrh = np.where(sfrh > 0.0, np.log10(sfrh), 0.0)
+
+        _log_smahs_data = log_smahs[indx]
+        _log_sfrh_data = log_sfrh[indx]
+
+        _log_smahs_fits = jnp_interp_vmap(tng_t, t_table, log_smh_table)
+        _log_sfrh_fits = jnp_interp_vmap(tng_t, t_table, log_sfh_table)
+
+        smahs_fits = np.where(_log_smahs_fits == 0.0, np.nan, 10**_log_smahs_fits)
+        sfrh_fits = np.where(_log_sfrh_fits == 0.0, np.nan, 10**_log_sfrh_fits)
+        smahs_data = np.where(_log_smahs_data == 0.0, np.nan, 10**_log_smahs_data)
+        sfrh_data = np.where(_log_sfrh_data == 0.0, np.nan, 10**_log_sfrh_data)
+
+        logmp0_data = logmp0[indx]
+
+        ssfrh = sfrh_data / smahs_data
+        ssfrh_fit = sfrh_fits / smahs_fits
+        ssfrh = np.clip(ssfrh, 1e-12, np.inf)
+        ssfrh_fit = np.clip(ssfrh_fit, 1e-12, np.inf)
+        sfrh = np.where(smahs_data > 0.0, ssfrh * smahs_data, sfrh_data)
+        sfrh_fits = ssfrh_fit * smahs_fits
+
+        for i in range(len(mpeak_bins) - 1):
+            masksel = (logmp0_data > mpeak_bins[i]) & (logmp0_data < mpeak_bins[i + 1])
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+
+                mstar_data_mean[i] += np.nansum(smahs_data[masksel], axis=0)
+                mstar_fit_mean[i] += np.nansum(smahs_fits[masksel], axis=0)
+                sfr_data_mean[i] += np.nansum(sfrh[masksel], axis=0)
+                sfr_fit_mean[i] += np.nansum(sfrh_fits[masksel], axis=0)
+
+                ngals[i] += masksel.sum()
+
+    mstar_data_mean /= ngals[:, None]
+    mstar_fit_mean /= ngals[:, None]
+    sfr_data_mean /= ngals[:, None]
+    sfr_fit_mean /= ngals[:, None]
+
+    out = (
+        mpeak_bins,
+        mpeak_binsc,
+        tng_t,
         mstar_data_mean,
         mstar_fit_mean,
         sfr_data_mean,
