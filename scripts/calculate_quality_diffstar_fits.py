@@ -335,7 +335,6 @@ def calculate_plot_tng(mpeak_bins):
     diffmah_drn = tng_smhm_utils.BEBOP_TNG_MAH
     diffstar_drn = tng_smhm_utils.BEBOP_TNG_SFH
     binaries_drn = tng_smhm_utils.BEBOP_TNG
-    diffstar_bnpat = tng_smhm_utils.LCRC_DR1_diffstar_bnpat
 
     mpeak_binsc = 0.5 * (mpeak_bins[1:] + mpeak_bins[:-1])
     out = load_tng_data(binaries_drn)
