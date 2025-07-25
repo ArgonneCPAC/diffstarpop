@@ -8,6 +8,8 @@ from matplotlib.lines import Line2D
 import warnings
 import h5py
 
+import argparse
+
 from astropy.cosmology import Planck15, z_at_value
 
 mred = "#d62728"
@@ -22,6 +24,7 @@ plt.rc("text.latex", preamble=r"\usepackage{amsmath}")  # necessary to use \dfra
 
 import smdpl_smhm_utils
 import tng_smhm_utils
+import galacticus_smhm_utils
 from smdpl_smhm_utils import load_diffstar_sfh_tables
 
 from diffstar.data_loaders.load_smah_data import (
@@ -32,9 +35,12 @@ from diffstar.data_loaders.load_smah_data import (
     load_SMDPL_nomerging_data,
     load_tng_data,
 )
+from diffstar.data_loaders.load_galacticus_sfh import load_galacticus_diffstar_data
 
 from jax import vmap, jit as jjit, numpy as jnp
-from diffstar.defaults import TODAY
+from diffstar.defaults import TODAY, LGT0
+from diffstar.utils import cumulative_mstar_formed_galpop
+from diffmah.diffmah_kernels import DiffmahParams, mah_halopop, DEFAULT_MAH_PARAMS
 
 
 def _jnp_interp_vmap(x_new, x, y):
@@ -339,6 +345,7 @@ def calculate_plot_tng(mpeak_bins):
     mpeak_binsc = 0.5 * (mpeak_bins[1:] + mpeak_bins[:-1])
     out = load_tng_data(binaries_drn)
     (halo_ids, log_smahs, sfrh, tng_t, log_mahs, logmp0) = out
+    log_sfrh = np.where(sfrh > 0.0, np.log10(sfrh), 0.0)
     nt = len(tng_t)
     n_subvol_smdpl = 20
 
@@ -377,8 +384,6 @@ def calculate_plot_tng(mpeak_bins):
         ) = out
 
         log_sfh_table = log_ssfrh_table + log_smh_table
-
-        log_sfrh = np.where(sfrh > 0.0, np.log10(sfrh), 0.0)
 
         _log_smahs_data = log_smahs[indx]
         _log_sfrh_data = log_sfrh[indx]
@@ -422,6 +427,109 @@ def calculate_plot_tng(mpeak_bins):
         mpeak_bins,
         mpeak_binsc,
         tng_t,
+        mstar_data_mean,
+        mstar_fit_mean,
+        sfr_data_mean,
+        sfr_fit_mean,
+    )
+
+    return out
+
+
+def calculate_plot_galcus_insitu(mpeak_bins):
+    BEBOP_GALAC = galacticus_smhm_utils.BEBOP_GALAC
+
+    mpeak_binsc = 0.5 * (mpeak_bins[1:] + mpeak_bins[:-1])
+
+    out = load_galacticus_diffstar_data(BEBOP_GALAC)
+    galcus_t = out.galcus_sfh_data["tarr"]
+    sfrh = out.galcus_sfh_data["sfh_in_situ"]
+    diffmah_data = out.diffmah_fit_data
+
+    log_smahs = np.log10(cumulative_mstar_formed_galpop(galcus_t, sfrh))
+
+    mah_params = DEFAULT_MAH_PARAMS._make(
+        [diffmah_data[key] for key in DEFAULT_MAH_PARAMS._fields]
+    )
+
+    mah_pars_ntuple = DiffmahParams(*mah_params)
+    dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, galcus_t, LGT0)
+    logmp0 = log_mah_fit[:, -1]
+
+    # (halo_ids, log_smahs, sfrh, tng_t, log_mahs, logmp0) = out
+    log_sfrh = np.where(sfrh > 0.0, np.log10(sfrh), 0.0)
+    nt = len(galcus_t)
+
+    mstar_data_mean = np.zeros((len(mpeak_binsc), nt))
+    mstar_fit_mean = np.zeros((len(mpeak_binsc), nt))
+    sfr_data_mean = np.zeros((len(mpeak_binsc), nt))
+    sfr_fit_mean = np.zeros((len(mpeak_binsc), nt))
+
+    ngals = np.zeros(len(mpeak_binsc))
+
+    sfh_type = "in_situ"
+
+    out = galacticus_smhm_utils.load_diffstar_sfh_tables(
+        sfh_type,
+        BEBOP_GALAC,
+        BEBOP_GALAC,
+    )
+    (
+        t_table,
+        log_mah_table,
+        log_smh_table,
+        log_ssfrh_table,
+        mah_params,
+        ms_params,
+        q_params,
+        is_cen,
+        has_fit,
+    ) = out
+
+    log_sfh_table = log_ssfrh_table + log_smh_table
+
+    _log_smahs_data = log_smahs
+    _log_sfrh_data = log_sfrh
+
+    _log_smahs_fits = jnp_interp_vmap(galcus_t, t_table, log_smh_table)
+    _log_sfrh_fits = jnp_interp_vmap(galcus_t, t_table, log_sfh_table)
+
+    smahs_fits = np.where(_log_smahs_fits == 0.0, np.nan, 10**_log_smahs_fits)
+    sfrh_fits = np.where(_log_sfrh_fits == 0.0, np.nan, 10**_log_sfrh_fits)
+    smahs_data = np.where(_log_smahs_data == 0.0, np.nan, 10**_log_smahs_data)
+    sfrh_data = np.where(_log_sfrh_data == 0.0, np.nan, 10**_log_sfrh_data)
+
+    logmp0_data = logmp0
+
+    ssfrh = sfrh_data / smahs_data
+    ssfrh_fit = sfrh_fits / smahs_fits
+    ssfrh = np.clip(ssfrh, 1e-12, np.inf)
+    ssfrh_fit = np.clip(ssfrh_fit, 1e-12, np.inf)
+    sfrh = np.where(smahs_data > 0.0, ssfrh * smahs_data, sfrh_data)
+    sfrh_fits = ssfrh_fit * smahs_fits
+
+    for i in range(len(mpeak_bins) - 1):
+        masksel = (logmp0_data > mpeak_bins[i]) & (logmp0_data < mpeak_bins[i + 1])
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+
+            mstar_data_mean[i] += np.nansum(smahs_data[masksel], axis=0)
+            mstar_fit_mean[i] += np.nansum(smahs_fits[masksel], axis=0)
+            sfr_data_mean[i] += np.nansum(sfrh[masksel], axis=0)
+            sfr_fit_mean[i] += np.nansum(sfrh_fits[masksel], axis=0)
+
+            ngals[i] += masksel.sum()
+
+    mstar_data_mean /= ngals[:, None]
+    mstar_fit_mean /= ngals[:, None]
+    sfr_data_mean /= ngals[:, None]
+    sfr_fit_mean /= ngals[:, None]
+
+    out = (
+        mpeak_bins,
+        mpeak_binsc,
+        galcus_t,
         mstar_data_mean,
         mstar_fit_mean,
         sfr_data_mean,
@@ -501,3 +609,44 @@ out_tng = calculate_plot_tng(mpeak_bins)
 outdir = "/lcrc/project/halotools/alarcon/results/diffstar_quality_fits/"
 outname = "diffstar_quality_tng.h5"
 save_data_plot(outdir, outname, out_tng)
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-sim_name",
+        help="simulation name",
+        type=str,
+        default="smdpl",
+        choices=[
+            "smdpl",
+            "smdpl_dr1",
+            "tng",
+            "galcus_insitu",
+            "galcus_inplusexsitu",
+        ],
+    )
+
+    args = parser.parse_args()
+    sim_name = args.sim_name
+
+    mpeak_bins = np.arange(11.25, 14.5, 0.50)
+    outdir = "/lcrc/project/halotools/alarcon/results/diffstar_quality_fits/"
+
+    if sim_name == "smdpl":
+        out_smdpl_nomerging = calculate_plot_smdpl_nomerging(mpeak_bins)
+        outname = "diffstar_quality_smdpl.h5"
+        save_data_plot(outdir, outname, out_smdpl_nomerging)
+    elif sim_name == "smdpl_dr1":
+        out_smdpl_dr1 = calculate_plot_smdpl_dr1(mpeak_bins)
+        outname = "diffstar_quality_smdpl_dr1.h5"
+        save_data_plot(outdir, outname, out_smdpl_dr1)
+    elif sim_name == "tng":
+        out_tng = calculate_plot_tng(mpeak_bins)
+        outname = "diffstar_quality_tng.h5"
+        save_data_plot(outdir, outname, out_tng)
+    elif sim_name == "galcus_insitu":
+        out_galcus_insitu = calculate_plot_galcus_insitu(mpeak_bins)
+        outname = "diffstar_quality_galcus_insitu.h5"
+        save_data_plot(outdir, outname, out_galcus_insitu)
