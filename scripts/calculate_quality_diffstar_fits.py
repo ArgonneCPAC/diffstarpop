@@ -604,11 +604,11 @@ def save_data_plot(outdrn, outname, data):
 # outname = "diffstar_quality_smdpl_dr1.h5"
 # save_data_plot(outdir, outname, out_smdpl_dr1)
 
-mpeak_bins = np.arange(11.25, 14.5, 0.50)
-out_tng = calculate_plot_tng(mpeak_bins)
-outdir = "/lcrc/project/halotools/alarcon/results/diffstar_quality_fits/"
-outname = "diffstar_quality_tng.h5"
-save_data_plot(outdir, outname, out_tng)
+# mpeak_bins = np.arange(11.25, 14.5, 0.50)
+# out_tng = calculate_plot_tng(mpeak_bins)
+# outdir = "/lcrc/project/halotools/alarcon/results/diffstar_quality_fits/"
+# outname = "diffstar_quality_tng.h5"
+# save_data_plot(outdir, outname, out_tng)
 
 
 if __name__ == "__main__":
