@@ -94,6 +94,7 @@ def load_diffstar_sfh_tables(
         ms_params,
         q_params,
         is_cen,
+        has_fit,
     )
 
     return out
@@ -222,6 +223,7 @@ def create_target_data(
         ms_params,
         q_params,
         is_cen,
+        has_fit,
     ) = _res
 
     _path = os.path.join(diffmah_drn, "tarr_disk.npy")
@@ -434,6 +436,7 @@ def create_pdf_target_data(
         ms_params,
         q_params,
         is_cen,
+        has_fit,
     ) = _res
 
     log_ssfrh_table = np.clip(log_ssfrh_table, -12.0, None)
