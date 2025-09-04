@@ -36,7 +36,9 @@ def load_diffstar_sfh_tables(
     n_times=200,
 ):
 
-    data = load_galacticus_diffstar_data(diffstar_drn)
+    data = load_galacticus_diffstar_data(
+        BEBOP_GALAC, diffstar_drn=diffstar_drn, diffmah_drn=diffmah_drn
+    )
 
     diffmah_data = data.diffmah_fit_data
     if sfh_type == "in_situ":
