@@ -87,15 +87,27 @@ def load_diffstar_sfh_tables(
     _a = np.arange(0, nhalos_tot).astype("i8")
     indx = np.array_split(_a, NCHUNKS)[subvol]
 
+    has_fit = (
+        (diffmah_data["loss"][indx] > 0.0)
+        & (diffstar_data["loss"][indx] > 0.0)
+        & (diffstar_data["success"][indx] == 1)
+    )
+
     mah_params = DEFAULT_MAH_PARAMS._make(
-        [diffmah_data[key][indx] for key in DEFAULT_MAH_PARAMS._fields]
+        [diffmah_data[key][indx][has_fit] for key in DEFAULT_MAH_PARAMS._fields]
     )
 
     ms_params = DEFAULT_DIFFSTAR_PARAMS.ms_params._make(
-        [diffstar_data[key][indx] for key in DEFAULT_DIFFSTAR_PARAMS.ms_params._fields]
+        [
+            diffstar_data[key][indx][has_fit]
+            for key in DEFAULT_DIFFSTAR_PARAMS.ms_params._fields
+        ]
     )
     q_params = DEFAULT_DIFFSTAR_PARAMS.q_params._make(
-        [diffstar_data[key][indx] for key in DEFAULT_DIFFSTAR_PARAMS.q_params._fields]
+        [
+            diffstar_data[key][indx][has_fit]
+            for key in DEFAULT_DIFFSTAR_PARAMS.q_params._fields
+        ]
     )
     sfh_params = DEFAULT_DIFFSTAR_PARAMS._make((ms_params, q_params))
 
@@ -119,6 +131,7 @@ def load_diffstar_sfh_tables(
         mah_params,
         ms_params,
         q_params,
+        has_fit,
     )
 
     return out
@@ -278,9 +291,10 @@ def create_target_data(
         mah_params,
         ms_params,
         q_params,
+        has_fit,
     ) = _res
 
-    upid = load_tng_chunk_data(subvol)
+    upid = load_tng_chunk_data(subvol)[has_fit]
     tng_t = np.load(os.path.join(BEBOP_TNG, "tng_cosmic_time.npy"))
 
     tids = return_target_redshfit_index(t_table, redshift_targets)
@@ -491,11 +505,12 @@ def create_pdf_target_data(
         mah_params,
         ms_params,
         q_params,
+        has_fit,
     ) = _res
 
     log_ssfrh_table = np.clip(log_ssfrh_table, -12.0, None)
 
-    upid = load_tng_chunk_data(subvol)
+    upid = load_tng_chunk_data(subvol)[has_fit]
 
     tng_t = np.load(os.path.join(BEBOP_TNG, "tng_cosmic_time.npy"))
 
