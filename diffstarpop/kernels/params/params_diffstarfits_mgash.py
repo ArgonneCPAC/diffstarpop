@@ -14,7 +14,7 @@ from .params_diffstarfits_mgash_smdpl import (
 """
 # SMDPL DR1
 
-from .params_diffstarfits_mgash_smdpl_DR1 import (
+from .params_diffstarfits_mgash_smdpl_dr1 import (
     DIFFSTARFITS_SMDPL_DR1_DIFFSTARPOP_PARAMS as DIFFSTARFITS_SMDPL_DR1_DIFFSTARPOP_PARAMS_mgash,
     DIFFSTARFITS_SMDPL_DR1_DIFFSTARPOP_U_PARAMS as DIFFSTARFITS_SMDPL_DR1_DIFFSTARPOP_U_PARAMS_mgash,
 )
