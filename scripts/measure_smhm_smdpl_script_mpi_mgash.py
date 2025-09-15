@@ -80,10 +80,7 @@ if __name__ == "__main__":
     pattern = re.compile(f"^{regex_str}$")
     matching_files = [f for f in os.listdir(diffstar_drn) if pattern.match(f)]
     subvol_avail = len(matching_files)
-    if sim_name == "DR1_nomerging":
-        subvols = [x.split("_")[1] for x in matching_files]
-    elif sim_name == "DR1":
-        subvols = [x.split("_")[-1].split(".")[0] for x in matching_files]
+    subvols = [x.split("_")[-1].split(".")[0] for x in matching_files]
     subvols = np.sort(np.array(subvols).astype(int))
     subvols_arr = np.array_split(subvols, nranks)[rank]
     n_subvol_smdpl = len(subvols)
