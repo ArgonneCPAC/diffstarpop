@@ -108,7 +108,7 @@ def load_diffstar_subvolume(
     diffstar_data = _load_flat_hdf5(diffstar_fn)
 
     subvol_str = return_subvol_str_diffmah(
-        subvol, sim_name, diffstar_drn, LCRC_NOMERGING_diffmah_bnpat
+        subvol, sim_name, diffmah_drn, LCRC_NOMERGING_diffmah_bnpat
     )
     diffmah_bn = diffstar_bnpat.format(subvol_str).replace("diffstar", "diffmah")
     diffmah_fn = os.path.join(diffmah_drn, diffmah_bn)
