@@ -31,6 +31,7 @@ LCRC_DR1_BINARIES_DRN = (
 )
 LCRC_NOMERGING_diffstar_bnpat = "diffstar_fits_subvol_{}.hdf5"
 LCRC_DR1_diffstar_bnpat = "diffstar_fits_subvol_{}.hdf5"
+LCRC_NOMERGING_diffmah_bnpat = "subvol_{}_diffstar_fits.h5"
 
 TASSO_DIFFSTAR_DRN = "/Users/aphearin/work/DATA/diffstar_data/SMDPL/"
 N_SUBVOL_SMDPL = 576
@@ -107,7 +108,7 @@ def load_diffstar_subvolume(
     diffstar_data = _load_flat_hdf5(diffstar_fn)
 
     subvol_str = return_subvol_str_diffmah(
-        subvol, sim_name, diffstar_drn, diffstar_bnpat
+        subvol, sim_name, diffstar_drn, LCRC_NOMERGING_diffmah_bnpat
     )
     diffmah_bn = diffstar_bnpat.format(subvol_str).replace("diffstar", "diffmah")
     diffmah_fn = os.path.join(diffmah_drn, diffmah_bn)
