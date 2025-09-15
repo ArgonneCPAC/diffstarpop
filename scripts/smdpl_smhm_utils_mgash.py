@@ -62,10 +62,7 @@ def return_subvol_str(subvol, sim_name, diffstar_drn, diffstar_bnpat):
     regex_str = re.escape(diffstar_bnpat).replace(r"\{\}", r"(\d{1,3})")
     pattern = re.compile(f"^{regex_str}$")
     matching_files = [f for f in os.listdir(diffstar_drn) if pattern.match(f)]
-    if sim_name == "DR1_nomerging":
-        subvols = [x.split("_")[1] for x in matching_files]
-    elif sim_name == "DR1":
-        subvols = [x.split("_")[-1].split(".")[0] for x in matching_files]
+    subvols = [x.split("_")[-1].split(".")[0] for x in matching_files]
     subvols_len = np.array([len(x) for x in subvols])
 
     if np.any(subvols_len == 1):
