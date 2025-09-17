@@ -304,6 +304,7 @@ def calculate_plot_tng(mpeak_bins):
             mah_params,
             ms_params,
             q_params,
+            has_fit,
         ) = out
 
         log_sfh_table = log_ssfrh_table + log_smh_table
