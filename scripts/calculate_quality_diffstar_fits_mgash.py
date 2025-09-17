@@ -272,26 +272,6 @@ def calculate_plot_tng(mpeak_bins):
     nt = len(tng_t)
     n_subvol_smdpl = 20
 
-    out = tng_smhm_utils.load_diffstar_sfh_tables(
-        subvol,
-        diffmah_drn,
-        diffstar_drn,
-    )
-    (
-        t_table,
-        log_mah_table,
-        log_smh_table,
-        log_ssfrh_table,
-        mah_params,
-        ms_params,
-        q_params,
-        has_fit,
-    ) = out
-
-    log_smahs = log_smahs[has_fit]
-    log_sfrh = log_sfrh[has_fit]
-    logmp0 = logmp0[has_fit]
-
     nhalos_tot = len(halo_ids)
 
     _a = np.arange(0, nhalos_tot).astype("i8")
@@ -311,10 +291,26 @@ def calculate_plot_tng(mpeak_bins):
 
         indx = np.array_split(_a, n_subvol_smdpl)[subvol]
 
+        out = tng_smhm_utils.load_diffstar_sfh_tables(
+            subvol,
+            diffmah_drn,
+            diffstar_drn,
+        )
+        (
+            t_table,
+            log_mah_table,
+            log_smh_table,
+            log_ssfrh_table,
+            mah_params,
+            ms_params,
+            q_params,
+            has_fit,
+        ) = out
+
         log_sfh_table = log_ssfrh_table + log_smh_table
 
-        _log_smahs_data = log_smahs[indx]
-        _log_sfrh_data = log_sfrh[indx]
+        _log_smahs_data = log_smahs[indx][has_fit]
+        _log_sfrh_data = log_sfrh[indx][has_fit]
 
         _log_smahs_fits = jnp_interp_vmap(tng_t, t_table, log_smh_table)
         _log_sfrh_fits = jnp_interp_vmap(tng_t, t_table, log_sfh_table)
@@ -324,7 +320,7 @@ def calculate_plot_tng(mpeak_bins):
         smahs_data = np.where(_log_smahs_data == 0.0, np.nan, 10**_log_smahs_data)
         sfrh_data = np.where(_log_sfrh_data == 0.0, np.nan, 10**_log_sfrh_data)
 
-        logmp0_data = logmp0[indx]
+        logmp0_data = logmp0[indx][has_fit]
 
         ssfrh = sfrh_data / smahs_data
         ssfrh_fit = sfrh_fits / smahs_fits
