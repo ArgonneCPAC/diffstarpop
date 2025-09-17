@@ -272,6 +272,26 @@ def calculate_plot_tng(mpeak_bins):
     nt = len(tng_t)
     n_subvol_smdpl = 20
 
+    out = tng_smhm_utils.load_diffstar_sfh_tables(
+        subvol,
+        diffmah_drn,
+        diffstar_drn,
+    )
+    (
+        t_table,
+        log_mah_table,
+        log_smh_table,
+        log_ssfrh_table,
+        mah_params,
+        ms_params,
+        q_params,
+        has_fit,
+    ) = out
+
+    log_smahs = log_smahs[has_fit]
+    log_sfrh = log_sfrh[has_fit]
+    logmp0 = logmp0[has_fit]
+
     nhalos_tot = len(halo_ids)
 
     _a = np.arange(0, nhalos_tot).astype("i8")
@@ -290,22 +310,6 @@ def calculate_plot_tng(mpeak_bins):
         print(subvol)
 
         indx = np.array_split(_a, n_subvol_smdpl)[subvol]
-
-        out = tng_smhm_utils.load_diffstar_sfh_tables(
-            subvol,
-            diffmah_drn,
-            diffstar_drn,
-        )
-        (
-            t_table,
-            log_mah_table,
-            log_smh_table,
-            log_ssfrh_table,
-            mah_params,
-            ms_params,
-            q_params,
-            has_fit,
-        ) = out
 
         log_sfh_table = log_ssfrh_table + log_smh_table
 
