@@ -22,9 +22,9 @@ plt.rc("font", size=22)
 plt.rc("text", usetex=False)
 plt.rc("text.latex", preamble=r"\usepackage{amsmath}")  # necessary to use \dfrac
 
-import tng_smhm_utils
-import galacticus_smhm_utils
-import smdpl_smhm_utils_mgash as smdpl_smhm_utils
+import tng_smhm_utils_mgash
+import galacticus_smhm_utils_mgash
+import smdpl_smhm_utils_mgash
 from smdpl_smhm_utils_mgash import load_diffstar_sfh_tables
 
 from diffstar.data_loaders.load_smah_data import (
@@ -51,10 +51,10 @@ jnp_interp_vmap = jjit(vmap(_jnp_interp_vmap, in_axes=(None, None, 0)))
 
 
 def calculate_plot_smdpl_nomerging(mpeak_bins):
-    diffmah_drn = smdpl_smhm_utils.LCRC_NOMERGING_DIFFMAH_DRN
-    diffstar_drn = smdpl_smhm_utils.LCRC_NOMERGING_DIFFSTAR_DRN
-    binaries_drn = smdpl_smhm_utils.LCRC_NOMERGING_BINARIES_DRN
-    diffstar_bnpat = smdpl_smhm_utils.LCRC_NOMERGING_diffstar_bnpat
+    diffmah_drn = smdpl_smhm_utils_mgash.LCRC_NOMERGING_DIFFMAH_DRN
+    diffstar_drn = smdpl_smhm_utils_mgash.LCRC_NOMERGING_DIFFSTAR_DRN
+    binaries_drn = smdpl_smhm_utils_mgash.LCRC_NOMERGING_BINARIES_DRN
+    diffstar_bnpat = smdpl_smhm_utils_mgash.LCRC_NOMERGING_diffstar_bnpat
     sim_name = "DR1_nomerging"
 
     regex_str = re.escape(diffstar_bnpat).replace(r"\{\}", r"(\d{1,3})")
@@ -78,7 +78,7 @@ def calculate_plot_smdpl_nomerging(mpeak_bins):
 
         print(subvol)
 
-        out = smdpl_smhm_utils.load_diffstar_sfh_tables(
+        out = smdpl_smhm_utils_mgash.load_diffstar_sfh_tables(
             subvol,
             sim_name,
             n_subvol_smdpl,
@@ -155,10 +155,10 @@ def calculate_plot_smdpl_nomerging(mpeak_bins):
 
 
 def calculate_plot_smdpl_dr1(mpeak_bins):
-    diffmah_drn = smdpl_smhm_utils.LCRC_DR1_DIFFMAH_DRN
-    diffstar_drn = smdpl_smhm_utils.LCRC_DR1_DIFFSTAR_DRN
-    binaries_drn = smdpl_smhm_utils.LCRC_DR1_BINARIES_DRN
-    diffstar_bnpat = smdpl_smhm_utils.LCRC_DR1_diffstar_bnpat
+    diffmah_drn = smdpl_smhm_utils_mgash.LCRC_DR1_DIFFMAH_DRN
+    diffstar_drn = smdpl_smhm_utils_mgash.LCRC_DR1_DIFFSTAR_DRN
+    binaries_drn = smdpl_smhm_utils_mgash.LCRC_DR1_BINARIES_DRN
+    diffstar_bnpat = smdpl_smhm_utils_mgash.LCRC_DR1_diffstar_bnpat
     sim_name = "DR1"
 
     regex_str = re.escape(diffstar_bnpat).replace(r"\{\}", r"(\d{1,3})")
@@ -184,7 +184,7 @@ def calculate_plot_smdpl_dr1(mpeak_bins):
 
         print(subvol)
 
-        out = smdpl_smhm_utils.load_diffstar_sfh_tables(
+        out = smdpl_smhm_utils_mgash.load_diffstar_sfh_tables(
             subvol,
             sim_name,
             n_subvol_smdpl,
@@ -261,9 +261,9 @@ def calculate_plot_smdpl_dr1(mpeak_bins):
 
 
 def calculate_plot_tng(mpeak_bins):
-    diffmah_drn = tng_smhm_utils.BEBOP_TNG_MAH
-    diffstar_drn = tng_smhm_utils.BEBOP_TNG_SFH
-    binaries_drn = tng_smhm_utils.BEBOP_TNG
+    diffmah_drn = tng_smhm_utils_mgash.BEBOP_TNG_MAH
+    diffstar_drn = tng_smhm_utils_mgash.BEBOP_TNG_SFH
+    binaries_drn = tng_smhm_utils_mgash.BEBOP_TNG
 
     mpeak_binsc = 0.5 * (mpeak_bins[1:] + mpeak_bins[:-1])
     out = load_tng_data(binaries_drn)
@@ -291,7 +291,7 @@ def calculate_plot_tng(mpeak_bins):
 
         indx = np.array_split(_a, n_subvol_smdpl)[subvol]
 
-        out = tng_smhm_utils.load_diffstar_sfh_tables(
+        out = tng_smhm_utils_mgash.load_diffstar_sfh_tables(
             subvol,
             diffmah_drn,
             diffstar_drn,
@@ -361,7 +361,8 @@ def calculate_plot_tng(mpeak_bins):
 
 
 def calculate_plot_galcus_insitu(mpeak_bins):
-    BEBOP_GALAC = galacticus_smhm_utils.BEBOP_GALAC
+    BEBOP_GALAC = galacticus_smhm_utils_mgash.BEBOP_GALAC
+    BEBOP_GALAC_SFH = galacticus_smhm_utils_mgash.BEBOP_GALAC_SFH
 
     mpeak_binsc = 0.5 * (mpeak_bins[1:] + mpeak_bins[:-1])
 
@@ -393,10 +394,10 @@ def calculate_plot_galcus_insitu(mpeak_bins):
 
     sfh_type = "in_situ"
 
-    out = galacticus_smhm_utils.load_diffstar_sfh_tables(
+    out = galacticus_smhm_utils_mgash.load_diffstar_sfh_tables(
         sfh_type,
         BEBOP_GALAC,
-        BEBOP_GALAC,
+        BEBOP_GALAC_SFH,
     )
     (
         t_table,
@@ -464,7 +465,8 @@ def calculate_plot_galcus_insitu(mpeak_bins):
 
 
 def calculate_plot_galcus_inplusexsitu(mpeak_bins):
-    BEBOP_GALAC = galacticus_smhm_utils.BEBOP_GALAC
+    BEBOP_GALAC = galacticus_smhm_utils_mgash.BEBOP_GALAC
+    BEBOP_GALAC_SFH = galacticus_smhm_utils_mgash.BEBOP_GALAC_SFH
 
     mpeak_binsc = 0.5 * (mpeak_bins[1:] + mpeak_bins[:-1])
 
@@ -496,226 +498,10 @@ def calculate_plot_galcus_inplusexsitu(mpeak_bins):
 
     sfh_type = "in_plus_ex_situ"
 
-    out = galacticus_smhm_utils.load_diffstar_sfh_tables(
+    out = galacticus_smhm_utils_mgash.load_diffstar_sfh_tables(
         sfh_type,
         BEBOP_GALAC,
-        BEBOP_GALAC,
-    )
-    (
-        t_table,
-        log_mah_table,
-        log_smh_table,
-        log_ssfrh_table,
-        mah_params,
-        ms_params,
-        q_params,
-        is_cen,
-        has_fit,
-    ) = out
-
-    log_sfh_table = log_ssfrh_table + log_smh_table
-
-    _log_smahs_data = log_smahs[has_fit]
-    _log_sfrh_data = log_sfrh[has_fit]
-
-    _log_smahs_fits = jnp_interp_vmap(galcus_t, t_table, log_smh_table)
-    _log_sfrh_fits = jnp_interp_vmap(galcus_t, t_table, log_sfh_table)
-
-    smahs_fits = np.where(_log_smahs_fits == 0.0, np.nan, 10**_log_smahs_fits)
-    sfrh_fits = np.where(_log_sfrh_fits == 0.0, np.nan, 10**_log_sfrh_fits)
-    smahs_data = np.where(_log_smahs_data == 0.0, np.nan, 10**_log_smahs_data)
-    sfrh_data = np.where(_log_sfrh_data == 0.0, np.nan, 10**_log_sfrh_data)
-
-    logmp0_data = logmp0[has_fit]
-
-    ssfrh = sfrh_data / smahs_data
-    ssfrh_fit = sfrh_fits / smahs_fits
-    ssfrh = np.clip(ssfrh, 1e-12, np.inf)
-    ssfrh_fit = np.clip(ssfrh_fit, 1e-12, np.inf)
-    sfrh = np.where(smahs_data > 0.0, ssfrh * smahs_data, sfrh_data)
-    sfrh_fits = ssfrh_fit * smahs_fits
-
-    for i in range(len(mpeak_bins) - 1):
-        masksel = (logmp0_data > mpeak_bins[i]) & (logmp0_data < mpeak_bins[i + 1])
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-
-            mstar_data_mean[i] += np.nansum(smahs_data[masksel], axis=0)
-            mstar_fit_mean[i] += np.nansum(smahs_fits[masksel], axis=0)
-            sfr_data_mean[i] += np.nansum(sfrh[masksel], axis=0)
-            sfr_fit_mean[i] += np.nansum(sfrh_fits[masksel], axis=0)
-
-            ngals[i] += masksel.sum()
-
-    mstar_data_mean /= ngals[:, None]
-    mstar_fit_mean /= ngals[:, None]
-    sfr_data_mean /= ngals[:, None]
-    sfr_fit_mean /= ngals[:, None]
-
-    out = (
-        mpeak_bins,
-        mpeak_binsc,
-        galcus_t,
-        mstar_data_mean,
-        mstar_fit_mean,
-        sfr_data_mean,
-        sfr_fit_mean,
-    )
-
-    return out
-
-
-def calculate_plot_galcus_insitu_v2(mpeak_bins):
-    BEBOP_GALAC = galacticus_smhm_utils.BEBOP_GALAC
-
-    mpeak_binsc = 0.5 * (mpeak_bins[1:] + mpeak_bins[:-1])
-
-    out = load_galacticus_diffstar_data(BEBOP_GALAC)
-    galcus_t = out.galcus_sfh_data["tarr"]
-    sfrh = out.galcus_sfh_data["sfh_in_situ"]
-    diffmah_data = out.diffmah_fit_data
-
-    galcus_dt = np.ones_like(galcus_t)
-    galcus_dt[1:] = np.diff(galcus_t)
-
-    sfrh = sfrh / galcus_dt
-
-    log_smahs = np.log10(cumulative_mstar_formed_galpop(galcus_t, sfrh))
-
-    mah_params = DEFAULT_MAH_PARAMS._make(
-        [diffmah_data[key] for key in DEFAULT_MAH_PARAMS._fields]
-    )
-
-    mah_pars_ntuple = DiffmahParams(*mah_params)
-    dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, galcus_t, LGT0)
-    logmp0 = log_mah_fit[:, -1]
-
-    # (halo_ids, log_smahs, sfrh, tng_t, log_mahs, logmp0) = out
-    log_sfrh = np.where(sfrh > 0.0, np.log10(sfrh), 0.0)
-    nt = len(galcus_t)
-
-    mstar_data_mean = np.zeros((len(mpeak_binsc), nt))
-    mstar_fit_mean = np.zeros((len(mpeak_binsc), nt))
-    sfr_data_mean = np.zeros((len(mpeak_binsc), nt))
-    sfr_fit_mean = np.zeros((len(mpeak_binsc), nt))
-
-    ngals = np.zeros(len(mpeak_binsc))
-
-    sfh_type = "in_situ"
-
-    out = galacticus_smhm_utils.load_diffstar_sfh_tables(
-        sfh_type,
-        BEBOP_GALAC,
-        BEBOP_GALAC,
-    )
-    (
-        t_table,
-        log_mah_table,
-        log_smh_table,
-        log_ssfrh_table,
-        mah_params,
-        ms_params,
-        q_params,
-        is_cen,
-        has_fit,
-    ) = out
-
-    log_sfh_table = log_ssfrh_table + log_smh_table
-
-    _log_smahs_data = log_smahs[has_fit]
-    _log_sfrh_data = log_sfrh[has_fit]
-
-    _log_smahs_fits = jnp_interp_vmap(galcus_t, t_table, log_smh_table)
-    _log_sfrh_fits = jnp_interp_vmap(galcus_t, t_table, log_sfh_table)
-
-    smahs_fits = np.where(_log_smahs_fits == 0.0, np.nan, 10**_log_smahs_fits)
-    sfrh_fits = np.where(_log_sfrh_fits == 0.0, np.nan, 10**_log_sfrh_fits)
-    smahs_data = np.where(_log_smahs_data == 0.0, np.nan, 10**_log_smahs_data)
-    sfrh_data = np.where(_log_sfrh_data == 0.0, np.nan, 10**_log_sfrh_data)
-
-    logmp0_data = logmp0[has_fit]
-
-    ssfrh = sfrh_data / smahs_data
-    ssfrh_fit = sfrh_fits / smahs_fits
-    ssfrh = np.clip(ssfrh, 1e-12, np.inf)
-    ssfrh_fit = np.clip(ssfrh_fit, 1e-12, np.inf)
-    sfrh = np.where(smahs_data > 0.0, ssfrh * smahs_data, sfrh_data)
-    sfrh_fits = ssfrh_fit * smahs_fits
-
-    for i in range(len(mpeak_bins) - 1):
-        masksel = (logmp0_data > mpeak_bins[i]) & (logmp0_data < mpeak_bins[i + 1])
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-
-            mstar_data_mean[i] += np.nansum(smahs_data[masksel], axis=0)
-            mstar_fit_mean[i] += np.nansum(smahs_fits[masksel], axis=0)
-            sfr_data_mean[i] += np.nansum(sfrh[masksel], axis=0)
-            sfr_fit_mean[i] += np.nansum(sfrh_fits[masksel], axis=0)
-
-            ngals[i] += masksel.sum()
-
-    mstar_data_mean /= ngals[:, None]
-    mstar_fit_mean /= ngals[:, None]
-    sfr_data_mean /= ngals[:, None]
-    sfr_fit_mean /= ngals[:, None]
-
-    out = (
-        mpeak_bins,
-        mpeak_binsc,
-        galcus_t,
-        mstar_data_mean,
-        mstar_fit_mean,
-        sfr_data_mean,
-        sfr_fit_mean,
-    )
-
-    return out
-
-
-def calculate_plot_galcus_inplusexsitu_v2(mpeak_bins):
-    BEBOP_GALAC = galacticus_smhm_utils.BEBOP_GALAC
-
-    mpeak_binsc = 0.5 * (mpeak_bins[1:] + mpeak_bins[:-1])
-
-    out = load_galacticus_diffstar_data(BEBOP_GALAC)
-    galcus_t = out.galcus_sfh_data["tarr"]
-    sfrh = out.galcus_sfh_data["sfh_tot"]
-    diffmah_data = out.diffmah_fit_data
-
-    galcus_dt = np.ones_like(galcus_t)
-    galcus_dt[1:] = np.diff(galcus_t)
-
-    sfrh = sfrh / galcus_dt
-
-    log_smahs = np.log10(cumulative_mstar_formed_galpop(galcus_t, sfrh))
-
-    mah_params = DEFAULT_MAH_PARAMS._make(
-        [diffmah_data[key] for key in DEFAULT_MAH_PARAMS._fields]
-    )
-
-    mah_pars_ntuple = DiffmahParams(*mah_params)
-    dmhdt_fit, log_mah_fit = mah_halopop(mah_pars_ntuple, galcus_t, LGT0)
-    logmp0 = log_mah_fit[:, -1]
-
-    # (halo_ids, log_smahs, sfrh, tng_t, log_mahs, logmp0) = out
-    log_sfrh = np.where(sfrh > 0.0, np.log10(sfrh), 0.0)
-    nt = len(galcus_t)
-
-    mstar_data_mean = np.zeros((len(mpeak_binsc), nt))
-    mstar_fit_mean = np.zeros((len(mpeak_binsc), nt))
-    sfr_data_mean = np.zeros((len(mpeak_binsc), nt))
-    sfr_fit_mean = np.zeros((len(mpeak_binsc), nt))
-
-    ngals = np.zeros(len(mpeak_binsc))
-
-    sfh_type = "in_plus_ex_situ"
-
-    out = galacticus_smhm_utils.load_diffstar_sfh_tables(
-        sfh_type,
-        BEBOP_GALAC,
-        BEBOP_GALAC,
+        BEBOP_GALAC_SFH,
     )
     (
         t_table,
