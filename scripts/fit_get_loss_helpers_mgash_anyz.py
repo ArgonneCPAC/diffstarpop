@@ -328,14 +328,10 @@ def prepare_ragged(indx_pdf, nmhalo_pdf, index_mhalo):
     Mmax = max(len(ix) for ix in indx_pdf)
 
     # Build dense (nz, Mmax) arrays for indices, weights, and mask
-    idx = jnp.zeros((nz, Mmax), dtype=jnp.int32)
-    w = jnp.zeros((nz, Mmax), dtype=nmhalo_pdf.dtype)
-    # msk = jnp.zeros((nz, Mmax), dtype=bool)
+    idx_np = np.zeros((nz, Mmax), dtype=jnp.int32)
+    w_np = np.zeros((nz, Mmax), dtype=nmhalo_pdf.dtype)
+    # msk_np = np.zeros((nz, Mmax), dtype=bool)
 
-    # Fill per bin (still fine to use Python here; this is pre-processing)
-    idx_np = idx.to_py()
-    w_np = w.to_py()
-    # msk_np = msk.to_py()
     for z in range(nz):
         m = len(indx_pdf[z])
         idx_np[z, :m] = jnp.asarray(indx_pdf[z])
