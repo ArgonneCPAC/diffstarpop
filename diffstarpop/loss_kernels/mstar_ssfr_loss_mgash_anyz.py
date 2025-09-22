@@ -310,7 +310,7 @@ def mstar_ssfr_kern_tobs(u_params, loss_data):
     pdfs = jnp.take(pred_mstar_ssfr_pdf, indx_pdf, axis=0)
     pdfs = jnp.einsum("zmab,zm->zab", pdfs, nmhalo_pdf)
     pdfs = jnp.take(pdfs, target_mstar_ids, axis=1)
-    pred_data = pdfs / jnp.sum(pdfs, axis=1, keepdims=True)
+    pred_data = pdfs / jnp.sum(pdfs, axis=2, keepdims=True)
     return pred_data
 
 
@@ -428,7 +428,7 @@ def mstar_ssfr_sat_kern_tobs(u_params, loss_data):
     pdfs = jnp.take(pred_mstar_ssfr_pdf, indx_pdf, axis=0)
     pdfs = jnp.einsum("zmab,zm->zab", pdfs, nmhalo_pdf)
     pdfs = jnp.take(pdfs, target_mstar_ids, axis=1)
-    pred_data = pdfs / jnp.sum(pdfs, axis=1, keepdims=True)
+    pred_data = pdfs / jnp.sum(pdfs, axis=2, keepdims=True)
     return pred_data
 
 
