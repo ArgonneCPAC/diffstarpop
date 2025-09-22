@@ -500,7 +500,9 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
     ndbins_lo = np.array(ndbins_lo)
     ndbins_hi = np.array(ndbins_hi)
 
-    indx_pdf, mhalo_pdf_cen = prepare_ragged(indx_pdf, mhalo_pdf_cen, index_mhalo)
+    indx_pdf, mhalo_pdf_cen_ragged = prepare_ragged(
+        indx_pdf, mhalo_pdf_cen, index_mhalo
+    )
 
     loss_data_ssfr = (
         mah_params_data,
@@ -515,7 +517,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
         ndbins_hi,
         logmstar_bins_pdf,
         logssfr_bins_pdf,
-        mhalo_pdf_cen,
+        mhalo_pdf_cen_ragged,
         indx_pdf,
         jnp.asarray(target_mstar_ids),
         target_data,
@@ -618,7 +620,9 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
     ndbins_lo = np.array(ndbins_lo)
     ndbins_hi = np.array(ndbins_hi)
 
-    indx_pdf, mhalo_pdf_cen = prepare_ragged(indx_pdf, mhalo_pdf_cen, index_mhalo)
+    indx_pdf, mhalo_pdf_cen_ragged = prepare_ragged(
+        indx_pdf, mhalo_pdf_cen, index_mhalo
+    )
 
     loss_data_ssfr_pred = (
         mah_params_data,
@@ -633,7 +637,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
         ndbins_hi,
         logmstar_bins_pdf,
         logssfr_bins_pdf,
-        mhalo_pdf_cen,
+        mhalo_pdf_cen_ragged,
         indx_pdf,
         jnp.asarray(target_mstar_ids),
         target_data,
@@ -803,7 +807,9 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
     ndbins_lo = np.array(ndbins_lo)
     ndbins_hi = np.array(ndbins_hi)
 
-    indx_pdf, mhalo_pdf_sat = prepare_ragged(indx_pdf, mhalo_pdf_sat, index_mhalo)
+    indx_pdf, mhalo_pdf_sat_ragged = prepare_ragged(
+        indx_pdf, mhalo_pdf_sat, index_mhalo
+    )
 
     loss_data_ssfr_sat = (
         mah_params_data,
@@ -818,7 +824,7 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
         ndbins_hi,
         logmstar_bins_pdf,
         logssfr_bins_pdf,
-        mhalo_pdf_sat,
+        mhalo_pdf_sat_ragged,
         indx_pdf,
         jnp.asarray(target_mstar_ids),
         target_data_sat,
@@ -919,7 +925,9 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
     ndbins_lo = np.array(ndbins_lo)
     ndbins_hi = np.array(ndbins_hi)
 
-    indx_pdf, mhalo_pdf_sat = prepare_ragged(indx_pdf, mhalo_pdf_sat, index_mhalo)
+    indx_pdf, mhalo_pdf_sat_ragged = prepare_ragged(
+        indx_pdf, mhalo_pdf_sat, index_mhalo
+    )
 
     loss_data_ssfr_sat_pred = (
         mah_params_data,
@@ -934,7 +942,7 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
         ndbins_hi,
         logmstar_bins_pdf,
         logssfr_bins_pdf,
-        mhalo_pdf_sat,
+        mhalo_pdf_sat_ragged,
         indx_pdf,
         jnp.asarray(target_mstar_ids),
         target_data_sat,
