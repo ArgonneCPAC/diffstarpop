@@ -449,7 +449,9 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
     # target_mstar_ids = np.array([9, 12, 15, 17, 19])
     # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
-    target_data = np.zeros((5, len(target_mstar_ids), len(logssfr_binsc_pdf)))
+    target_data = np.zeros(
+        (len(age_targets), len(target_mstar_ids), len(logssfr_binsc_pdf))
+    )
     for i in range(len(age_targets)):
         for j, jval in enumerate(target_mstar_ids):
             target_data[i, j] = (
@@ -536,7 +538,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
             sel = (tobs_id == i) & (logmh_id == j) & (upid_samp == -1)
 
             if sel.sum() < 50:
-                print(i, j)
+                print(i, j, t_target, logmh_binsc[j], sel.sum())
                 continue
             arange_sel = np.arange(len(tobs_id))[sel]
             replace = True if sel.sum() < nhalos_plot else False
@@ -564,7 +566,9 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
     # target_mstar_ids = np.array([9, 12, 15, 17, 19])
     # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
-    target_data = np.zeros((5, len(target_mstar_ids), len(logssfr_binsc_pdf)))
+    target_data = np.zeros(
+        (len(age_targets), len(target_mstar_ids), len(logssfr_binsc_pdf))
+    )
     for i in range(len(age_targets)):
         for j, jval in enumerate(target_mstar_ids):
             target_data[i, j] = (
@@ -746,7 +750,9 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
     # target_mstar_ids = np.array([9, 12, 15, 17])
     # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
-    target_data_sat = np.zeros((5, len(target_mstar_ids), len(logssfr_binsc_pdf)))
+    target_data_sat = np.zeros(
+        (len(age_targets), len(target_mstar_ids), len(logssfr_binsc_pdf))
+    )
     for i in range(len(age_targets)):
         for j, jval in enumerate(target_mstar_ids):
             target_data_sat[i, j] = (
@@ -859,7 +865,9 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
     # target_mstar_ids = np.array([9, 12, 15, 17])
     # target_mstar_ids = np.array([14, 17, 19, 22])
     print(logmstar_binsc_pdf[target_mstar_ids])
-    target_data_sat = np.zeros((5, len(target_mstar_ids), len(logssfr_binsc_pdf)))
+    target_data_sat = np.zeros(
+        (len(age_targets), len(target_mstar_ids), len(logssfr_binsc_pdf))
+    )
     for i in range(len(age_targets)):
         for j, jval in enumerate(target_mstar_ids):
             target_data_sat[i, j] = (
