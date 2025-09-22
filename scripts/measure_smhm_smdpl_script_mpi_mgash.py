@@ -47,6 +47,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-z_bins",
         nargs="+",
+        type=float,
         help="List of redshift bins",
         default=smhm_utils.Z_BINS,
     )
