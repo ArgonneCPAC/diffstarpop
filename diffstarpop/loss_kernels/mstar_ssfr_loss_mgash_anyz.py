@@ -302,7 +302,11 @@ def mstar_ssfr_kern_tobs(u_params, loss_data):
         logmstar_bins,
         logssfr_bins,
     )
-
+    nms = len(logmstar_bins) - 1
+    nsf = len(logssfr_bins) - 1
+    pred_mstar_ssfr_pdf = pred_mstar_ssfr_pdf.reshape(
+        (len(pred_mstar_ssfr_pdf), nms, nsf)
+    )
     pdfs = jnp.take(pred_mstar_ssfr_pdf, indx_pdf, axis=0)
     pdfs = jnp.einsum("zmab,zm->zab", pdfs, nmhalo_pdf)
     pdfs = jnp.take(pdfs, target_mstar_ids, axis=1)
@@ -416,7 +420,11 @@ def mstar_ssfr_sat_kern_tobs(u_params, loss_data):
         logmstar_bins,
         logssfr_bins,
     )
-
+    nms = len(logmstar_bins) - 1
+    nsf = len(logssfr_bins) - 1
+    pred_mstar_ssfr_pdf = pred_mstar_ssfr_pdf.reshape(
+        (len(pred_mstar_ssfr_pdf), nms, nsf)
+    )
     pdfs = jnp.take(pred_mstar_ssfr_pdf, indx_pdf, axis=0)
     pdfs = jnp.einsum("zmab,zm->zab", pdfs, nmhalo_pdf)
     pdfs = jnp.take(pdfs, target_mstar_ids, axis=1)
