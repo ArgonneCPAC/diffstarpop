@@ -42,6 +42,29 @@ from diffstarpop.loss_kernels.mstar_ssfr_loss_mgash import (
     get_pred_mstar_ssfr_sat_data_wrapper,
 )
 
+import subprocess
+
+
+def try_enable_latex():
+    """Try enabling LaTeX text rendering in matplotlib,
+    fallback if not available."""
+    try:
+        # Quick check: can we run latex?
+        subprocess.check_call(
+            ["latex", "--version"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        plt.rc("text", usetex=True)
+        plt.rc("font", family="serif", size=16)
+        print("LaTeX rendering enabled.")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        # LaTeX not installed or failed
+        plt.rc("text", usetex=False)
+        plt.rc("font", family="serif", size=16)
+        print("LaTeX not available, falling back to default mathtext.")
+
+
 BEBOP_SMHM_MEAN_DATA = "/lcrc/project/halotools/alarcon/results/"
 
 if __name__ == "__main__":
@@ -69,6 +92,9 @@ if __name__ == "__main__":
     else:
         params = np.load(params_path)
         all_u_params = params["diffstarpop_u_params"]
+
+    # Quick check: can we run latex?
+    try_enable_latex()
 
     # Register params ---------------------------------------------
 
@@ -199,7 +225,8 @@ if __name__ == "__main__":
     # Plots for P(Mstar | Mobs, zobs)
     # =====================================
     print("Making plot Mstar PDFs...")
-
+    fontsize = 24
+    tick_fontsize = 24
     (
         logmstar_bins_pdf,
         mstar_wcounts,
@@ -250,30 +277,53 @@ if __name__ == "__main__":
                 ls="--",
             )
 
-        ax[i].set_ylim(0, 0.3)
+        ax[i].set_ylim(0, 0.35)
+        ax[i].set_yticks(np.arange(0, 0.31, 0.10))
         ax[i].set_xlim(7, 13.0)
-        ax[i].set_ylabel(r"$P(M_\star(t_{\rm obs})| M_{\rm halo}(t_{\rm obs}))$")
-        ax[i].set_title(r"${\rm Redshift}=%.1f$" % redshift_targets[i], y=0.85, x=0.9)
-        if i < 4:
+        ax[i].set_ylabel(r"$P(M_{\star}| M_{\rm halo})$", fontsize=fontsize)
+        ax[i].set_title(
+            r"${\rm Redshift}=%.1f$" % redshift_targets[i],
+            y=0.82,
+            x=0.88,
+            fontsize=fontsize,
+        )
+        if i < len(age_targets) - 1:
             ax[i].set_xticklabels([])
+        ax[i].yaxis.set_tick_params(labelsize=tick_fontsize)
 
     legend_elements = [
         Patch(
             facecolor=colors_mstar[0],
             edgecolor="none",
-            label=r"$M_{\rm halo}(t_{\rm obs}))=11$",
+            label=r"$m_{\rm h}(t_{\rm obs})=11$",
             alpha=0.7,
         ),
         Patch(
-            facecolor=colors_mstar[-1],
+            facecolor=colors_mstar[3],
             edgecolor="none",
-            label=r"$M_{\rm halo}(t_{\rm obs}))=14.5$",
+            label=r"$m_{\rm h}(t_{\rm obs})=12$",
+            alpha=0.7,
+        ),
+        Patch(
+            facecolor=colors_mstar[6],
+            edgecolor="none",
+            label=r"$m_{\rm h}(t_{\rm obs})=13$",
+            alpha=0.7,
+        ),
+        Patch(
+            facecolor=colors_mstar[-2],
+            edgecolor="none",
+            label=r"$m_{\rm h}(t_{\rm obs})=14$",
             alpha=0.7,
         ),
         Line2D([0], [0], color="k", ls="--", label="Diffstarpop"),
     ]
-    ax[0].legend(handles=legend_elements, loc=2, fontsize=14)
-    ax[4].set_xlabel(r"$\log M_\star(t_{\rm obs})$")
+    ax[0].legend(handles=legend_elements, loc=2, fontsize=18)
+    ax[len(age_targets) - 1].set_xlabel(
+        r"$\log M_\star(t_{\rm obs}) [M_\odot]$", fontsize=fontsize
+    )
+
+    ax[len(age_targets) - 1].xaxis.set_tick_params(labelsize=tick_fontsize)
 
     fig.subplots_adjust(hspace=0.08)
 
@@ -298,11 +348,11 @@ if __name__ == "__main__":
 
     bestfit_data = get_pred_mstar_ssfr_data_wrapper(all_u_params, loss_data_ssfr_pred)
 
-    fig, ax = plt.subplots(5, 1, figsize=(12, 16), sharex=False)
+    fig, ax = plt.subplots(len(age_targets), 1, figsize=(12, 16), sharex=False)
 
     colors_ssfr = plt.get_cmap("plasma")(np.linspace(0.2, 0.8, len(target_mstar_ids)))
 
-    for i in range(5):
+    for i in range(len(age_targets)):
 
         for j in range(len(target_mstar_ids)):
 
@@ -317,34 +367,48 @@ if __name__ == "__main__":
                 logssfr_binsc_pdf, bestfit_data[i, j], color=colors_ssfr[j], ls="--"
             )
 
-        ax[i].set_ylim(0, 0.35)
-        ax[i].set_ylabel(
-            r"$P_{\rm cen}({\rm sSFR}(t_{\rm obs})| M_\star(t_{\rm obs}))$"
+        ax[i].set_ylim(0, 0.37)
+        ax[i].set_yticks(np.arange(0, 0.31, 0.10))
+        ax[i].set_ylabel(r"$P_{\rm cen}({\rm sSFR}| M_\star)$", fontsize=fontsize)
+        ax[i].set_title(
+            r"${\rm Redshift}=%.1f$" % redshift_targets[i],
+            y=0.82,
+            x=0.12,
+            fontsize=fontsize,
         )
-        ax[i].set_title(r"${\rm Redshift}=%.1f$" % redshift_targets[i], y=0.85, x=0.9)
-        if i < 4:
+        if i < len(age_targets) - 1:
             ax[i].set_xticklabels([])
+        ax[i].yaxis.set_tick_params(labelsize=tick_fontsize)
 
     legend_elements = [
         Patch(
             facecolor=colors_ssfr[0],
             edgecolor="none",
-            label=r"$M_\star(t_{\rm obs})=9.0$",
+            label=r"$m_\star(t_{\rm obs})=9.0$",
+            alpha=0.7,
+        ),
+        Patch(
+            facecolor=colors_ssfr[2],
+            edgecolor="none",
+            label=r"$m_\star(t_{\rm obs})=10.0$",
             alpha=0.7,
         ),
         Patch(
             facecolor=colors_ssfr[-1],
             edgecolor="none",
-            label=r"$M_\star(t_{\rm obs})=11.5$",
+            label=r"$m_\star(t_{\rm obs})=11.5$",
             alpha=0.7,
         ),
         Line2D([0], [0], color="k", ls="--", label="Diffstarpop"),
     ]
-    ax[0].legend(handles=legend_elements, loc=2, fontsize=14)
-    ax[4].set_xlabel(r"$\log {\rm sSFR}(t_{\rm obs})$")
+    ax[0].legend(handles=legend_elements, loc=1, fontsize=18)
+    ax[len(age_targets) - 1].set_xlabel(
+        r"$\log {\rm sSFR}(t_{\rm obs}) [\rm{yr}^{-1}]$", fontsize=fontsize
+    )
+    ax[len(age_targets) - 1].xaxis.set_tick_params(labelsize=tick_fontsize)
 
     fig.subplots_adjust(hspace=0.08)
-    fig.suptitle("Centrals", y=0.9)
+    fig.suptitle("Centrals", y=0.9, fontsize=fontsize)
     plt.savefig(
         outdir + "pdf_ssfr_centrals.png",
         bbox_inches="tight",
@@ -369,11 +433,11 @@ if __name__ == "__main__":
         all_u_params, loss_data_ssfr_sat_pred
     )
 
-    fig, ax = plt.subplots(5, 1, figsize=(12, 16), sharex=False)
+    fig, ax = plt.subplots(len(age_targets), 1, figsize=(12, 16), sharex=False)
 
     colors_ssfr = plt.get_cmap("plasma")(np.linspace(0.2, 0.8, len(target_mstar_ids)))
 
-    for i in range(5):
+    for i in range(len(age_targets)):
 
         for j in range(len(target_mstar_ids)):
 
@@ -388,34 +452,49 @@ if __name__ == "__main__":
                 logssfr_binsc_pdf, bestfit_data[i, j], color=colors_ssfr[j], ls="--"
             )
 
-        ax[i].set_ylim(0, 0.35)
-        ax[i].set_ylabel(
-            r"$P_{\rm cen}({\rm sSFR}(t_{\rm obs})| M_\star(t_{\rm obs}))$"
+        ax[i].set_ylim(0, 0.37)
+        ax[i].set_yticks(np.arange(0, 0.31, 0.10))
+        ax[i].set_ylabel(r"$P_{\rm sat}({\rm sSFR}| M_\star)$", fontsize=fontsize)
+        ax[i].set_title(
+            r"${\rm Redshift}=%.1f$" % redshift_targets[i],
+            y=0.82,
+            x=0.12,
+            fontsize=fontsize,
         )
-        ax[i].set_title(r"${\rm Redshift}=%.1f$" % redshift_targets[i], y=0.85, x=0.9)
-        if i < 4:
+        if i < len(age_targets) - 1:
             ax[i].set_xticklabels([])
+        ax[i].yaxis.set_tick_params(labelsize=tick_fontsize)
 
     legend_elements = [
         Patch(
             facecolor=colors_ssfr[0],
             edgecolor="none",
-            label=r"$M_\star(t_{\rm obs})=9.0$",
+            label=r"$m_\star(t_{\rm obs})=9.0$",
+            alpha=0.7,
+        ),
+        Patch(
+            facecolor=colors_ssfr[2],
+            edgecolor="none",
+            label=r"$m_\star(t_{\rm obs})=10.0$",
             alpha=0.7,
         ),
         Patch(
             facecolor=colors_ssfr[-1],
             edgecolor="none",
-            label=r"$M_\star(t_{\rm obs})=11.5$",
+            label=r"$m_\star(t_{\rm obs})=11.5$",
             alpha=0.7,
         ),
         Line2D([0], [0], color="k", ls="--", label="Diffstarpop"),
     ]
-    ax[0].legend(handles=legend_elements, loc="upper center", fontsize=14)
-    ax[4].set_xlabel(r"$\log {\rm sSFR}(t_{\rm obs})$")
+    ax[0].legend(handles=legend_elements, loc=1, fontsize=18)
+    ax[len(age_targets) - 1].set_xlabel(
+        r"$\log {\rm sSFR}(t_{\rm obs}) [\rm{yr}^{-1}]$", fontsize=fontsize
+    )
+
+    ax[len(age_targets) - 1].xaxis.set_tick_params(labelsize=tick_fontsize)
 
     fig.subplots_adjust(hspace=0.08)
-    fig.suptitle("Satellites", y=0.9)
+    fig.suptitle("Satellites", y=0.9, fontsize=fontsize)
 
     plt.savefig(
         outdir + "pdf_ssfr_satellites.png",
