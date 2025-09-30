@@ -41,7 +41,7 @@ from .params_diffstarfits_mgash_galacticus_in_plus_ex_situ import (
 )
 
 sim_name_list = [
-    "smdpl",
+    "smdpl_dr1_nomerging",
     "smdpl_dr1",
     "tng",
     "galacticus_in_situ",
