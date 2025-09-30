@@ -4,7 +4,6 @@ from diffstar.defaults_mgash_model import (
     DiffstarUParams,
     MSUParams,
     QUParams,
-    DEFAULT_DIFFSTAR_U_PARAMS,
     DEFAULT_Q_U_PARAMS_UNQUENCHED,
 )
 from jax import jit as jjit
