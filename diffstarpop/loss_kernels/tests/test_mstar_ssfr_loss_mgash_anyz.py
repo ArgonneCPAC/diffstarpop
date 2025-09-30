@@ -1,13 +1,8 @@
-import types
-import math
 import numpy as np
-import jax
 import jax.numpy as jnp
 import pytest
-from jax import random as jran
 
 from ...kernels.defaults_mgash import (
-    DEFAULT_DIFFSTARPOP_PARAMS,
     DEFAULT_DIFFSTARPOP_U_PARAMS,
 )
 from ..namedtuple_utils_mgash import (

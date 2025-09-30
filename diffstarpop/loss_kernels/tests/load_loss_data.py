@@ -1,5 +1,3 @@
-from typing import Any, Iterable, Sequence
-import numpy as np
 import h5py
 import json
 
