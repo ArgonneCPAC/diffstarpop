@@ -8,11 +8,11 @@ from .defaults import (
     DiffstarPopParams,
     DiffstarPopUParams,
 )
-from .kernels.defaults_tpeak_line_sepms_satfrac import (
+from .kernels.defaults_mgash import (
     get_bounded_diffstarpop_params,
     get_unbounded_diffstarpop_params,
 )
-from .mc_diffstarpop_tpeak_sepms_satfrac import (
+from .mc_diffstarpop_mgash import (
     mc_diffstar_params_galpop,
     mc_diffstar_params_singlegal,
     mc_diffstar_sfh_galpop,

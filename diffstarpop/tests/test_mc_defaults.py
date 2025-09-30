@@ -10,6 +10,7 @@ def test_mc_diffstar_params_galpop():
     ran_key = jran.key(0)
     n_gals = 500
     logmp0 = np.zeros(n_gals) + 12.0
+    tpeak = np.zeros(n_gals) + 12.0
     upid = np.zeros(n_gals).astype(int) - 1
     lgmu_infall = np.zeros_like(logmp0)
     logmhost_infall = np.copy(logmp0)
@@ -17,6 +18,7 @@ def test_mc_diffstar_params_galpop():
     _res = mc_diffstar_params_galpop(
         DEFAULT_DIFFSTARPOP_PARAMS,
         logmp0,
+        tpeak,
         upid,
         lgmu_infall,
         logmhost_infall,
