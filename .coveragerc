@@ -6,3 +6,5 @@ omit =
     diffstarpop/_version.py
     diffstarpop/tests/*.py
     diffstarpop/*/tests/*.py
+    diffstarpop/*/*/tests/*.py
+    diffstarpop/data_loaders/*.py
