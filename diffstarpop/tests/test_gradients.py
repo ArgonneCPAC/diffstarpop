@@ -16,7 +16,7 @@ from ..defaults import (
     DEFAULT_DIFFSTARPOP_U_PARAMS,
     DiffstarPopUParams,
 )
-from ..kernels.diffstarpop_tpeak_line_sepms_satfrac import _diffstarpop_means_covs
+from ..kernels.diffstarpop_mgash import _diffstarpop_means_covs
 
 
 @jjit
@@ -179,12 +179,14 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
     ran_key = jran.PRNGKey(0)
 
     logmp0 = 12.5
+    tpeak = 12.0
     lgmu_infall = -1.5
     logmhost = 13.5
     gyr_since_infall = 1.0
     args = (
         DEFAULT_DIFFSTARPOP_PARAMS,
         logmp0,
+        tpeak,
         lgmu_infall,
         logmhost,
         gyr_since_infall,
@@ -207,6 +209,7 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
     args = (
         alt_dpp_params,
         logmp0,
+        tpeak,
         lgmu_infall,
         logmhost,
         gyr_since_infall,
@@ -235,6 +238,7 @@ def test_gradients_of_diffstarpop_pdf_satquench_params_are_nonzero():
         args = (
             dpp_params,
             logmp0,
+            tpeak,
             lgmu_infall,
             logmhost,
             gyr_since_infall,
