@@ -36,6 +36,7 @@ def get_loss_data_smhm(indir, nhalos):
         logmh_id = hdf["logmh_id"][:]
         # logmh_val = hdf["logmh_id"][:]
         mah_params_samp = hdf["mah_params_samp"][:]
+        upid_samp = hdf["upid_samp"][:]
         # ms_params_samp = hdf["ms_params_samp"][:]
         # q_params_samp = hdf["q_params_samp"][:]
         tobs_id = hdf["tobs_id"][:]
@@ -53,6 +54,7 @@ def get_loss_data_smhm(indir, nhalos):
 
     mah_params_data = []
     logmp0_data = []
+    upid_data = []
     lgmu_infall_data = []
     logmhost_infall_data = []
     gyr_since_infall_data = []
@@ -72,6 +74,7 @@ def get_loss_data_smhm(indir, nhalos):
             arange_sel = np.arange(len(tobs_id))[sel]
             arange_sel = np.random.choice(arange_sel, nhalos, replace=False)
             mah_params_data.append(mah_params_samp[:, arange_sel])
+            upid_data.append(upid_samp[arange_sel])
             lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
             logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
             gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
@@ -83,6 +86,7 @@ def get_loss_data_smhm(indir, nhalos):
 
     mah_params_data = np.array(mah_params_data)
     logmp0_data = np.array(logmp0_data)
+    upid_data = np.array(upid_data)
     lgmu_infall_data = np.array(lgmu_infall_data)
     logmhost_infall_data = np.array(logmhost_infall_data)
     gyr_since_infall_data = np.array(gyr_since_infall_data)
@@ -114,6 +118,7 @@ def get_loss_data_smhm(indir, nhalos):
         redshift_targets,
         smhm,
         mah_params_samp,
+        upid_samp,
     )
 
     return loss_data, plot_data
@@ -183,6 +188,7 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
 
     mah_params_data = []
     logmp0_data = []
+    upid_data = []
     lgmu_infall_data = []
     logmhost_infall_data = []
     gyr_since_infall_data = []
@@ -203,6 +209,7 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
             arange_sel = np.arange(len(tobs_id))[sel]
             arange_sel = np.random.choice(arange_sel, nhalos, replace=replace)
             mah_params_data.append(mah_params_samp[:, arange_sel])
+            upid_data.append(upid_samp[arange_sel])
             lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
             logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
             gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
@@ -215,6 +222,7 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
 
     mah_params_data = np.array(mah_params_data)
     logmp0_data = np.array(logmp0_data)
+    upid_data = np.array(upid_data)
     lgmu_infall_data = np.array(lgmu_infall_data)
     logmhost_infall_data = np.array(logmhost_infall_data)
     gyr_since_infall_data = np.array(gyr_since_infall_data)
@@ -225,6 +233,7 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
     loss_data_mstar = (
         mah_params_data,
         logmp0_data,
+        upid_data,
         lgmu_infall_data,
         logmhost_infall_data,
         gyr_since_infall_data,
@@ -245,6 +254,7 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
 
     mah_params_data = []
     logmp0_data = []
+    upid_data = []
     lgmu_infall_data = []
     logmhost_infall_data = []
     gyr_since_infall_data = []
@@ -265,6 +275,7 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
             arange_sel = np.arange(len(tobs_id))[sel]
             arange_sel = np.random.choice(arange_sel, nhalos_plot, replace=replace)
             mah_params_data.append(mah_params_samp[:, arange_sel])
+            upid_data.append(upid_samp[arange_sel])
             lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
             logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
             gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
@@ -277,6 +288,7 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
 
     mah_params_data = np.array(mah_params_data)
     logmp0_data = np.array(logmp0_data)
+    upid_data = np.array(upid_data)
     lgmu_infall_data = np.array(lgmu_infall_data)
     logmhost_infall_data = np.array(logmhost_infall_data)
     gyr_since_infall_data = np.array(gyr_since_infall_data)
@@ -287,6 +299,7 @@ def get_loss_data_pdfs_mstar(indir, nhalos):
     loss_data_mstar_pred = (
         mah_params_data,
         logmp0_data,
+        upid_data,
         lgmu_infall_data,
         logmhost_infall_data,
         gyr_since_infall_data,
@@ -378,6 +391,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
 
     mah_params_data = []
     logmp0_data = []
+    upid_data = []
     lgmu_infall_data = []
     logmhost_infall_data = []
     gyr_since_infall_data = []
@@ -414,6 +428,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
             replace = True if sel.sum() < nhalos else False
             arange_sel = np.random.choice(arange_sel, nhalos, replace=replace)
             mah_params_data.append(mah_params_samp[:, arange_sel])
+            upid_data.append(upid_samp[arange_sel])
             lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
             logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
             gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
@@ -442,6 +457,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
 
     mah_params_data = np.array(mah_params_data)
     logmp0_data = np.array(logmp0_data)
+    upid_data = np.array(upid_data)
     lgmu_infall_data = np.array(lgmu_infall_data)
     logmhost_infall_data = np.array(logmhost_infall_data)
     gyr_since_infall_data = np.array(gyr_since_infall_data)
@@ -461,6 +477,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
     loss_data_ssfr = (
         mah_params_data,
         logmp0_data,
+        upid_data,
         lgmu_infall_data,
         logmhost_infall_data,
         gyr_since_infall_data,
@@ -489,6 +506,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
 
     mah_params_data = []
     logmp0_data = []
+    upid_data = []
     lgmu_infall_data = []
     logmhost_infall_data = []
     gyr_since_infall_data = []
@@ -523,6 +541,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
             replace = True if sel.sum() < nhalos_plot else False
             arange_sel = np.random.choice(arange_sel, nhalos_plot, replace=replace)
             mah_params_data.append(mah_params_samp[:, arange_sel])
+            upid_data.append(upid_samp[arange_sel])
             lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
             logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
             gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
@@ -551,6 +570,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
 
     mah_params_data = np.array(mah_params_data)
     logmp0_data = np.array(logmp0_data)
+    upid_data = np.array(upid_data)
     lgmu_infall_data = np.array(lgmu_infall_data)
     logmhost_infall_data = np.array(logmhost_infall_data)
     gyr_since_infall_data = np.array(gyr_since_infall_data)
@@ -570,6 +590,7 @@ def get_loss_data_pdfs_ssfr_central(indir, nhalos):
     loss_data_ssfr_pred = (
         mah_params_data,
         logmp0_data,
+        upid_data,
         lgmu_infall_data,
         logmhost_infall_data,
         gyr_since_infall_data,
@@ -665,6 +686,7 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
 
     mah_params_data = []
     logmp0_data = []
+    upid_data = []
     lgmu_infall_data = []
     logmhost_infall_data = []
     gyr_since_infall_data = []
@@ -698,6 +720,7 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
             replace = True if sel.sum() < nhalos else False
             arange_sel = np.random.choice(arange_sel, nhalos, replace=replace)
             mah_params_data.append(mah_params_samp[:, arange_sel])
+            upid_data.append(upid_samp[arange_sel])
             lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
             logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
             gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
@@ -727,6 +750,7 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
 
     mah_params_data = np.array(mah_params_data)
     logmp0_data = np.array(logmp0_data)
+    upid_data = np.array(upid_data)
     lgmu_infall_data = np.array(lgmu_infall_data)
     logmhost_infall_data = np.array(logmhost_infall_data)
     gyr_since_infall_data = np.array(gyr_since_infall_data)
@@ -746,6 +770,7 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
     loss_data_ssfr_sat = (
         mah_params_data,
         logmp0_data,
+        upid_data,
         lgmu_infall_data,
         logmhost_infall_data,
         gyr_since_infall_data,
@@ -774,6 +799,7 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
 
     mah_params_data = []
     logmp0_data = []
+    upid_data = []
     lgmu_infall_data = []
     logmhost_infall_data = []
     gyr_since_infall_data = []
@@ -806,6 +832,7 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
             replace = True if sel.sum() < nhalos_plot else False
             arange_sel = np.random.choice(arange_sel, nhalos_plot, replace=replace)
             mah_params_data.append(mah_params_samp[:, arange_sel])
+            upid_data.append(upid_samp[arange_sel])
             lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
             logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
             gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
@@ -834,6 +861,7 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
 
     mah_params_data = np.array(mah_params_data)
     logmp0_data = np.array(logmp0_data)
+    upid_data = np.array(upid_data)
     lgmu_infall_data = np.array(lgmu_infall_data)
     logmhost_infall_data = np.array(logmhost_infall_data)
     gyr_since_infall_data = np.array(gyr_since_infall_data)
@@ -853,6 +881,7 @@ def get_loss_data_pdfs_ssfr_satellite(indir, nhalos):
     loss_data_ssfr_sat_pred = (
         mah_params_data,
         logmp0_data,
+        upid_data,
         lgmu_infall_data,
         logmhost_infall_data,
         gyr_since_infall_data,
@@ -947,6 +976,7 @@ def get_loss_data_pdfs_mstar_cen(indir, nhalos):
     # Centrals
     mah_params_data = []
     logmp0_data = []
+    upid_data = []
     lgmu_infall_data = []
     logmhost_infall_data = []
     gyr_since_infall_data = []
@@ -967,6 +997,7 @@ def get_loss_data_pdfs_mstar_cen(indir, nhalos):
             arange_sel = np.arange(len(tobs_id))[sel]
             arange_sel = np.random.choice(arange_sel, nhalos, replace=replace)
             mah_params_data.append(mah_params_samp[:, arange_sel])
+            upid_data.append(upid_samp[arange_sel])
             lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
             logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
             gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
@@ -981,6 +1012,7 @@ def get_loss_data_pdfs_mstar_cen(indir, nhalos):
 
     mah_params_data = np.array(mah_params_data)
     logmp0_data = np.array(logmp0_data)
+    upid_data = np.array(upid_data)
     lgmu_infall_data = np.array(lgmu_infall_data)
     logmhost_infall_data = np.array(logmhost_infall_data)
     gyr_since_infall_data = np.array(gyr_since_infall_data)
@@ -991,6 +1023,7 @@ def get_loss_data_pdfs_mstar_cen(indir, nhalos):
     loss_data_mstar = (
         mah_params_data,
         logmp0_data,
+        upid_data,
         lgmu_infall_data,
         logmhost_infall_data,
         gyr_since_infall_data,
@@ -1011,6 +1044,7 @@ def get_loss_data_pdfs_mstar_cen(indir, nhalos):
 
     mah_params_data = []
     logmp0_data = []
+    upid_data = []
     lgmu_infall_data = []
     logmhost_infall_data = []
     gyr_since_infall_data = []
@@ -1031,6 +1065,7 @@ def get_loss_data_pdfs_mstar_cen(indir, nhalos):
             arange_sel = np.arange(len(tobs_id))[sel]
             arange_sel = np.random.choice(arange_sel, nhalos_plot, replace=replace)
             mah_params_data.append(mah_params_samp[:, arange_sel])
+            upid_data.append(upid_samp[arange_sel])
             lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
             logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
             gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
@@ -1045,6 +1080,7 @@ def get_loss_data_pdfs_mstar_cen(indir, nhalos):
 
     mah_params_data = np.array(mah_params_data)
     logmp0_data = np.array(logmp0_data)
+    upid_data = np.array(upid_data)
     lgmu_infall_data = np.array(lgmu_infall_data)
     logmhost_infall_data = np.array(logmhost_infall_data)
     gyr_since_infall_data = np.array(gyr_since_infall_data)
@@ -1055,6 +1091,7 @@ def get_loss_data_pdfs_mstar_cen(indir, nhalos):
     loss_data_mstar_pred = (
         mah_params_data,
         logmp0_data,
+        upid_data,
         lgmu_infall_data,
         logmhost_infall_data,
         gyr_since_infall_data,
@@ -1145,6 +1182,7 @@ def get_loss_data_pdfs_mstar_sat(indir, nhalos):
     # Centrals
     mah_params_data = []
     logmp0_data = []
+    upid_data = []
     lgmu_infall_data = []
     logmhost_infall_data = []
     gyr_since_infall_data = []
@@ -1165,6 +1203,7 @@ def get_loss_data_pdfs_mstar_sat(indir, nhalos):
             arange_sel = np.arange(len(tobs_id))[sel]
             arange_sel = np.random.choice(arange_sel, nhalos, replace=replace)
             mah_params_data.append(mah_params_samp[:, arange_sel])
+            upid_data.append(upid_samp[arange_sel])
             lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
             logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
             gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
@@ -1179,6 +1218,7 @@ def get_loss_data_pdfs_mstar_sat(indir, nhalos):
 
     mah_params_data = np.array(mah_params_data)
     logmp0_data = np.array(logmp0_data)
+    upid_data = np.array(upid_data)
     lgmu_infall_data = np.array(lgmu_infall_data)
     logmhost_infall_data = np.array(logmhost_infall_data)
     gyr_since_infall_data = np.array(gyr_since_infall_data)
@@ -1189,6 +1229,7 @@ def get_loss_data_pdfs_mstar_sat(indir, nhalos):
     loss_data_mstar = (
         mah_params_data,
         logmp0_data,
+        upid_data,
         lgmu_infall_data,
         logmhost_infall_data,
         gyr_since_infall_data,
@@ -1209,6 +1250,7 @@ def get_loss_data_pdfs_mstar_sat(indir, nhalos):
 
     mah_params_data = []
     logmp0_data = []
+    upid_data = []
     lgmu_infall_data = []
     logmhost_infall_data = []
     gyr_since_infall_data = []
@@ -1229,6 +1271,7 @@ def get_loss_data_pdfs_mstar_sat(indir, nhalos):
             arange_sel = np.arange(len(tobs_id))[sel]
             arange_sel = np.random.choice(arange_sel, nhalos_plot, replace=replace)
             mah_params_data.append(mah_params_samp[:, arange_sel])
+            upid_data.append(upid_samp[arange_sel])
             lgmu_infall_data.append(np.ones(len(arange_sel)) * lgmu_infall)
             logmhost_infall_data.append(np.ones(len(arange_sel)) * logmhost_infall)
             gyr_since_infall_data.append(np.ones(len(arange_sel)) * gyr_since_infall)
@@ -1243,6 +1286,7 @@ def get_loss_data_pdfs_mstar_sat(indir, nhalos):
 
     mah_params_data = np.array(mah_params_data)
     logmp0_data = np.array(logmp0_data)
+    upid_data = np.array(upid_data)
     lgmu_infall_data = np.array(lgmu_infall_data)
     logmhost_infall_data = np.array(logmhost_infall_data)
     gyr_since_infall_data = np.array(gyr_since_infall_data)
@@ -1253,6 +1297,7 @@ def get_loss_data_pdfs_mstar_sat(indir, nhalos):
     loss_data_mstar_pred = (
         mah_params_data,
         logmp0_data,
+        upid_data,
         lgmu_infall_data,
         logmhost_infall_data,
         gyr_since_infall_data,

@@ -9,12 +9,12 @@ from jax import jit as jjit
 from jax import numpy as jnp
 from jax import value_and_grad, vmap
 
-from ..kernels.defaults_tpeak_line import (
+from ..kernels.defaults_tpeak_line_satfrac import (
     DEFAULT_DIFFSTARPOP_U_PARAMS,
     get_bounded_diffstarpop_params,
 )
-from ..mc_diffstarpop_tpeak import mc_diffstar_sfh_galpop
-from .namedtuple_utils_tpeak import (
+from ..mc_diffstarpop_tpeak_satfrac import mc_diffstar_sfh_galpop
+from .namedtuple_utils_tpeak_satfrac import (
     array_to_tuple_new_diffstarpop_tpeak,
     tuple_to_jax_array,
 )
@@ -54,6 +54,7 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
     diffstarpop_params,
     mah_params,
     logmp0,
+    upid,
     lgmu_infall,
     logmhost_infall,
     gyr_since_infall,
@@ -65,6 +66,7 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
         diffstarpop_params,
         mah_params,
         logmp0,
+        upid,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -74,7 +76,7 @@ def _mc_diffstar_sfh_galpop_vmap_kern(
     return res
 
 
-_U = (None, *[0] * 7)
+_U = (None, *[0] * 8)
 mc_diffstar_sfh_galpop_vmap = jjit(vmap(_mc_diffstar_sfh_galpop_vmap_kern, in_axes=_U))
 
 
@@ -118,6 +120,7 @@ def mstar_kern_tobs(u_params, loss_data):
     (
         mah_params,
         logmp0,
+        upid,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -133,6 +136,7 @@ def mstar_kern_tobs(u_params, loss_data):
         diffstarpop_params,
         mah_params,
         logmp0,
+        upid,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -238,6 +242,7 @@ def mstar_ssfr_kern_tobs(u_params, loss_data):
     (
         mah_params,
         logmp0,
+        upid,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -260,6 +265,7 @@ def mstar_ssfr_kern_tobs(u_params, loss_data):
         diffstarpop_params,
         mah_params,
         logmp0,
+        upid,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -389,6 +395,7 @@ def mstar_ssfr_sat_kern_tobs(u_params, loss_data):
     (
         mah_params,
         logmp0,
+        upid,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
@@ -411,6 +418,7 @@ def mstar_ssfr_sat_kern_tobs(u_params, loss_data):
         diffstarpop_params,
         mah_params,
         logmp0,
+        upid,
         lgmu_infall,
         logmhost_infall,
         gyr_since_infall,
